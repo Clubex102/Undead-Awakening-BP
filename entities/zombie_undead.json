@@ -4,7 +4,7 @@
         "description": {
             "identifier": "namespace:entity",
             "is_spawnable": true,
-            "is_summonable": true
+            "is_summonable": false
         },
         "component_groups": {},
         "components": {},
