@@ -1,0 +1,13 @@
+{
+    "format_version": "1.20.80",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "namespace:entity",
+            "is_spawnable": true,
+            "is_summonable": true
+        },
+        "component_groups": {},
+        "components": {},
+        "events": {}
+    }
+}
