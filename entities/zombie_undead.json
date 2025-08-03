@@ -1,13 +1,102 @@
 {
-    "format_version": "1.20.90",
+    "format_version": "1.20.80",
     "minecraft:entity": {
         "description": {
-            "identifier": "namespace:entity",
+            "identifier": "udaw:zombiecomun",
             "is_spawnable": true,
-            "is_summonable": false
+            "is_summonable": true
         },
         "component_groups": {},
-        "components": {},
+        "components": {
+            "minecraft:health": {
+                "value": 20,
+                "max": 20
+            },
+            "minecraft:movement": {
+                "value": 0.3
+            
+            },
+            "minecraft:physics":
+            {
+                "has_collision": true,
+                "has_gravity": true
+            },
+            "minecraft:attack": {
+                "damage": 5
+            },
+            "minecraft:behavior.break_door": {
+                "priority": 3,
+                "speed_multiplier": 2
+            },
+            "minecraft:behavior.nearest_attackable_target": {
+                "priority": 4,
+                "within_radius": 50,
+                "entity_types": [
+                   {
+                    "filters": {
+                        "any_of": [
+                            {
+                                "test": "is_family",
+                                "value": "player",
+                                "operator": "=="
+                            },
+                            {
+                                "test": "is_family",
+                                "value": "villager",
+                                "operator": "=="
+                            },
+                            {
+                                "test": "is_family",
+                                "value": "illager",
+                                "operator": "=="
+                            }
+                        ]
+                    }
+                   }
+                ]
+            },
+            "minecraft:behavior.random_look_around": {
+                "look_distance": 40
+            },
+            "minecraft:collision_box": {
+                "height": 2,
+                "width": 1
+            
+            },
+            "minecraft:type_family": {"family": [
+                "mob", "zombie"
+            ]
+        },
+        "minecraft:behavior.melee_attack": {
+            "melee_fov": 90,
+            "track_target": true,
+            "attack_types": "melee",
+            "random_stop_interval": 0,
+            "reach_multiplier": 2,
+            "attack_once": false,
+            "require_complete_path": false,
+            "cooldown_time": 1,
+            "speed_multiplier": 1.5
+            
+        },
+        "minecraft:target_nearby_sensor": {
+            "must_see": false,
+            "inside_range": 1,
+            "outside_range": 70
+        },
+        "minecraft:navigation.generic": {
+            "can_walk": true,
+            "avoid_damage_blocks": true,
+            "can_break_doors": true,
+            "avoid_water": true,
+            "blocks_to_avoid": [
+                "minecraft:fire"
+            ]
+        },
+        "minecraft:movement.basic": {
+            "max_turn": 30
+        }
+        },
         "events": {}
     }
 }
