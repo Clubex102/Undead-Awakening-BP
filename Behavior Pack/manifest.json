@@ -1,15 +1,15 @@
 {
     "format_version": "1.10",
     "header": {
-        "description": "Undead Awakeningt.",
-        "name": "Caracol Studios",
-        "uuid": "12345678-1234-1234-1234-123456789012",
+        "description": "By Caracol Studios.",
+        "name": "Undead Awakening BP",
+        "uuid": "7398a6e1-f11e-4b73-b118-4f92621f5825",
         "version": [1, 0, 0],
         "min_engine_version": [1, 16, 0]
     },
     "modules": [
         {
-        "description": "This module contains custom behaviors.",
+        "description": "Behavior Pack.",
         "type": "data",
         "uuid": "23456789-2345-2345-2345-234567890123",
         "version": [1, 0, 0]
