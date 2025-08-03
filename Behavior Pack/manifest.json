@@ -1,0 +1,18 @@
+{
+    "format_version": "1.10",
+    "header": {
+        "description": "This is a behavior pack for Minecraft.",
+        "name": "My Behavior Pack",
+        "uuid": "12345678-1234-1234-1234-123456789012",
+        "version": [1, 0, 0],
+        "min_engine_version": [1, 16, 0]
+    },
+    "modules": [
+        {
+        "description": "This module contains custom behaviors.",
+        "type": "data",
+        "uuid": "23456789-2345-2345-2345-234567890123",
+        "version": [1, 0, 0]
+        }
+    ]
+}
