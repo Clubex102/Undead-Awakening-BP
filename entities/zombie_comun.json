@@ -47,7 +47,7 @@
                             },
                             {
                                 "test": "is_family",
-                                "value": "illager",
+                                "value": "villager",
                                 "operator": "=="
                             }
                         ]
