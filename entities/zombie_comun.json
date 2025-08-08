@@ -32,27 +32,27 @@
                 "priority": 4,
                 "within_radius": 50,
                 "entity_types": [
-                   {
-                    "filters": {
-                        "any_of": [
-                            {
-                                "test": "is_family",
-                                "value": "player",
-                                "operator": "=="
-                            },
-                            {
-                                "test": "is_family",
-                                "value": "villager",
-                                "operator": "=="
-                            },
-                            {
-                                "test": "is_family",
-                                "value": "villager",
-                                "operator": "=="
-                            }
-                        ]
+                    {
+                        "filters": {
+                            "any_of": [
+                                {
+                                    "test": "is_family",
+                                    "value": "player",
+                                    "operator": "=="
+                                },
+                                {
+                                    "test": "is_family",
+                                    "value": "villager",
+                                    "operator": "=="
+                                },
+                                {
+                                    "test": "is_family",
+                                    "value": "villager",
+                                    "operator": "=="
+                                }
+                            ]
+                        }
                     }
-                   }
                 ]
             },
             "minecraft:behavior.random_look_around": {
