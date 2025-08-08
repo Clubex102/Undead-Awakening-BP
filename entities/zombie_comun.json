@@ -38,17 +38,17 @@
                                 {
                                     "test": "is_family",
                                     "value": "player",
-                                    "operator": "=="
+                                    "subject": "other"
                                 },
                                 {
                                     "test": "is_family",
                                     "value": "villager",
-                                    "operator": "=="
+                                    "subject": "other"
                                 },
                                 {
                                     "test": "is_family",
-                                    "value": "villager",
-                                    "operator": "=="
+                                    "value": "illager",
+                                    "subject": "other"
                                 }
                             ]
                         }
