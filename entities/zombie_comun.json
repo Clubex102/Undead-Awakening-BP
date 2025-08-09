@@ -13,13 +13,26 @@
                 "max": 20
             },
             "minecraft:movement": {
-                "value": 0.4
+                "value": 0.3
             
             },
+            "minecraft:jump.static": {
+                "jump_power": 0.42
+            },
+            "minecraft:can_climb": {},
             "minecraft:physics":
             {
                 "has_collision": true,
                 "has_gravity": true
+            },
+            "minecraft:behavior.random_stroll": {
+                "priority": 6
+            },
+            "minecraft:behavior.look_at_target": {
+                "look_distance": 8,
+                "probability": 0.02,
+                "angle_of_view_vertical": 360,
+                "angle_of_view_horizontal": 360
             },
             "minecraft:attack": {
                 "damage": 5
