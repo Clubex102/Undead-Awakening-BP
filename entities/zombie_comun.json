@@ -42,7 +42,7 @@
                 "speed_multiplier": 2
             },
             "minecraft:behavior.nearest_attackable_target": {
-                "priority": 4,
+                "priority": 2,
                 "must_see": true,
                 "must_see_forget_duration": 30,
                 "reselect_targets": true,
