@@ -37,6 +37,7 @@
             "minecraft:attack": {
                 "damage": 5
             },
+            "minecraft:block_climber": {},
             "minecraft:behavior.break_door": {
                 "priority": 3,
                 "speed_multiplier": 2
@@ -68,13 +69,13 @@
                                 }
                             ]
                         },
-                        "max_dist": 50
+                        "max_dist": 60
                     }
                 ]
             },
             "minecraft:follow_range": {
-                "value": 40,
-                "max": 50
+                "value": 60,
+                "max": 70
             },
             "minecraft:behavior.random_look_around": {
                 "look_distance": 40
