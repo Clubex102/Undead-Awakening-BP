@@ -72,6 +72,10 @@
                     }
                 ]
             },
+            "minecraft:follow_range": {
+                "value": 40,
+                "max": 50
+            },
             "minecraft:behavior.random_look_around": {
                 "look_distance": 40
             },
@@ -99,6 +103,27 @@
             "must_see": false,
             "inside_range": 1,
             "outside_range": 70
+        },
+        "minecraft:navigation.climb": {
+            "avoid_damage_blocks": true,
+            "avoid_portals": true,
+            "avoid_sun": false,
+            "avoid_water": true,
+            "blocks_to_avoid": [],
+            "can_breach": false,
+            "can_break_doors": true,
+            "can_jump": true,
+            "can_open_doors": false,
+            "can_open_iron_doors": false,
+            "can_pass_doors": true,
+            "can_path_from_air": false,
+            "can_path_over_lava": false,
+            "can_path_over_water": false,
+            "can_sink": true,
+            "can_swim": false,
+            "can_walk": true,
+            "can_walk_in_lava": false,
+            "is_amphibious": false
         },
         "minecraft:navigation.generic": {
             "can_walk": true,
