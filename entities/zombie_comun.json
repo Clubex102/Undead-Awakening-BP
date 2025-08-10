@@ -29,15 +29,14 @@
                 "priority": 6
             },
             "minecraft:behavior.look_at_target": {
-                "look_distance": 8,
+                "look_distance": 4,
                 "probability": 0.02,
                 "angle_of_view_vertical": 360,
                 "angle_of_view_horizontal": 360
             },
             "minecraft:attack": {
-                "damage": 5
+                "damage": 3.5
             },
-            "minecraft:block_climber": {},
             "minecraft:behavior.break_door": {
                 "priority": 3,
                 "speed_multiplier": 2
@@ -78,7 +77,7 @@
                 "max": 70
             },
             "minecraft:behavior.random_look_around": {
-                "look_distance": 40
+                "look_distance": 60
             },
             "minecraft:collision_box": {
                 "height": 2,
@@ -125,15 +124,7 @@
             "can_walk": true,
             "can_walk_in_lava": false,
             "is_amphibious": false
-        },
-        "minecraft:navigation.generic": {
-            "can_walk": true,
-            "avoid_damage_blocks": true,
-            "can_break_doors": true,
-            "avoid_water": true,
-            "blocks_to_avoid": [
-                "minecraft:fire"
-            ]
+            
         },
         "minecraft:movement.basic": {
             "max_turn": 30
