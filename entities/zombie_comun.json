@@ -43,7 +43,7 @@
             },
             "minecraft:behavior.nearest_attackable_target": {
                 "priority": 2,
-                "must_see": true,
+                "must_see": false,
                 "must_see_forget_duration": 30,
                 "reselect_targets": true,
                 "within_radius": 50,
@@ -68,13 +68,14 @@
                                 }
                             ]
                         },
-                        "max_dist": 60
+                        "max_dist": 70
                     }
                 ]
             },
+            "minecraft:vibration_listener": {},
             "minecraft:follow_range": {
-                "value": 60,
-                "max": 70
+                "value": 70,
+                "max": 80
             },
             "minecraft:behavior.random_look_around": {
                 "look_distance": 60
