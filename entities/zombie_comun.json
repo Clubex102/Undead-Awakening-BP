@@ -2,6 +2,14 @@
     "format_version": "1.20.80",
     "minecraft:entity": {
         "description": {
+            "animations": {
+                "zombie_comun": "controller.animation.zombie_comun"
+            },
+            "scripts": {
+                "animate": [
+                    "zombie_comun"
+                ]
+            },
             "identifier": "udaw:zombiecomun",
             "is_spawnable": true,
             "is_summonable": true
