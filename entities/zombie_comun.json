@@ -3,12 +3,8 @@
     "minecraft:entity": {
         "description": {
             "animations": {
-                "zombie_comun": "controller.animation.zombie_comun"
             },
             "scripts": {
-                "animate": [
-                    "zombie_comun"
-                ]
             },
             "identifier": "udaw:zombiecomun",
             "is_spawnable": true,
@@ -88,9 +84,13 @@
             "minecraft:behavior.random_look_around": {
                 "look_distance": 60
             },
+            "minecraft:pushable": {
+                "is_pushable": true,
+                "is_pushable_by_piston": true
+            },
             "minecraft:collision_box": {
                 "height": 2,
-                "width": 1
+                "width": 0.5
             
             },
             "minecraft:type_family": {"family": [
