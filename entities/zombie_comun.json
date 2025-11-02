@@ -133,6 +133,9 @@
         
         "minecraft:movement.basic": {
             "max_turn": 30
+        },
+        "minecraft:loot": {
+            "table": "loot_tables/entities/zombie_comun.json"
         }
         },
         "events": {}
