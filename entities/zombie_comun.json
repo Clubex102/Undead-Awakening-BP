@@ -8,9 +8,28 @@
             },
             "identifier": "udaw:zombiecomun",
             "is_spawnable": true,
-            "is_summonable": true
+            "is_summonable": true,
+            "spawn_category": "monster"
         },
-        "component_groups": {},
+        "component_groups": {
+            "day_time": {
+                "minecraft:behavior.avoid_mob_type": {
+                    "priority": 1,
+                    "entity_types": [
+                        {
+                            "filters": {
+                                "test": "is_family",
+                                "value": "player",
+                                "subject": "other"
+                            }
+                        }
+                    ],
+                    "max_dist": 128,
+                    "max_flee": 0,
+                    "sprint_speed_multiplier": 0.5
+                }
+            }
+        },
         "components": {
             "minecraft:health": {
                 "value": 20,
@@ -69,6 +88,21 @@
                                     "test": "is_family",
                                     "value": "illager",
                                     "subject": "other"
+                                },
+                                {
+                                    "test": "is_family",
+                                    "value": "snow_golem",
+                                    "subject": "other"
+                                },
+                                {
+                                    "test": "is_family",
+                                    "value": "iron_golem",
+                                    "subject": "other"
+                                },
+                                {
+                                    "test": "is_family",
+                                    "value": "witch",
+                                    "subject": "other"
                                 }
                             ]
                         },
@@ -80,7 +114,7 @@
                 "look_distance": 60
             },
             "minecraft:pushable": {
-                "is_pushable": true,
+                "is_pushable": false,
                 "is_pushable_by_piston": true
             },
             "minecraft:collision_box": {
@@ -120,9 +154,9 @@
             "can_open_doors": false,
             "can_open_iron_doors": false,
             "can_pass_doors": true,
-            "can_path_from_air": false,
+            "can_path_from_air": true,
             "can_path_over_lava": false,
-            "can_path_over_water": false,
+            "can_path_over_water": true,
             "can_sink": true,
             "can_swim": false,
             "can_walk": true,
@@ -130,13 +164,34 @@
             "is_amphibious": false
             
         },
-        
+        "minecraft:behavior.pickup_items": {
+            "can_pickup_any_item": true,
+            "can_pickup_to_hand_or_equipment": true,
+            "cooldown_after_being_attacked": 5,
+            "excluded_items": [],
+            "goal_radius": 0.2,
+            "max_dist": 3,
+            "pickup_based_on_chance": false,
+            "track_target": true
+        },
+        "minecraft:inventory": {
+            "inventory_size": 5
+        },
+        "minecraft:behavior.equip_item": {
+            "priority": 5
+        },"minecraft:equip_item": {
+            "can_wear_armor": true
+        },
         "minecraft:movement.basic": {
             "max_turn": 30
         },
         "minecraft:loot": {
             "table": "loot_tables/entities/zombie_comun.json"
-        }
+        },
+        "minecraft:experience_reward": {
+            "on_death": "math.random(3, 5)"
+        },
+        "minecraft:despawn": {}
         },
         "events": {}
     }
