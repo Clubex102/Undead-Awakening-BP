@@ -8,7 +8,36 @@
             }
         },
         "components": {
-            "minecraft:icon": "flintlockgun"
+            "minecraft:icon": "flintlockgun",
+            "minecraft:max_stack_size": 1,
+            "minecraft:can_destroy_in_creative": false,
+            "minecraft:custom_components": [
+                "udaw:weapon"
+            ],
+            "minecraft:durability": {
+                "damage_chance": {
+                    "min": 10,
+                    "max": 50
+                },
+                "max_durability": 120
+            },
+            "minecraft:repairable": {
+                "repair_items": [
+                    {
+                        "items": [
+                            "minecraft:iron_ingot"
+                        ],
+                        "repair_amount": "math.min(q.remaining_durability + c.other->q.remaining_durability + math.floor(q.max_durability /20), c.other->q.max_durability)"
+                    }
+                ]
+            },
+            "minecraft:use_modifiers": {
+                "use_duration": 8
+            },
+            "minecraft:cooldown": {
+                "category": "weapon",
+                "duration": 5
+            }
         }
     }
 }
