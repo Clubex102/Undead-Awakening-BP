@@ -32,7 +32,7 @@
                 ]
             },
             "minecraft:use_modifiers": {
-                "use_duration": 8
+                "use_duration": 0.25
             },
             "minecraft:cooldown": {
                 "category": "weapon",
