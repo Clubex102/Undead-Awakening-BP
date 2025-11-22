@@ -1,8 +1,7 @@
 import {
     system,
 } from "@minecraft/server";
-import { VECTOR } from "./mathUtils";
-import { shootCommon, shootRepeat } from "./u.js";
+import { shootCommon, shootRepeat } from "./globalVar/u.js";
 
 system.beforeEvents.startup.subscribe((udaw) => {
     udaw.itemComponentRegistry.registerCustomComponent("udaw:weapon", {
