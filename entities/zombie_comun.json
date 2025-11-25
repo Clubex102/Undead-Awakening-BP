@@ -64,6 +64,23 @@
                 "value": 0.3
             
             },
+            "minecraft:annotation.break_door": {
+              "break_time": 5,
+              "min_difficulty": "normal"
+            },
+            "minecraft:behavior.charge_held_item": {
+              "items": []
+            },
+            "minecraft:break_blocks": {
+              "breakable_blocks": [
+                "glass", "glass_pane", "white_glass", "black_glass", "gray_glass", "light_gray_glass", "brown_glass", "red_glass", "orange_glass", "yellow_glass", "lime_glass", "green_glass",
+                "glass", "glass_pane", "wooden_trapdoor", "oak_trapdoor", "spruce_trapdoor", "birch_trapdoor", "jungle_trapdoor", "acacia_trapdoor", "dark_oak_trapdoor", "crimson_trapdoor", "warped_trapdoor",
+                "blue_glass", "blue_glass_pane", "brown_glass", "brown_glass_pane", "cyan_glass", "cyan_glass_pane", "gray_glass", "gray_glass_pane", "green_glass", "green_glass_pane",
+                "light_blue_glass", "light_blue_glass_pane", "light_gray_glass", "light_gray_glass_pane", "lime_glass", "lime_glass_pane", "magenta_glass", "magenta_glass_pane", "orange_glass", "orange_glass_pane",
+                "pink_glass", "pink_glass_pane", "purple_glass", "purple_glass_pane", "red_glass", "red_glass_pane", "white_glass", "white_glass_pane", "yellow_glass", "yellow_glass_pane",
+                "blue_glass", "green_glass", "red_glass", "yellow_glass", "white_glass", "black_glass", "purple_glass", "cyan_glass", "pink_glass", "lime_glass", "gray_glass", "light_gray_glass", "orange_glass", "brown_glass", "magenta_glass", "light_blue_glass"
+              ]
+            },
             "minecraft:jump.static": {
                 "jump_power": 0.42
             },
