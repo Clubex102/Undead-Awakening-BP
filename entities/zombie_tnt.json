@@ -10,6 +10,16 @@
             "spawn_category": "monster"
         },
         "component_groups": {
+            "minecraft:timer_exploding": {
+                "minecraft:timer": {
+                    "time": 2.5,
+                    "time_down_event": {
+                        "event": "udaw:explode_now",
+                        "target": "self"
+                    }
+                },
+                "minecraft:is_charged": {}
+            },
             "minecraft:exploding": {
                 "minecraft:explode": {
                     "fuse_length": 2,
@@ -17,8 +27,7 @@
                     "power": 4,
                     "causes_fire": false,
                     "breaks_blocks": true
-                },
-                "minecraft:is_charged": {}
+                }
             }
         },
         "components": {
@@ -164,11 +173,18 @@
                         },
                         "add": {
                             "component_groups": [
-                                "minecraft:exploding"
+                                "minecraft:timer_exploding"
                             ]
                         }
                     }
                 ]
+            },
+            "udaw:explode_now": {
+                "add": {
+                    "component_groups": [
+                        "minecraft:exploding"
+                    ]
+                }
             },
             "minecraft:stop_exploding": {
                 "remove": {
