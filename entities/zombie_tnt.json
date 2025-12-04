@@ -12,13 +12,17 @@
         "component_groups": {
             "minecraft:timer_exploding": {
                 "minecraft:timer": {
-                    "time": 2.2,
+                    "time": 1.5,
                     "time_down_event": {
                         "event": "udaw:explode_now",
                         "target": "self"
                     }
                 },
-                "minecraft:is_baby": {}
+                "minecraft:is_baby": {},
+                "minecraft:movement": {
+                    "value": 0,
+                    "max": 0
+                }
             },
             "minecraft:exploding": {
                 "minecraft:explode": {
