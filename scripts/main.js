@@ -16,7 +16,7 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
         onUse(event) {
             const { itemStack, source } = event;
             shootCommon(source, "minecraft:arrow", 1, 1);
-            itemStack.getComponent("cooldown").startCooldown(5);
+            itemStack.getComponent("cooldown").startCooldown(source);
         },
     });
 });
