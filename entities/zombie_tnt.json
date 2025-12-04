@@ -18,7 +18,7 @@
                         "target": "self"
                     }
                 },
-                "minecraft:is_charged": {}
+                "minecraft:is_baby": {}
             },
             "minecraft:exploding": {
                 "minecraft:explode": {
