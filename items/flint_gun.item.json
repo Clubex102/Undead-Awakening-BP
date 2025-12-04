@@ -31,8 +31,10 @@
                     }
                 ]
             },
+            "minecraft:use_animation": "bow",
             "minecraft:use_modifiers": {
-                "use_duration": 0.25
+                "use_duration": 99999,
+                "movement_modifier": 0.35
             },
             "minecraft:cooldown": {
                 "category": "weapon",
