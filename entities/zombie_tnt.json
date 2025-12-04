@@ -21,9 +21,6 @@
                 "minecraft:is_baby": {}
             },
             "udaw:exploding": {
-                "minecraft:movement": {
-                    "value": 0
-                },
                 "minecraft:explode": {
                     "fuse_length": 2,
                     "fuse_lit": true,
