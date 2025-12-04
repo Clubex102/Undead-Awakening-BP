@@ -27,6 +27,9 @@
                     "power": 4,
                     "causes_fire": false,
                     "breaks_blocks": true
+                },
+                "minecraft:movement": {
+                    "value": 0
                 }
             }
         },
