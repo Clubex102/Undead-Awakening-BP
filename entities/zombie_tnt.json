@@ -121,7 +121,7 @@
             "minecraft:target_nearby_sensor": {
                 "must_see": false,
                 "inside_range": 3,
-                "outside_range": 6,
+                "outside_range": 7,
                 "on_inside_range": {
                     "event": "minecraft:start_exploding",
                     "target": "self"
