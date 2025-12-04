@@ -163,21 +163,11 @@
         },
         "events": {
             "minecraft:start_exploding": {
-                "sequence": [
-                    {
-                        "filters": {
-                            "test": "has_component",
-                            "subject": "self",
-                            "operator": "!=",
-                            "value": "minecraft:is_charged"
-                        },
-                        "add": {
+                "add": {
                             "component_groups": [
                                 "minecraft:timer_exploding"
                             ]
                         }
-                    }
-                ]
             },
             "udaw:explode_now": {
                 "add": {
