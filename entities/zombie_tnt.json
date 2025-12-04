@@ -168,6 +168,11 @@
                     "component_groups": [
                         "minecraft:timer_exploding"
                     ]
+                },
+                "remove": {
+                    "component_groups": [
+                        "udaw:exploding"
+                    ]
                 }
             },
             "udaw:explode_now": {
