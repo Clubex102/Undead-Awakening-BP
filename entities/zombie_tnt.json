@@ -156,8 +156,11 @@
             "minecraft:movement.basic": {
                 "max_turn": 30
             },
+            "minecraft:loot": {
+                "table": "loot_tables/entities/zombie_tnt.json"
+            },
             "minecraft:experience_reward": {
-                "on_death": "query.last_hit_by_player ? Math.Random(3,5) : 0"
+                "on_death": "query.last_hit_by_player ? Math.Random(3,5) : 1"
             },
             "minecraft:can_join_raid": {}
         },
