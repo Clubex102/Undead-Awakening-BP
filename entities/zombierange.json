@@ -1,0 +1,160 @@
+{
+    "format_version": "1.20.80",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "udaw:zombierange",
+            "is_spawnable": true,
+            "is_summonable": true,
+            "spawn_category": "monster"
+        },
+
+        "component_groups": {
+            "minecraft:ranged_attack": {
+                "minecraft:behavior.ranged_attack": {
+                    "priority": 4,
+                    "attack_interval_min": 3.0,
+                    "attack_interval_max": 3.0,
+                    "attack_radius": 30.0
+                },
+                "minecraft:shooter": {
+                    "def": "minecraft:arrow"
+                }
+            }
+        },
+
+        "components": {
+            "minecraft:health": {
+                "value": 20,
+                "max": 20
+            },
+
+            "minecraft:movement": {
+                "value": 0.35
+            },
+
+            "minecraft:jump.static": {
+                "jump_power": 0.42
+            },
+
+            "minecraft:physics": {
+                "has_collision": true,
+                "has_gravity": true
+            },
+
+            "minecraft:behavior.random_stroll": {
+                "priority": 6
+            },
+
+            "minecraft:behavior.look_at_target": {
+                "look_distance": 6,
+                "probability": 0.02
+            },
+
+            "minecraft:behavior.nearest_attackable_target": {
+                "priority": 2,
+                "must_see": false,
+                "must_see_forget_duration": 30,
+                "reselect_targets": true,
+                "within_radius": 30,
+                "entity_types": [
+                    {
+                        "filters": {
+                            "any_of": [
+                                { "test": "is_family", "value": "player", "subject": "other" },
+                                { "test": "is_family", "value": "villager", "subject": "other" },
+                                { "test": "is_family", "value": "illager", "subject": "other" },
+                                { "test": "is_family", "value": "snow_golem", "subject": "other" },
+                                { "test": "is_family", "value": "iron_golem", "subject": "other" },
+                                { "test": "is_family", "value": "witch", "subject": "other" }
+                            ]
+                        },
+                        "max_dist": 25
+                    }
+                ]
+            },
+            
+
+            "minecraft:behavior.avoid_mob_type": {
+                "priority": 1,
+                "entity_types": [
+                    {
+                        "filters": {
+                            "any_of": [
+                                { "test": "is_family", "value": "player", "subject": "other" },
+                                { "test": "is_family", "value": "villager", "subject": "other" },
+                                { "test": "is_family", "value": "illager", "subject": "other" },
+                                { "test": "is_family", "value": "snow_golem", "subject": "other" },
+                                { "test": "is_family", "value": "iron_golem", "subject": "other" },
+                                { "test": "is_family", "value": "witch", "subject": "other" }
+                            ]
+                        },
+                        "max_dist": 4
+                    }
+                ],
+                "max_dist": 4,
+                "max_flee": 0,
+                "sprint_speed_multiplier": 1.5
+            },
+
+            "minecraft:type_family": {
+                "family": ["mob", "zombie", "monster"]
+            },
+
+            "minecraft:collision_box": {
+                "height": 2,
+                "width": 0.5
+            },
+
+            "minecraft:navigation.walk": {
+                "avoid_damage_blocks": true,
+                "avoid_portals": true,
+                "avoid_sun": false,
+                "avoid_water": true,
+                "blocks_to_avoid": [],
+                "can_breach": false,
+                "can_break_doors": false,
+                "can_jump": true,
+                "can_open_doors": false,
+                "can_open_iron_doors": false,
+                "can_pass_doors": true,
+                "can_path_from_air": false,
+                "can_path_over_lava": false,
+                "can_path_over_water": true,
+                "can_sink": true,
+                "can_swim": true,
+                "can_walk": true,
+                "can_walk_in_lava": false,
+                "is_amphibious": false
+            },
+
+            "minecraft:movement.basic": {
+                "max_turn": 30
+            },
+
+            "minecraft:behavior.charge_held_item": {
+                "priority": 3,
+                "items": [
+                    "minecraft:arrow"
+                ]
+            },
+
+            "minecraft:follow_range": {
+                "value": 64
+            },
+
+            "minecraft:experience_reward": {
+                "on_death": "query.last_hit_by_player ? Math.Random(3,5) : 0"
+            }
+        },
+
+        "events": {
+            "minecraft:entity_spawned": {
+                "add": {
+                    "component_groups": [
+                        "minecraft:ranged_attack"
+                    ]
+                }
+            }
+        }
+    }
+}
