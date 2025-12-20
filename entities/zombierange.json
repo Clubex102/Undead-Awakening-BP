@@ -29,7 +29,7 @@
             },
 
             "minecraft:movement": {
-                "value": 0.35
+                "value": 0.30
             },
 
             "minecraft:jump.static": {
@@ -81,7 +81,6 @@
                         "filters": {
                             "any_of": [
                                 { "test": "is_family", "value": "player", "subject": "other" },
-                                { "test": "is_family", "value": "villager", "subject": "other" },
                                 { "test": "is_family", "value": "illager", "subject": "other" },
                                 { "test": "is_family", "value": "snow_golem", "subject": "other" },
                                 { "test": "is_family", "value": "iron_golem", "subject": "other" },

@@ -113,7 +113,7 @@
             
             
             "minecraft:type_family": {
-                "family": ["mob", "zombie", "monster"]
+                "family": ["mob", "zombie", "zombietnt", "monster"]
             },
             "minecraft:target_nearby_sensor": {
                 "must_see": false,

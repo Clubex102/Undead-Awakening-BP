@@ -67,6 +67,7 @@
         "minecraft:variant": {
           "value": 1
         },
+        
         "minecraft:equipment": {
           "table": "loot_tables/entities/pillager_captain_equipment.json",
           "slot_drop_chance": [
@@ -76,6 +77,7 @@
             }
           ]
         },
+        
         "minecraft:loot": {
           "table": "loot_tables/entities/pillager_captain.json"
         },
@@ -90,6 +92,16 @@
       },
       "minecraft:patrol_captain": {
         "minecraft:is_illager_captain": {
+        },
+        "minecraft:behavior.avoid_mob_type": {
+          "priority": 1,
+          "entity_types": [
+            {
+              "filters": { "test": "is_family", "subject": "other", "value": "zombietnt" },
+              "max_dist": 4,
+              "sprint_speed_multiplier": 1.2
+            }
+          ]
         },
         "minecraft:variant": {
           "value": 1

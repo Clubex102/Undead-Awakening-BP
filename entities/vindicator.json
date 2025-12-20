@@ -87,6 +87,25 @@
       "minecraft:illager_squad_captain": {
         "minecraft:is_illager_captain": {
         },
+        "minecraft:behavior.avoid_mob_type": {
+          "priority": 5,
+          "entity_types": [
+            {
+              "filters": { "test": "is_family", "subject": "other", "value": "zombietnt" },
+              "max_dist": 3,
+              "walk_speed_multiplier": 0.6,
+              "sprint_speed_multiplier": 1.0
+            }
+          ],
+          "max_dist": 3,
+          "max_flee": 6,
+          "walk_speed_multiplier": 1,
+          "sprint_speed_multiplier": 1,
+          "probability_per_strength": 1,
+          "ignore_visibility": false,
+          "avoid_mob_sound": "example",
+          "remove_target": false
+        },
         "minecraft:variant": {
           "value": 1
         },
@@ -151,6 +170,7 @@
           }
         ]
       },
+      
       "minecraft:is_hidden_when_invisible": {
       },
       "minecraft:experience_reward": {
