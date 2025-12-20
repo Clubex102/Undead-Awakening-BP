@@ -14,10 +14,17 @@
                     "priority": 4,
                     "attack_interval_min": 3.0,
                     "attack_interval_max": 3.0,
-                    "attack_radius": 30.0
+                    "attack_radius": 30.0,
+                    "charge_charged_trigger": 1.5,
+                    "charge_shoot_trigger": 3,
+                    "attack_radius_min": 10,
+                    "target_in_sight_time": 1,
+                    "set_persistent": true
+                    
                 },
                 "minecraft:shooter": {
                     "def": "minecraft:arrow"
+                    
                 }
             }
         },
@@ -26,6 +33,11 @@
             "minecraft:health": {
                 "value": 20,
                 "max": 20
+            },
+            
+            "minecraft:pushable": {
+                "is_pushable": true,
+                "is_pushable_by_piston": true
             },
 
             "minecraft:movement": {
@@ -147,6 +159,7 @@
         },
 
         "events": {
+            
             "minecraft:entity_spawned": {
                 "add": {
                     "component_groups": [
