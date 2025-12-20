@@ -22,6 +22,7 @@
                     "set_persistent": true
                     
                 },
+                
                 "minecraft:shooter": {
                     "def": "minecraft:arrow"
                     
@@ -52,6 +53,7 @@
                 "has_collision": true,
                 "has_gravity": true
             },
+            
 
             "minecraft:behavior.random_stroll": {
                 "priority": 6
@@ -61,6 +63,7 @@
                 "look_distance": 6,
                 "probability": 0.02
             },
+            
 
             "minecraft:behavior.nearest_attackable_target": {
                 "priority": 2,
@@ -110,6 +113,7 @@
             "minecraft:type_family": {
                 "family": ["mob", "zombie", "monster"]
             },
+            
 
             "minecraft:collision_box": {
                 "height": 2,
@@ -148,6 +152,10 @@
                     "minecraft:arrow"
                 ]
             },
+            "minecraft:loot": {
+                "table": "loot_tables/entities/zombierange.json"
+            },
+            
 
             "minecraft:follow_range": {
                 "value": 64
@@ -157,6 +165,7 @@
                 "on_death": "query.last_hit_by_player ? Math.Random(3,5) : 0"
             }
         },
+        
 
         "events": {
             
