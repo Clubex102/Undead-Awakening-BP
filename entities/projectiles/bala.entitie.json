@@ -1,1 +1,28 @@
-{}
+{
+    "format_version": "1.21.60",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "udaw:ball_shoot",
+            "runtime_identifier": "minecraft:snowball"
+        },
+        "components": {
+            "minecraft:projectile": {
+                "anchor": 0,
+                "angle_offset": 0,
+                "catch_fire": false,
+                "gravity": 0.05,
+                "inertia": 0.99,
+                "knockback": true,
+                "on_hit": {
+                    "catch_fire": false,
+                    "impact_damage": {
+                        "apply_knockback_to_blocking_targets": true
+                    }
+                },
+                "power": 2,
+                "shoot_target": true,
+                "should_bounce": false
+            }
+        }
+    }
+}
