@@ -22,11 +22,10 @@
                     "set_persistent": true
                     
                 },
-                
                 "minecraft:shooter": {
                     "def": "minecraft:arrow"
-                    
-                }
+                },
+                "minecraft:is_charged": {}
             }
         },
 
