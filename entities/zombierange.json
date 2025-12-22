@@ -105,7 +105,7 @@
                     }
                 ],
                 "max_dist": 4,
-                "max_flee": 0,
+                "max_flee": 6,
                 "sprint_speed_multiplier": 1.5
             },
 
