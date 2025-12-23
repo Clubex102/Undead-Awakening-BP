@@ -53,7 +53,7 @@
                 "inside_range": 1,
                 "outside_range": 20
             },
-            "minecraft:navigation.climb": {
+            "minecraft:navigation.generic": {
                 "avoid_damage_blocks": true,
                 "avoid_portals": true,
                 "avoid_sun": false,
