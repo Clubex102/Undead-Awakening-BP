@@ -1,0 +1,82 @@
+{
+    "format_version": "1.20.80",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "udaw:zombie_lance",
+            "is_spawnable": true,
+            "is_summonable": true,
+            "spawn_category": "monster"
+        },
+        "components": {
+            "minecraft:health": {
+                "value": 35
+            },
+            "minecraft:movement.basic": {
+                "max_turn": 30
+            },
+            "minecraft:movement": {
+                "value": 0.3
+            },
+            "minecraft:can_climb": {},
+            "minecraft:attack": {
+                "damage": 7
+            },
+            "minecraft:jump.static": {
+                "jump_power": 0.42
+            },
+            "minecraft:physics": {
+                "has_collision": true,
+                "has_gravity": true
+            },
+            "minecraft:behavior.random_stroll": {
+                "priority": 7
+            },
+            "minecraft:behavior.look_at_player": {
+                "angle_of_view_vertical": 360,
+                "angle_of_view_horizontal": 360,
+                "look_distance": 4,
+                "probability": 0.02
+            },
+            "minecraft:behavior.random_look_around": {
+                "look_distance": 40
+            },
+            "minecraft:pushable": {
+                "is_pushable": true,
+                "is_pushable_by_piston": true
+            },
+            "minecraft:collision_box": {
+                "height": 2,
+                "width": 0.5
+            },
+            "minecraft:target_nearby_sensor": {
+                "must_see": false,
+                "inside_range": 1,
+                "outside_range": 20
+            },
+            "minecraft:navigation.climb": {
+                "avoid_damage_blocks": true,
+                "avoid_portals": true,
+                "avoid_sun": false,
+                "avoid_water": true,
+                "blocks_to_avoid": [],
+                "can_breach": false,
+                "can_break_doors": false,
+                "can_jump": true,
+                "can_open_doors": false,
+                "can_open_iron_doors": false,
+                "can_pass_doors": true,
+                "can_path_from_air": true,
+                "can_path_over_lava": false,
+                "can_path_over_water": true,
+                "can_sink": true,
+                "can_swim": false,
+                "can_walk": true,
+                "can_walk_in_lava": false,
+                "is_amphibious": false
+            },
+            "minecraft:experience_reward": {
+                "on_death": "query.last_hit_by_player ? Math.random(3,5) : 0"
+            }
+        }
+    }
+}
