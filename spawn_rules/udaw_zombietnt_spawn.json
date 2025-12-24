@@ -15,8 +15,8 @@
           "adjust_for_weather": true
         },
         "minecraft:density_limit": {
-          "surface": 1,
-          "underground": 3
+          "surface": 3,
+          "underground": 5
         },
         "minecraft:delay_filter": {
           "identifier": "udaw:zombietnt",
