@@ -12,10 +12,10 @@
                 "value": 35
             },
             "minecraft:movement.basic": {
-                "max_turn": 30
+                "max_turn": 35
             },
             "minecraft:movement": {
-                "value": 0.3
+                "value": 0.35
             },
             "minecraft:can_climb": {},
             "minecraft:attack": {
@@ -76,6 +76,90 @@
             },
             "minecraft:experience_reward": {
                 "on_death": "query.last_hit_by_player ? Math.random(3,5) : 0"
+                
+            },
+            "minecraft:type_family": {
+                "family": [
+                    "monster",
+                     "zombie", 
+                     "mob"
+
+                ]
+            },
+            
+
+            "minecraft:behavior.melee_attack": {
+                "melee_fov": 180,
+                "track_target": false,
+                "attack_types": "melee",
+                "random_stop_interval": 0,
+                "reach_multiplier": 2,
+                "attack_once": false,
+                "require_complete_path": false,
+                "cooldown_time": 1.5,
+                "priority": 2
+            },
+            "minecraft:behavior.break_door": {
+                "priority": 1
+            },
+            "minecraft:behavior.nearest_attackable_target": {
+                "attack_interval": 0,
+                "attack_interval_min": 0,
+                "attack_owner": false,
+                "must_reach": false,
+                "must_see": false,
+                "must_see_forget_duration": 3,
+                "persist_time": 10,
+                "reselect_targets": true,
+                "scan_interval": 10,
+                "set_persistent": true,
+                "target_invisible_multiplier": 0.7,
+                "target_search_height": -1,
+                "target_sneak_visibility_multiplier": 0.8,
+                "entity_types": [
+                    {
+                        "filters": {
+                            "test": "is_family",
+                            "subject": "other",
+                            "value": "player"
+                        }
+
+                    },
+                    {
+                        "filters": {
+                            "test": "is_family",
+                            "subject": "other",
+                            "value": "villager"
+                        }
+                    },
+                    {
+                        "filters": {
+                            "test": "is_family",
+                            "subject": "other",
+                            "value": "iron_golem"
+                        }
+                    }, {
+                        "filters": {
+                            "test": "is_family",
+                            "subject": "other",
+                            "value": "snow_golem"
+                        }
+                    }, {
+                        "filters": {
+                            "test": "is_family",
+                            "subject": "other",
+                            "value": "witch"
+                        }
+                    },
+                    {
+                        "filters": {
+                            "test": "is_family",
+                            "subject": "other",
+                            "value": "illager"
+                        }
+                    }
+                ],
+                "within_radius": 0
             }
         }
     }

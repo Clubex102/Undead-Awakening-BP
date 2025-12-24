@@ -12,24 +12,6 @@
             "spawn_category": "monster"
         },
         "component_groups": {
-            "day_time": {
-                "minecraft:behavior.avoid_mob_type": {
-                    "priority": 1,
-                    "entity_types": [
-                        {
-                            "filters": {
-                                "test": "is_family",
-                                "value": "player",
-                                "subject": "other"
-                            }
-                        }
-                    ],
-                    "max_dist": 128,
-                    "max_flee": 0,
-                    "sprint_speed_multiplier": 0.5
-                }
-            }
-            ,
             "minecraft:raid_configuration": {
                 "minecraft:dweller": {
                     "dwelling_type": "village",
