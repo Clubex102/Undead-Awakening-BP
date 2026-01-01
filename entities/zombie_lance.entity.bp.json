@@ -89,7 +89,7 @@
             
 
             "minecraft:behavior.melee_attack": {
-                "melee_fov": 180,
+                "melee_fov": 90,
                 "track_target": false,
                 "attack_types": "melee",
                 "random_stop_interval": 0,
@@ -97,7 +97,7 @@
                 "attack_once": false,
                 "require_complete_path": false,
                 "cooldown_time": 1.5,
-                "priority": 2
+                "priority": 0
             },
             "minecraft:behavior.break_door": {
                 "priority": 1

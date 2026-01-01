@@ -11,11 +11,11 @@
         "component_groups": {
             "minecraft:ranged_attack": {
                 "minecraft:behavior.ranged_attack": {
-                    "priority": 1,
+                    "priority": 0,
                     "attack_interval_min": 1.0,
                     "attack_interval_max": 3.0,
                     "attack_radius": 30.0,
-                    "charge_charged_trigger": 1.7,
+                    "charge_charged_trigger": 1.3,
                     "charge_shoot_trigger": 2.5,
                     "attack_radius_min": 10,
                     "target_in_sight_time": 1,
@@ -25,7 +25,9 @@
                 "minecraft:shooter": {
                     "def": "minecraft:arrow"
                 },
-                "minecraft:is_charged": {}
+                "minecraft:is_charged": {
+                    
+                }
             }
         },
 
@@ -65,7 +67,7 @@
             
 
             "minecraft:behavior.nearest_attackable_target": {
-                "priority": 1,
+                "priority": 0,
                 "must_see": false,
                 "must_see_forget_duration": 30,
                 "reselect_targets": true,
@@ -143,6 +145,9 @@
 
             "minecraft:movement.basic": {
                 "max_turn": 35
+            },
+            "minecraft:is_charged": {
+                
             },
 
             "minecraft:behavior.charge_held_item": {
