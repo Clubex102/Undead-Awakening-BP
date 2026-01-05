@@ -17,8 +17,8 @@
           "adjust_for_weather": true
         },
         "minecraft:density_limit": {
-          "underground": 3,
-          "surface": 5
+          "underground": 10,
+          "surface": 15
         },
         "minecraft:difficulty_filter": {
           "min": "easy",
