@@ -21,7 +21,7 @@
           "max": "hard"
         },
         "minecraft:density_limit": {
-          "surface": 40,
+          "surface": 50,
           "underground": 30
         },
         "minecraft:biome_filter": {

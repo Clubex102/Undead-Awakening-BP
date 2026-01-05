@@ -66,7 +66,7 @@
                 "priority": 6
             },
             "minecraft:behavior.look_at_target": {
-                "look_distance": 4,
+                "look_distance": 50,
                 "probability": 0.02,
                 "angle_of_view_vertical": 360,
                 "angle_of_view_horizontal": 360
@@ -79,11 +79,11 @@
                 "speed_multiplier": 2
             },
             "minecraft:behavior.nearest_attackable_target": {
-                "priority": 2,
-                "must_see": true,
+                "priority": 0,
+                "must_see": false,
                 "must_see_forget_duration": 30,
                 "reselect_targets": true,
-                "within_radius": 30,
+                "within_radius": 50,
                 "entity_types": [
                     {
                         "filters": {

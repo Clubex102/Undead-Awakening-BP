@@ -20,6 +20,11 @@
           "underground": 10,
           "surface": 15
         },
+        "minecraft:delay_filter": {
+          "identifier": "udaw:zombierange",
+          "max": 3,
+          "spawn_chance": 60
+        },
         "minecraft:difficulty_filter": {
           "min": "easy",
           "max": "hard"
