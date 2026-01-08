@@ -6,8 +6,10 @@
       "population_control": "monster"
     },
     "conditions": [
+      
       {
         "minecraft:spawns_on_surface": {
+          
           
         },
         "minecraft:spawns_underground": {},
@@ -16,13 +18,21 @@
           "max": 7,
           "adjust_for_weather": true
         },
+        "minecraft:weight": {
+          "default": 30
+        },
+        "minecraft:herd": {
+          "min_size": 7,
+          "max_size": 8
+        },
+        "minecraft:density_limit": {
+          "surface": 80,
+          "underground": 40
+        
+        },
         "minecraft:difficulty_filter": {
           "min": "easy",
           "max": "hard"
-        },
-        "minecraft:density_limit": {
-          "surface": 50,
-          "underground": 30
         },
         "minecraft:biome_filter": {
           "test": "has_biome_tag",
