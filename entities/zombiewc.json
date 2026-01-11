@@ -148,29 +148,6 @@
         "can_walk_in_lava": false,
         "is_amphibious": false
       },
-      "minecraft:behavior.pickup_items": {
-        "can_pickup_any_item": true,
-        "can_pickup_to_hand_or_equipment": true,
-        "cooldown_after_being_attacked": 5,
-        "excluded_items": [],
-        "goal_radius": 0.2,
-        "max_dist": 3,
-        "pickup_based_on_chance": false,
-        "track_target": true
-      },
-      "minecraft:inventory": {
-        "inventory_size": 5
-      },
-      "minecraft:behavior.equip_item": {
-        "priority": 5
-      },
-      "minecraft:equip_item": {
-        "can_wear_armor": true
-      },
-      "minecraft:shareables": {
-        "singular_pickup": true,
-        "items": []
-      },
       "minecraft:movement.basic": {
         "max_turn": 30
       },
