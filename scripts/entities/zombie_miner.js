@@ -22,7 +22,7 @@ const BREAKABLE_TAGS = [
   "wood"
 ];
 
-const BREAK_TIME = 25;        // ticks por bloque
+const BREAK_TIME = 5;        // ticks por bloque
 const CHECK_INTERVAL = 5;    // cada cuantos ticks se ejecuta
 const MAX_DISTANCE = 1.5;    // bloque frente al zombie
 const PLAYER_DETECT_RANGE = 10;
@@ -62,7 +62,7 @@ system.runInterval(async () => {
           zombie.setDynamicProperty("mining", 0);
           continue;
         }
-
+        world.sendMessage(`Zombie Miner ${zombie.id} is trying to mine block ${block.typeId} at (${blockPos.x}, ${blockPos.y}, ${blockPos.z})`);
         const canBreak =
           BREAKABLE_BLOCKS.includes(block.typeId) ||
           BREAKABLE_TAGS.some(tag => block.hasTag(tag));
