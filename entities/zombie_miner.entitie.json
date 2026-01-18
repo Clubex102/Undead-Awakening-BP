@@ -9,14 +9,33 @@
         "component_groups": {
             "udaw:breaking": {
                 "minecraft:break_blocks": {
-                    "breakable_blocks": [
-                        "minecraft:stone",
-                        "minecraft:dirt"
-                    ]
+                "breakable_blocks": [
+                    "minecraft:stone",
+                    "minecraft:dirt"
+                ]
+                }
+            },
+
+            "udaw:mining_on_timer": {
+                "minecraft:timer": {
+                "time": 4,
+                "looping": false,
+                "time_down_event": {
+                    "event": "udaw:stop_mining"
+                }
+                }
+            },
+
+            "udaw:mining_off_timer": {
+                "minecraft:timer": {
+                "time": 2,
+                "looping": false,
+                "time_down_event": {
+                    "event": "udaw:start_mining"
+                }
                 }
             }
-        },
-
+            },
         "components": {
             "minecraft:health": {
                 "value": 20,
@@ -188,11 +207,31 @@
             "minecraft:can_join_raid": {}
         },
         "events": {
-            "udaw:break": {
+            "udaw:start_mining": {
                 "add": {
-                    "component_groups": [
-                        "udaw:breaking"
-                    ]
+                "component_groups": [
+                    "udaw:breaking",
+                    "udaw:mining_on_timer"
+                ]
+                },
+                "remove": {
+                "component_groups": [
+                    "udaw:mining_off_timer"
+                ]
+                }
+            },
+
+            "udaw:stop_mining": {
+                "remove": {
+                "component_groups": [
+                    "udaw:breaking",
+                    "udaw:mining_on_timer"
+                ]
+                },
+                "add": {
+                "component_groups": [
+                    "udaw:mining_off_timer"
+                ]
                 }
             }
         }
