@@ -51,7 +51,7 @@ system.runInterval(async () => {
       maxDistance: PLAYER_DETECT_RANGE
     });
     for (const zombie of zombies) {
-      const target = await getTarget(zombie);
+      const target = zombie.target;
       if (!target) {
 
       }
