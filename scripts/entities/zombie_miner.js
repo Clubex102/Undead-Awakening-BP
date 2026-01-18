@@ -42,16 +42,15 @@ const DIMENSIONS = ["overworld", "nether", "the_end"];
 
 /* ================= LOOP ================= */
 
-system.runInterval( () => {
+system.runInterval(async () => {
   for (const dimId of DIMENSIONS) {
     const dimension = world.getDimension(dimId);
 
     const zombies = dimension.getEntities({
-      families: ["miner"],
-      maxDistance: PLAYER_DETECT_RANGE
+      families: ["miner"]
     });
     for (const zombie of zombies) {
-      const target = zombie.target;
+      const target = await getTarget(zombie);
       if (!target) {
 
       }
