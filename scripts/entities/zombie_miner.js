@@ -35,7 +35,7 @@ const BLOCK_DROPS = {
 
 const BREAK_TIME = 1;
 const CHECK_INTERVAL = 1;
-const MAX_DISTANCE = 1.5;
+const MAX_DISTANCE = 6;
 const PLAYER_DETECT_RANGE = 10;
 
 const DIMENSIONS = ["overworld", "nether", "the_end"];
