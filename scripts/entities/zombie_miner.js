@@ -110,9 +110,9 @@ function spawnBlockDrop(block, dimension) {
 function getTarget(entity) {
     let resolved = false;
     return new Promise((resolve) => {
-        entity.triggerEvent('custom:get_target');
+        entity.triggerEvent('udaw:get_target');
         const ev = system.afterEvents.scriptEventReceive.subscribe((data) => {
-            if (data.id === 'custom:get_target') {
+            if (data.id === 'udaw:get_target') {
                 resolved = true;
                 system.afterEvents.scriptEventReceive.unsubscribe(ev);
                 resolve(data.sourceEntity); return;
