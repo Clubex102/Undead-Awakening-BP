@@ -42,7 +42,7 @@ const DIMENSIONS = ["overworld", "nether", "the_end"];
 
 /* ================= LOOP ================= */
 
-system.runInterval(() => {
+system.runInterval(async () => {
   for (const dimId of DIMENSIONS) {
     const dimension = world.getDimension(dimId);
 
@@ -52,7 +52,7 @@ system.runInterval(() => {
     });
 
     for (const zombie of zombies) {
-      const target = zombie.target;
+      const target = await getTarget(zombie);
       if (!target) continue;
 
       const view = zombie.getViewDirection();
@@ -106,4 +106,22 @@ function spawnBlockDrop(block, dimension) {
     new ItemStack(data.item, amount),
     block.location
   );
+}
+
+function getTarget(entity) {
+    let resolved = false;
+    return new Promise((resolve) => {
+        entity.triggerEvent('custom:get_target');
+        const ev = system.afterEvents.scriptEventReceive.subscribe((data) => {
+            if (data.id === 'custom:get_target') {
+                resolved = true;
+                system.afterEvents.scriptEventReceive.unsubscribe(ev);
+                resolve(data.sourceEntity); return;
+            }
+        });
+        system.runTimeout(() => {
+            system.afterEvents.scriptEventReceive.unsubscribe(ev);
+            if (!resolved) resolve(null);
+        }, 20);
+    });
 }
