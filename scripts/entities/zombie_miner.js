@@ -51,12 +51,10 @@ system.runInterval(async () => {
       maxDistance: PLAYER_DETECT_RANGE
     });
     for (const zombie of zombies) {
-        zombie.triggerEvent("udaw:get_target");
+      const target = await getTarget(zombie);
+      if (!target) {
 
-        const target = getCachedTarget(zombie);
-        if (!target) {
-          zombie.setDynamicProperty("mining", 0);
-        }
+      }
       else {
         world.sendMessage(`[Zombie Miner] Zombie miner ${zombie.id} a ${target.typeId}.`);
       const view = zombie.getViewDirection();
@@ -114,30 +112,20 @@ function spawnBlockDrop(block, dimension) {
   );
 }
 
-const TARGET_CACHE = new Map();
-
-system.afterEvents.scriptEventReceive.subscribe(ev => {
-  if (ev.id !== "udaw:get_target") return;
-
-  const target = ev.sourceEntity;
-  const sender = ev.initiator; // el zombie
-
-  if (!sender || !target) return;
-
-  TARGET_CACHE.set(sender.id, {
-    entity: target,
-    tick: system.currentTick
-  });
-});
-function getCachedTarget(zombie) {
-  const data = TARGET_CACHE.get(zombie.id);
-  if (!data) return null;
-
-  // Expira después de 1 segundo (20 ticks)
-  if (system.currentTick - data.tick > 20) {
-    TARGET_CACHE.delete(zombie.id);
-    return null;
-  }
-
-  return data.entity;
+function getTarget(entity) {
+    let resolved = false;
+    return new Promise((resolve) => {
+        entity.triggerEvent('udaw:get_target');
+        const ev = system.afterEvents.scriptEventReceive.subscribe((data) => {
+            if (data.id === 'udaw:get_target') {
+                resolved = true;
+                system.afterEvents.scriptEventReceive.unsubscribe(ev);
+                resolve(data.sourceEntity); return;
+            }
+        });
+        system.runTimeout(() => {
+            system.afterEvents.scriptEventReceive.unsubscribe(ev);
+            if (!resolved) resolve(null);
+        }, 20);
+    });
 }
