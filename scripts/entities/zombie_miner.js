@@ -52,8 +52,11 @@ system.runInterval(async () => {
     });
     for (const zombie of zombies) {
       const target = await getTarget(zombie);
-      if (!target) continue;
-      world.sendMessage(`[Zombie Miner] Zombie miner ${zombie.id} a ${target.id}.`);
+      if (!target) {
+
+      }
+      else {
+        world.sendMessage(`[Zombie Miner] Zombie miner ${zombie.id} a ${target.id}.`);
       const view = zombie.getViewDirection();
       const pos = zombie.location;
 
@@ -88,6 +91,8 @@ system.runInterval(async () => {
       } else {
         zombie.setDynamicProperty("mining", mining);
       }
+      }
+      
     }
   }
 }, 10);
