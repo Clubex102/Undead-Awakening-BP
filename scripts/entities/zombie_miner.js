@@ -1,98 +1,93 @@
 import { world, system, ItemStack } from "@minecraft/server";
 
-// Bloques por typeId (editable)
+/* ================= CONFIG ================= */
+
 const BREAKABLE_BLOCKS = [
-    "minecraft:stone",
-    "minecraft:dirt",
-    "minecraft:grass_block",
-    "minecraft:oak_log",
-    "minecraft:spruce_log",
-    "minecraft:birch_log"
-];
-const BREAKABLE_TAGS = [
-  "acacia",
-  "birch",
-  "diamond_pick_diggable",
-  "dirt",
-  "iron_pick_diggable",
-  "log",
-  "metal",
-  "stone",
-  "stone_pick_diggable",
-  "wood"
+  "minecraft:stone",
+  "minecraft:dirt",
+  "minecraft:grass_block",
+  "minecraft:oak_log",
+  "minecraft:spruce_log",
+  "minecraft:birch_log"
 ];
 
-const BREAK_TIME = 5;        // ticks por bloque
-const CHECK_INTERVAL = 5;    // cada cuantos ticks se ejecuta
-const MAX_DISTANCE = 1.5;    // bloque frente al zombie
+const BREAKABLE_TAGS = [
+  "minecraft:logs",
+  "minecraft:dirt",
+  "minecraft:stone",
+  "minecraft:mineable/pickaxe"
+];
+
+const BLOCK_DROPS = {
+  "minecraft:stone": { item: "minecraft:cobblestone", min: 1, max: 1 },
+  "minecraft:dirt": { item: "minecraft:dirt", min: 1, max: 1 },
+  "minecraft:grass_block": { item: "minecraft:dirt", min: 1, max: 1 },
+  "minecraft:oak_log": { item: "minecraft:oak_log", min: 1, max: 1 },
+  "minecraft:spruce_log": { item: "minecraft:spruce_log", min: 1, max: 1 },
+  "minecraft:birch_log": { item: "minecraft:birch_log", min: 1, max: 1 }
+};
+
+const BREAK_TIME = 5;
+const CHECK_INTERVAL = 5;
+const MAX_DISTANCE = 1.5;
 const PLAYER_DETECT_RANGE = 10;
 
 const DIMENSIONS = ["overworld", "nether", "the_end"];
 
-system.runInterval(async () => {
-  for (const dimension of DIMENSIONS) {
-    world.sendMessage(`Checking dimension: ${dimension}`);
-    let dimension;
-    try {
-      dimension = world.getDimension(dimension);
-    } catch {
-        
-        continue;
-    }
+/* ================= LOOP ================= */
+
+system.runInterval(() => {
+  for (const dimId of DIMENSIONS) {
+    const dimension = world.getDimension(dimId);
+
     const zombies = dimension.getEntities({
-      families: ["miner"],
+      families: ["folkor_zombie_miner"],
       maxDistance: PLAYER_DETECT_RANGE
     });
 
     for (const zombie of zombies) {
-      const target = await getTarget(zombie);
-      if (!target) { 
-          console.warn('no target');
+      const target = zombie.target;
+      if (!target) continue;
+
+      const view = zombie.getViewDirection();
+      const pos = zombie.location;
+
+      const blockPos = {
+        x: Math.floor(pos.x + view.x * MAX_DISTANCE),
+        y: Math.floor(pos.y + 1),
+        z: Math.floor(pos.z + view.z * MAX_DISTANCE)
+      };
+
+      const block = dimension.getBlock(blockPos);
+      if (!block || block.isAir) {
+        zombie.setDynamicProperty("mining", 0);
+        continue;
+      }
+
+      const canBreak =
+        BREAKABLE_BLOCKS.includes(block.typeId) ||
+        BREAKABLE_TAGS.some(tag => block.hasTag(tag));
+
+      if (!canBreak) {
+        zombie.setDynamicProperty("mining", 0);
+        continue;
+      }
+
+      let mining = zombie.getDynamicProperty("mining") ?? 0;
+      mining++;
+
+      if (mining >= BREAK_TIME) {
+        spawnBlockDrop(block, dimension);
+        block.setType("minecraft:air");
+        zombie.setDynamicProperty("mining", 0);
       } else {
-        const view = zombie.getViewDirection();
-        const pos = zombie.location;
-
-        const blockPos = {
-          x: Math.floor(pos.x + view.x * MAX_DISTANCE),
-          y: Math.floor(pos.y + 1),
-          z: Math.floor(pos.z + view.z * MAX_DISTANCE)
-        };
-
-        const block = dimension.getBlock(blockPos);
-        if (!block || block.isAir) {
-          zombie.setDynamicProperty("mining", 0);
-          continue;
-        }
-        world.sendMessage(`Zombie Miner ${zombie.id} is trying to mine block ${block.typeId} at (${blockPos.x}, ${blockPos.y}, ${blockPos.z})`);
-        const canBreak =
-          BREAKABLE_BLOCKS.includes(block.typeId) ||
-          BREAKABLE_TAGS.some(tag => block.hasTag(tag));
-
-        if (!canBreak) {
-          zombie.setDynamicProperty("mining", 0);
-          continue;
-        }
-        let mining = zombie.getDynamicProperty("mining") ?? 0;
-        mining++;
-
-        if (mining >= BREAK_TIME) {
-          spawnBlockDrop(block, dimension);
-          block.setType("minecraft:air");
-          zombie.setDynamicProperty("mining", 0);
-
-          dimension.spawnParticle("minecraft:block_break", {
-            x: blockPos.x + 0.5,
-            y: blockPos.y + 0.5,
-            z: blockPos.z + 0.5
-          });
-        } else {
-          zombie.setDynamicProperty("mining", mining);
-        }
+        zombie.setDynamicProperty("mining", mining);
       }
     }
   }
 }, CHECK_INTERVAL);
 
+/* ================= DROPS ================= */
 
 function spawnBlockDrop(block, dimension) {
   const data = BLOCK_DROPS[block.typeId];
@@ -105,22 +100,4 @@ function spawnBlockDrop(block, dimension) {
     new ItemStack(data.item, amount),
     block.location
   );
-}
-
-function getTarget(entity) {
-    let resolved = false;
-    return new Promise((resolve) => {
-        entity.triggerEvent('udaw:get_target');
-        const ev = system.afterEvents.scriptEventReceive.subscribe((data) => {
-            if (data.id === 'udaw:get_target') {
-                resolved = true;
-                system.afterEvents.scriptEventReceive.unsubscribe(ev);
-                resolve(data.sourceEntity); return;
-            }
-        });
-        system.runTimeout(() => {
-            system.afterEvents.scriptEventReceive.unsubscribe(ev);
-            if (!resolved) resolve(null);
-        }, 20);
-    });
 }
