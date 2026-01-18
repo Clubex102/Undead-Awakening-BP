@@ -12,10 +12,16 @@ const BREAKABLE_BLOCKS = [
 ];
 
 const BREAKABLE_TAGS = [
-  "minecraft:logs",
-  "minecraft:dirt",
-  "minecraft:stone",
-  "minecraft:mineable/pickaxe"
+  "acacia",
+  "birch",
+  "diamond_pick_diggable",
+  "dirt",
+  "iron_pick_diggable",
+  "log",
+  "metal",
+  "stone",
+  "stone_pick_diggable",
+  "wood"
 ];
 
 const BLOCK_DROPS = {
