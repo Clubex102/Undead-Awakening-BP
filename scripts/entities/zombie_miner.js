@@ -31,6 +31,7 @@ const DIMENSIONS = ["overworld", "nether", "the_end"];
 
 system.runInterval(async () => {
   for (const dimension of DIMENSIONS) {
+    world.sendMessage(`Checking dimension: ${dimension}`);
     let dimension;
     try {
       dimension = world.getDimension(dimension);
