@@ -50,11 +50,11 @@ system.runInterval(async () => {
       families: ["miner"],
       maxDistance: PLAYER_DETECT_RANGE
     });
-
+    world.sendMessage(`[Zombie Miner] Tìm thấy ${zombies.length} zombie miner ở dimension "${dimId}".`);
     for (const zombie of zombies) {
       const target = await getTarget(zombie);
       if (!target) continue;
-
+      world.sendMessage(`[Zombie Miner] Zombie miner ${zombie.id} đã phát hiện mục tiêu ${target.id}.`);
       const view = zombie.getViewDirection();
       const pos = zombie.location;
 
