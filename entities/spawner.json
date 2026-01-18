@@ -1,0 +1,57 @@
+{
+  "format_version": "1.18.10",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "udaw:spawner",
+      "is_spawnable": false,
+      "is_summonable": true,
+      "is_experimental": false
+    },
+    "component_groups": {
+      "despawn": {
+        "minecraft:instant_despawn": {}
+      }
+    },
+    "components": {
+      "minecraft:scheduler": {
+        "min_delay_secs": 1,
+        "max_delay_secs": 2,
+        "scheduled_events": [
+          { "event": "startdespawn" }
+        ]
+      },
+      "minecraft:physics": {}
+    },
+    "events": {
+      "startdespawn": {
+        "add": {
+          "component_groups": ["despawn"]
+        }
+      },
+      "minecraft:entity_spawned": {
+        "sequence": [
+          {
+            "filters": {
+              "test": "",
+              "operator": "==",
+              "value": true
+            },
+            "sequence": [
+              {
+                "queue_command": {
+                  "command": [
+                    "summon udaw:zombiecomun ~~~",
+                    "summon udaw:zombiecomun ~~~",
+                    "summon udaw:zombiecomun ~~~",
+                    "summon udaw:zombiecomun ~~~",
+                    "summon udaw:zombiecomun ~~~"
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

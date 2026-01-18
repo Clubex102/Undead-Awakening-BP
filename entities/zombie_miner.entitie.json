@@ -162,7 +162,7 @@
                 ],
                 "can_breach": false,
                 "can_break_doors": true,
-                "can_jump": false,
+                "can_jump": true,
                 "can_open_doors": false,
                 "can_open_iron_doors": false,
                 "can_pass_doors": true,
