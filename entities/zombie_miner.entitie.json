@@ -7,12 +7,14 @@
             "is_summonable": true
         },
         "component_groups": {
-            "udaw:breaking": {
-                "minecraft:break_blocks": {
-                    "breakable_blocks": [
-                        "minecraft:stone",
-                        "minecraft:dirt"
-                    ]
+            "udaw:find_target": {
+                "minecraft:target_nearby_sensor": {
+                    "inside_range": 100,
+                    "outside_range": 100,
+                    "on_inside_range": {
+                    "event": "udaw:target_detected",
+                    "target": "self"
+                    }
                 }
             }
         },
@@ -188,11 +190,14 @@
             "minecraft:can_join_raid": {}
         },
         "events": {
-            "udaw:break": {
-                "add": {
-                    "component_groups": [
-                        "udaw:breaking"
-                    ]
+            "udaw:get_target": {
+                "add": { "component_groups": ["udaw:find_target"] }
+            },
+            "udaw:target_detected": {
+                "remove": { "component_groups": ["udaw:find_target"] },
+                "queue_command": {
+                    "command": "scriptevent udaw:get_target",
+                    "target": "target"
                 }
             }
         }
