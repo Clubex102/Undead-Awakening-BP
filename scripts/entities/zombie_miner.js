@@ -33,8 +33,8 @@ const BLOCK_DROPS = {
   "minecraft:birch_log": { item: "minecraft:birch_log", min: 1, max: 1 }
 };
 
-const BREAK_TIME = 5;
-const CHECK_INTERVAL = 5;
+const BREAK_TIME = 1;
+const CHECK_INTERVAL = 1;
 const MAX_DISTANCE = 1.5;
 const PLAYER_DETECT_RANGE = 10;
 
