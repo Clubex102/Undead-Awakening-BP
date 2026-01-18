@@ -7,11 +7,21 @@
     },
     "conditions": [
       {
+        "minecraft:spawns_on_surface": {},
         "minecraft:spawns_underground": {},
         "minecraft:brightness_filter": {
           "min": 0,
           "max": 7,
           "adjust_for_weather": true
+        },
+        "minecraft:density_limit": {
+          "surface": 2,
+          "underground": 20
+        },
+        "minecraft:delay_filter": {
+          "identifier": "udaw:zombietnt",
+          "max": 3,
+          "spawn_chance": 50
         },
         "minecraft:difficulty_filter": {
           "min": "easy",

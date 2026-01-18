@@ -11,12 +11,12 @@
         "component_groups": {
             "minecraft:ranged_attack": {
                 "minecraft:behavior.ranged_attack": {
-                    "priority": 4,
-                    "attack_interval_min": 3.0,
+                    "priority": 0,
+                    "attack_interval_min": 1.0,
                     "attack_interval_max": 3.0,
                     "attack_radius": 30.0,
-                    "charge_charged_trigger": 1.5,
-                    "charge_shoot_trigger": 3,
+                    "charge_charged_trigger": 1.3,
+                    "charge_shoot_trigger": 2.5,
                     "attack_radius_min": 10,
                     "target_in_sight_time": 1,
                     "set_persistent": true
@@ -25,7 +25,29 @@
                 "minecraft:shooter": {
                     "def": "minecraft:arrow"
                 },
-                "minecraft:is_charged": {}
+                "minecraft:is_charged": {
+                    
+                }
+            }
+            ,
+            "udaw:retaliation_melee": {
+                "minecraft:attack": {
+                    "damage": 2
+                },
+                "minecraft:behavior.melee_box_attack": {
+                    "priority": 1,
+                    "track_target": true
+                }
+            },
+            "udaw:start_retaliation_timer": {
+                "minecraft:timer": {
+                    "looping": false,
+                    "randomInterval": false,
+                    "time": [0.1, 0.1],
+                    "time_down_event": {
+                        "event": "udaw:stop_retaliation"
+                    }
+                }
             }
         },
 
@@ -41,7 +63,7 @@
             },
 
             "minecraft:movement": {
-                "value": 0.30
+                "value": 0.35
             },
 
             "minecraft:jump.static": {
@@ -65,11 +87,11 @@
             
 
             "minecraft:behavior.nearest_attackable_target": {
-                "priority": 2,
+                "priority": 0,
                 "must_see": false,
                 "must_see_forget_duration": 30,
                 "reselect_targets": true,
-                "within_radius": 30,
+                "within_radius": 70,
                 "entity_types": [
                     {
                         "filters": {
@@ -85,28 +107,6 @@
                         "max_dist": 25
                     }
                 ]
-            },
-            
-
-            "minecraft:behavior.avoid_mob_type": {
-                "priority": 1,
-                "entity_types": [
-                    {
-                        "filters": {
-                            "any_of": [
-                                { "test": "is_family", "value": "player", "subject": "other" },
-                                { "test": "is_family", "value": "illager", "subject": "other" },
-                                { "test": "is_family", "value": "snow_golem", "subject": "other" },
-                                { "test": "is_family", "value": "iron_golem", "subject": "other" },
-                                { "test": "is_family", "value": "witch", "subject": "other" }
-                            ]
-                        },
-                        "max_dist": 4
-                    }
-                ],
-                "max_dist": 4,
-                "max_flee": 0,
-                "sprint_speed_multiplier": 1.5
             },
 
             "minecraft:type_family": {
@@ -142,7 +142,10 @@
             },
 
             "minecraft:movement.basic": {
-                "max_turn": 30
+                "max_turn": 35
+            },
+            "minecraft:is_charged": {
+                
             },
 
             "minecraft:behavior.charge_held_item": {
@@ -163,15 +166,35 @@
             "minecraft:experience_reward": {
                 "on_death": "query.last_hit_by_player ? Math.Random(3,5) : 0"
             }
+            ,
+            "minecraft:on_hurt": {
+                "event": "udaw:retaliate",
+                "target": "self"
+            }
         },
         
 
         "events": {
-            
             "minecraft:entity_spawned": {
                 "add": {
                     "component_groups": [
                         "minecraft:ranged_attack"
+                    ]
+                }
+            },
+            "udaw:retaliate": {
+                "add": {
+                    "component_groups": [
+                        "udaw:retaliation_melee",
+                        "udaw:start_retaliation_timer"
+                    ]
+                }
+            },
+            "udaw:stop_retaliation": {
+                "remove": {
+                    "component_groups": [
+                        "udaw:retaliation_melee",
+                        "udaw:start_retaliation_timer"
                     ]
                 }
             }
