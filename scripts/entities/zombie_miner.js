@@ -47,7 +47,7 @@ system.runInterval(async () => {
     const dimension = world.getDimension(dimId);
 
     const zombies = dimension.getEntities({
-      families: ["folkor_zombie_miner"],
+      families: ["miner"],
       maxDistance: PLAYER_DETECT_RANGE
     });
 
