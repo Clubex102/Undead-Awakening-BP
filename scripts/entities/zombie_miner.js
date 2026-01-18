@@ -91,7 +91,7 @@ system.runInterval(async () => {
       }
     }
   }
-}, CHECK_INTERVAL);
+}, 10);
 
 /* ================= DROPS ================= */
 
