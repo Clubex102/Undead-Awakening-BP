@@ -34,7 +34,7 @@ const BLOCK_DROPS = {
 const MAX_DISTANCE = 6;
 const TARGET_RANGE = 10;
 const BREAK_TIME = 20; // ticks (~1s)
-const INTERVAL = 1;   // ticks
+const INTERVAL = 100;   // ticks
 
 const DIMENSIONS = ["overworld", "nether", "the_end"];
 
