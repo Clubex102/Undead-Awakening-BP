@@ -7,13 +7,6 @@
             "is_summonable": true
         },
         "component_groups": {
-            "udaw:miner": {
-                "minecraft:follow_range": { "value": 10 },
-                "minecraft:behavior.move_towards_target": {
-                    "priority": 2,
-                    "speed_multiplier": 1.0
-                }
-            },
             "udaw:find_target": {
                 "minecraft:target_nearby_sensor": {
                     "inside_range": 100,
@@ -441,11 +434,6 @@
             "minecraft:can_join_raid": {}
         },
         "events": {
-            "minecraft:entity_spawned": {
-                "add": {
-                "component_groups": ["udaw:miner"]
-                }
-            },
             "udaw:get_target": {
                 "add": { "component_groups": ["udaw:find_target"] }
                 },
