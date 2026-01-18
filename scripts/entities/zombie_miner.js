@@ -66,7 +66,7 @@ function getTarget(entity) {
   const targets = entity.dimension.getEntities({
     location: entity.location,
     maxDistance: TARGET_RANGE,
-    families: ["player"],
+    families: ["player", "villager"],
     closest: 1
   });
 
