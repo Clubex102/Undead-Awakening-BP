@@ -56,7 +56,7 @@ system.runInterval(async () => {
 
       }
       else {
-        world.sendMessage(`[Zombie Miner] Zombie miner ${zombie.id} a ${target.id}.`);
+        world.sendMessage(`[Zombie Miner] Zombie miner ${zombie.id} a ${target.typeId}.`);
       const view = zombie.getViewDirection();
       const pos = zombie.location;
 
