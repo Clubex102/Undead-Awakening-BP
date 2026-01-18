@@ -2,32 +2,27 @@
   "format_version": "1.8.0",
   "minecraft:spawn_rules": {
     "description": {
-      "identifier": "udaw:zombiecomun",
+      "identifier": "udaw:spawner",
       "population_control": "monster"
     },
     "conditions": [
       
       {
-        "minecraft:spawns_on_surface": {
-          
-          
+        "minecraft:spawns_on_surface": {    
         },
-        "minecraft:spawns_underground": {},
+        "minecraft:spawns_underground": {
+        },
         "minecraft:brightness_filter": {
           "min": 0,
-          "max": 7,
+          "max": 8,
           "adjust_for_weather": true
         },
         "minecraft:weight": {
-          "default": 30
-        },
-        "minecraft:herd": {
-          "min_size": 7,
-          "max_size": 8
+          "default": 90
         },
         "minecraft:density_limit": {
-          "surface": 80,
-          "underground": 40
+          "surface": 40,
+          "underground": 10
         
         },
         "minecraft:difficulty_filter": {
