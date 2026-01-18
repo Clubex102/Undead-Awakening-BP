@@ -10,6 +10,7 @@ import {
     ItemComponentUseOnEvent,
 } from "@minecraft/server";
 import { shootCommon, shootRepeat } from "./globalVar/u.js";
+import "./entities/zombie_miner.js";
 
 system.beforeEvents.startup.subscribe((startupEvent) => {
     startupEvent.itemComponentRegistry.registerCustomComponent("udaw:weapon", {
