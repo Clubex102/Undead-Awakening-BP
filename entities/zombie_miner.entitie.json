@@ -436,8 +436,8 @@
         "events": {
             "udaw:get_target": {
                 "add": { "component_groups": ["udaw:find_target"] }
-                },
-                "udaw:target_detected": {
+            },
+            "udaw:target_detected": {
                 "remove": { "component_groups": ["udaw:find_target"] },
                 "queue_command": {
                     "command": "scriptevent udaw:get_target",

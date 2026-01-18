@@ -50,9 +50,6 @@
               "break_time": 5,
               "min_difficulty": "normal"
             },
-            "minecraft:behavior.charge_held_item": {
-              "items": []
-            },
             "minecraft:jump.static": {
                 "jump_power": 0.42
             },
