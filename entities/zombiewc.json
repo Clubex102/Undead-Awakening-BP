@@ -124,7 +124,7 @@
       },
       "minecraft:target_nearby_sensor": {
         "must_see": false,
-        "inside_range": 1,
+        "inside_range": 100,
         "outside_range": 40
       },
       "minecraft:navigation.walk": {

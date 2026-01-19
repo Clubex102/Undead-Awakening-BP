@@ -21,8 +21,8 @@
           "max_size": 2
         },
         "minecraft:density_limit": {
-          "underground": 20,
-          "surface": 20
+          "underground": 5,
+          "surface": 5
         },
         "minecraft:delay_filter": {
           "identifier": "udaw:zombierange",

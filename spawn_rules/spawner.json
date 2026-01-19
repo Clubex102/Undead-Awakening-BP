@@ -21,7 +21,7 @@
           "default": 90
         },
         "minecraft:density_limit": {
-          "surface": 40,
+          "surface": 10,
           "underground": 10
         
         },
