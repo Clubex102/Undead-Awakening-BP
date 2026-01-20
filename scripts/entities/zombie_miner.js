@@ -55,15 +55,10 @@ function getLookBlock(entity) {
       if (block && block.typeId !== "minecraft:air") {
         // ⛔ Si está demasiado lejos, ignorar
         if (d > MAX_MINE_DISTANCE) {
-          world.sendMessage(
-            `§8[RAY] Bloque ignorado por distancia (${d.toFixed(2)})`
-          );
+          
           return null;
         }
 
-        world.sendMessage(
-          `§7[RAY] Bloque válido: ${block.typeId} a ${d.toFixed(2)}`
-        );
         return { block, pos };
       }
     }
@@ -115,11 +110,11 @@ function getMineable2x2(dimension, basePos, offsets) {
   }
 
   if (blocks.length === 0) {
-    world.sendMessage("§c[FAIL] 2×2 sin bloques rompibles");
+
     return null;
   }
 
-  world.sendMessage(`§6[MINE] Bloques válidos en 2×2: §f${blocks.length}`);
+
   return blocks;
 }
 
@@ -164,7 +159,7 @@ system.runInterval(() => {
         dimension.setBlockType(p, "minecraft:air");
       }
 
-      world.sendMessage(`§a[OK] Minado completado (${blocks.length} bloques)`);
+
 
       zombie.setDynamicProperty("mineStart", null);
       zombie.setDynamicProperty("minePos", null);
