@@ -173,4 +173,4 @@ system.runInterval(() => {
       zombie.setDynamicProperty("minePos", null);
     }
   }
-}, 2);
+}, 1);
