@@ -1,44 +1,99 @@
-import { world, system, BlockPermutation } from "@minecraft/server";
+import {
+  world,
+  system,
+  BlockPermutation,
+  Vector
+} from "@minecraft/server";
 
-const BREAK_DELAY = 40; // ticks (2 segundos)
-const BREAKABLE_BLOCKS = [
+const BREAK_TIME = 60; // ticks (3 segundos)
+const MAX_DISTANCE = 3;
+const STEP = 0.5;
+
+const BREAKABLE = new Set([
   "minecraft:dirt",
   "minecraft:grass_block",
   "minecraft:sand",
   "minecraft:gravel",
-  "minecraft:planks"
-];
+  "minecraft:planks",
+  "minecraft:stone"
+]);
+const DIMENSIONS = ["overworld", "nether", "the_end"];
+function getLookBlock(entity) {
+  const dir = entity.getViewDirection();
+  const origin = entity.getHeadLocation();
+  const dimension = entity.dimension;
+
+  for (let d = STEP; d <= MAX_DISTANCE; d += STEP) {
+    const pos = {
+      x: Math.floor(origin.x + dir.x * d),
+      y: Math.floor(origin.y + dir.y * d),
+      z: Math.floor(origin.z + dir.z * d)
+    };
+
+    const block = dimension.getBlock(pos);
+    if (!block) continue;
+
+    if (block.typeId !== "minecraft:air") {
+      return { block, pos };
+    }
+  }
+  return null;
+}
 
 system.runInterval(() => {
-  for (const player of world.getPlayers()) {
-    const dimension = player.dimension;
+  for (const dimId of DIMENSIONS) {
+    const dimension = world.getDimension(dimId);
+    const zombies = dimension.getEntities({ type: "udaw:zombieminer" });
 
-    for (const entity of dimension.getEntities({ type: "udaw:zombieminer" })) {
-      const view = entity.getViewDirection();
-      const pos = entity.location;
-      world.sendMessage(`Zombie Miner Position: x=${pos.x.toFixed(2)}, y=${pos.y.toFixed(2)}, z=${pos.z.toFixed(2)}`);
-      const blockPos = {
-        x: Math.floor(pos.x + view.x),
-        y: Math.floor(pos.y),
-        z: Math.floor(pos.z + view.z),
-      };
-
-      const block = dimension.getBlock(blockPos);
-      if (!block) continue;
-
-      if (!BREAKABLE_BLOCKS.includes(block.typeId)) continue;
-
-      if (!entity.getDynamicProperty("mining")) {
-        entity.setDynamicProperty("mining", system.currentTick);
+    for (const zombie of zombies) {
+      const target = getLookBlock(zombie);
+      if (!target) {
+        zombie.setDynamicProperty("mining", false);
+        continue;
       }
-      world.sendMessage(`Zombie Miner is mining block: ${block.typeId} at tick ${system.currentTick}`);
-      const startTick = entity.getDynamicProperty("mining");
 
-      if (system.currentTick - startTick >= BREAK_DELAY) {
-        dimension.setBlockType(blockPos, "minecraft:air");
-        world.sendMessage(`§c[UDaw] §fEl Zombie Miner ha minado un bloque de §6${block.typeId}§f.`);
-        entity.setDynamicProperty("mining", null);
+      if (!BREAKABLE.has(target.block.typeId)) continue;
+
+      // Mantener quieto
+      zombie.teleport(zombie.location, {
+        dimension: zombie.dimension,
+        rotation: zombie.getRotation()
+      });
+      zombie.getComponent("movement").setCurrentValue(0)
+
+      const tick = system.currentTick;
+
+      if (!zombie.getDynamicProperty("startMine")) {
+        zombie.setDynamicProperty("startMine", tick);
+        zombie.setDynamicProperty("miningPos", JSON.stringify(target.pos));
+        continue;
+      }
+
+      const start = zombie.getDynamicProperty("startMine");
+      const savedPos = JSON.parse(
+        zombie.getDynamicProperty("miningPos")
+      );
+
+      // Si cambió de bloque, reiniciar
+      if (
+        savedPos.x !== target.pos.x ||
+        savedPos.y !== target.pos.y ||
+        savedPos.z !== target.pos.z
+      ) {
+        zombie.setDynamicProperty("startMine", tick);
+        zombie.setDynamicProperty("miningPos", JSON.stringify(target.pos));
+        continue;
+      }
+
+      if (tick - start >= BREAK_TIME) {
+        zombie.dimension.setBlockType(
+          target.pos,
+          BlockPermutation.resolve("minecraft:air")
+        );
+
+        zombie.setDynamicProperty("startMine", null);
+        zombie.setDynamicProperty("miningPos", null);
       }
     }
   }
-}, 5);
+}, 2);
