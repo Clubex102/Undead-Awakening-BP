@@ -2,9 +2,9 @@ import { world, system } from "@minecraft/server";
 
 /* ================= CONFIG ================= */
 
-const BREAK_TIME = 20; // ticks (~1s)
+const BREAK_TIME = 20;
 const MAX_DISTANCE = 4;
-const STEP = 0.2;
+const STEP = 0.15;
 
 const DIMENSIONS = ["overworld", "nether", "the_end"];
 
@@ -24,34 +24,34 @@ const BREAKABLE = new Set([
 function getLookBlock(entity) {
   const dir = entity.getViewDirection();
   const origin = entity.getHeadLocation();
-  const dimension = entity.dimension;
+  const dim = entity.dimension;
 
-  // Distancia fija: justo delante del mob
-  const DISTANCE = 0.5;
+  for (let d = 0.5; d <= MAX_DISTANCE; d += STEP) {
+    const pos = {
+      x: Math.floor(origin.x + dir.x * d),
+      y: Math.floor(origin.y + dir.y * d),
+      z: Math.floor(origin.z + dir.z * d)
+    };
 
-  const pos = {
-    x: Math.floor(origin.x + dir.x * DISTANCE),
-    y: Math.floor(origin.y + dir.y * DISTANCE),
-    z: Math.floor(origin.z + dir.z * DISTANCE)
-  };
-
-  const block = dimension.getBlock(pos);
-  if (!block || block.typeId === "minecraft:air") {
-    return null;
+    const block = dim.getBlock(pos);
+    if (block && block.typeId !== "minecraft:air") {
+      world.sendMessage(
+        `§7[RAY] Bloque detectado: §f${block.typeId} §7en (${pos.x}, ${pos.y}, ${pos.z})`
+      );
+      return { block, pos };
+    }
   }
 
-  return { block, pos };
+  world.sendMessage("§c[RAY] No se detectó ningún bloque");
+  return null;
 }
 
-
-/* ================= 2×2 OFFSETS ================= */
+/* ================= OFFSETS 2×2 ================= */
 
 function get2x2Offsets(entity) {
   const dir = entity.getViewDirection();
 
-  // Eje dominante de la mirada
   if (Math.abs(dir.x) > Math.abs(dir.z)) {
-    // Mirando principalmente en X → plano Y/Z
     return [
       { x: 0, y: 0, z: 0 },
       { x: 0, y: 1, z: 0 },
@@ -59,7 +59,6 @@ function get2x2Offsets(entity) {
       { x: 0, y: 1, z: 1 }
     ];
   } else {
-    // Mirando principalmente en Z → plano X/Y
     return [
       { x: 0, y: 0, z: 0 },
       { x: 1, y: 0, z: 0 },
@@ -69,7 +68,7 @@ function get2x2Offsets(entity) {
   }
 }
 
-/* ================= DETECCIÓN 2×2 ================= */
+/* ================= 2×2 FLEXIBLE ================= */
 
 function getMineable2x2(dimension, basePos, offsets) {
   const blocks = [];
@@ -82,13 +81,17 @@ function getMineable2x2(dimension, basePos, offsets) {
     };
 
     const block = dimension.getBlock(pos);
-    if (!block || !BREAKABLE.has(block.typeId)) {
-      return null; // si falla uno, no se mina nada
+    if (block && BREAKABLE.has(block.typeId)) {
+      blocks.push(pos);
     }
-
-    blocks.push(pos);
   }
 
+  if (blocks.length === 0) {
+    world.sendMessage("§c[FAIL] 2×2 sin bloques rompibles");
+    return null;
+  }
+
+  world.sendMessage(`§6[MINE] Bloques válidos en 2×2: §f${blocks.length}`);
   return blocks;
 }
 
@@ -101,57 +104,39 @@ system.runInterval(() => {
 
     for (const zombie of zombies) {
       const target = getLookBlock(zombie);
+      const tick = system.currentTick;
 
       if (!target || !BREAKABLE.has(target.block.typeId)) {
         zombie.setDynamicProperty("mineStart", null);
         zombie.setDynamicProperty("minePos", null);
         continue;
       }
-      const tick = system.currentTick;
 
       if (!zombie.getDynamicProperty("mineStart")) {
+        world.sendMessage("§6[MINE] Iniciando minado...");
         zombie.setDynamicProperty("mineStart", tick);
         zombie.setDynamicProperty("minePos", JSON.stringify(target.pos));
         continue;
       }
 
       const start = zombie.getDynamicProperty("mineStart");
-      const saved = JSON.parse(zombie.getDynamicProperty("minePos"));
 
-      // Si cambió el bloque base → reiniciar
-      if (
-        saved.x !== target.pos.x ||
-        saved.y !== target.pos.y ||
-        saved.z !== target.pos.z
-      ) {
-        zombie.setDynamicProperty("mineStart", tick);
-        zombie.setDynamicProperty("minePos", JSON.stringify(target.pos));
-        continue;
-      }
-
-      // Aún no termina el tiempo
       if (tick - start < BREAK_TIME) continue;
 
-      /* ===== MINADO 2×2 ===== */
-
       const offsets = get2x2Offsets(zombie);
-      const blocks = getMineable2x2(
-        dimension,
-        target.pos,
-        offsets
-      );
+      const blocks = getMineable2x2(dimension, target.pos, offsets);
 
-      // Si el 2×2 no es válido, no rompe nada
       if (!blocks) {
         zombie.setDynamicProperty("mineStart", null);
         zombie.setDynamicProperty("minePos", null);
         continue;
       }
 
-      // Romper los 4 bloques
       for (const p of blocks) {
         dimension.setBlockType(p, "minecraft:air");
       }
+
+      world.sendMessage(`§a[OK] Minado completado (${blocks.length} bloques)`);
 
       zombie.setDynamicProperty("mineStart", null);
       zombie.setDynamicProperty("minePos", null);
