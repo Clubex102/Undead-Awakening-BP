@@ -119,7 +119,6 @@ system.runInterval(() => {
       if (!target || !BREAKABLE.has(target.block.typeId)) {
         zombie.setDynamicProperty("mineStart", null);
         zombie.setDynamicProperty("minePos", null);
-        zombie.getComponent("movement").resetToDefaultValue();
         continue;
       }
 
@@ -128,7 +127,6 @@ system.runInterval(() => {
         dimension: zombie.dimension,
         rotation: zombie.getRotation()
       });
-      zombie.getComponent("movement").setCurrentValue(0);
 
       const tick = system.currentTick;
 
@@ -173,7 +171,6 @@ system.runInterval(() => {
 
       zombie.setDynamicProperty("mineStart", null);
       zombie.setDynamicProperty("minePos", null);
-      zombie.getComponent("movement").resetToDefaultValue();
     }
   }
 }, 2);
