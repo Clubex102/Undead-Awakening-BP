@@ -35,10 +35,7 @@ system.runInterval(() => {
       const startTick = entity.getDynamicProperty("mining");
 
       if (system.currentTick - startTick >= BREAK_DELAY) {
-        dimension.setBlock(
-          blockPos,
-          BlockPermutation.resolve("minecraft:air")
-        );
+        dimension.setBlockType(blockPos, "minecraft:air");
 
         entity.setDynamicProperty("mining", null);
       }
