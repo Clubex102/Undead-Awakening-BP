@@ -16,7 +16,7 @@ system.runInterval(() => {
     for (const entity of dimension.getEntities({ type: "udaw:zombieminer" })) {
       const view = entity.getViewDirection();
       const pos = entity.location;
-
+      world.sendMessage(`Zombie Miner Position: x=${pos.x.toFixed(2)}, y=${pos.y.toFixed(2)}, z=${pos.z.toFixed(2)}`);
       const blockPos = {
         x: Math.floor(pos.x + view.x),
         y: Math.floor(pos.y),
@@ -31,12 +31,12 @@ system.runInterval(() => {
       if (!entity.getDynamicProperty("mining")) {
         entity.setDynamicProperty("mining", system.currentTick);
       }
-
+      world.sendMessage(`Zombie Miner is mining block: ${block.typeId} at tick ${system.currentTick}`);
       const startTick = entity.getDynamicProperty("mining");
 
       if (system.currentTick - startTick >= BREAK_DELAY) {
         dimension.setBlockType(blockPos, "minecraft:air");
-
+        world.sendMessage(`§c[UDaw] §fEl Zombie Miner ha minado un bloque de §6${block.typeId}§f.`);
         entity.setDynamicProperty("mining", null);
       }
     }
