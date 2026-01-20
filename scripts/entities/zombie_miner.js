@@ -3,7 +3,7 @@ import { world, system } from "@minecraft/server";
 /* ================= CONFIG ================= */
 
 const BREAK_TIME = 40;
-const MAX_DISTANCE = 4;
+const MAX_DISTANCE = 1.4;
 const STEP = 0.15;
 
 const DIMENSIONS = ["overworld", "nether", "the_end"];
@@ -27,13 +27,13 @@ function getLookBlock(entity) {
   const dim = entity.dimension;
 
   const CHECK_OFFSETS = [
-    { x: 0, y: 0, z: 0 },   // centro
-    { x: 1, y: 0, z: 0 },   // derecha
-    { x: -1, y: 0, z: 0 },  // izquierda
-    { x: 0, y: 0, z: 1 },   // frente lateral
-    { x: 0, y: 0, z: -1 },  // atrás lateral
-    { x: 0, y: 1, z: 0 },   // un poco arriba
-    { x: 0, y: -1, z: 0 }   // un poco abajo
+    { x: 0, y: 0, z: 0 },
+    { x: 1, y: 0, z: 0 },
+    { x: -1, y: 0, z: 0 },
+    { x: 0, y: 0, z: 1 },
+    { x: 0, y: 0, z: -1 },
+    { x: 0, y: 1, z: 0 },
+    { x: 0, y: -1, z: 0 }
   ];
 
   for (let d = 0.5; d <= MAX_DISTANCE; d += STEP) {
@@ -43,14 +43,6 @@ function getLookBlock(entity) {
       z: Math.floor(origin.z + dir.z * d)
     };
 
-    // Primero el bloque central
-    const center = dim.getBlock(basePos);
-    if (center && center.typeId !== "minecraft:air") {
-      world.sendMessage(`§7[RAY] Centro: ${center.typeId}`);
-      return { block: center, pos: basePos };
-    }
-
-    // Si es aire, revisar vecinos cercanos
     for (const o of CHECK_OFFSETS) {
       const pos = {
         x: basePos.x + o.x,
@@ -60,17 +52,25 @@ function getLookBlock(entity) {
 
       const block = dim.getBlock(pos);
       if (block && block.typeId !== "minecraft:air") {
+        // ⛔ Si está demasiado lejos, ignorar
+        if (d > MAX_MINE_DISTANCE) {
+          world.sendMessage(
+            `§8[RAY] Bloque ignorado por distancia (${d.toFixed(2)})`
+          );
+          return null;
+        }
+
         world.sendMessage(
-          `§e[RAY+] Bloque lateral detectado: ${block.typeId} (${pos.x}, ${pos.y}, ${pos.z})`
+          `§7[RAY] Bloque válido: ${block.typeId} a ${d.toFixed(2)}`
         );
         return { block, pos };
       }
     }
   }
 
-  world.sendMessage("§c[RAY] Nada detectado");
   return null;
 }
+
 
 
 /* ================= OFFSETS 2×2 ================= */
