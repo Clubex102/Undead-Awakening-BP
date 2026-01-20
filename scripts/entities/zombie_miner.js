@@ -1,13 +1,47 @@
-import { world, system } from "@minecraft/server";
+import { world, system, BlockPermutation } from "@minecraft/server";
+
+const BREAK_DELAY = 40; // ticks (2 segundos)
+const BREAKABLE_BLOCKS = [
+  "minecraft:dirt",
+  "minecraft:grass_block",
+  "minecraft:sand",
+  "minecraft:gravel",
+  "minecraft:planks"
+];
 
 system.runInterval(() => {
-  for (const dim of ["overworld", "nether", "the_end"]) {
-    const dimension = world.getDimension(dim);
+  for (const player of world.getPlayers()) {
+    const dimension = player.dimension;
 
-    const miners = dimension.getEntities({ families: ["miner"] });
+    for (const entity of dimension.getEntities({ type: "minecraft:zombie" })) {
+      const view = entity.getViewDirection();
+      const pos = entity.location;
 
-    for (const miner of miners) {
-      miner.triggerEvent("udaw:start_mining");
+      const blockPos = {
+        x: Math.floor(pos.x + view.x),
+        y: Math.floor(pos.y),
+        z: Math.floor(pos.z + view.z),
+      };
+
+      const block = dimension.getBlock(blockPos);
+      if (!block) continue;
+
+      if (!BREAKABLE_BLOCKS.includes(block.typeId)) continue;
+
+      if (!entity.getDynamicProperty("mining")) {
+        entity.setDynamicProperty("mining", system.currentTick);
+      }
+
+      const startTick = entity.getDynamicProperty("mining");
+
+      if (system.currentTick - startTick >= BREAK_DELAY) {
+        dimension.setBlock(
+          blockPos,
+          BlockPermutation.resolve("minecraft:air")
+        );
+
+        entity.setDynamicProperty("mining", null);
+      }
     }
   }
-}, 200);
+}, 5);
