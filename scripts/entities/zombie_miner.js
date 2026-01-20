@@ -27,7 +27,7 @@ function getLookBlock(entity) {
   const dimension = entity.dimension;
 
   // Distancia fija: justo delante del mob
-  const DISTANCE = 1.2;
+  const DISTANCE = 1;
 
   const pos = {
     x: Math.floor(origin.x + dir.x * DISTANCE),
@@ -107,13 +107,6 @@ system.runInterval(() => {
         zombie.setDynamicProperty("minePos", null);
         continue;
       }
-
-      // Efecto visual: detener movimiento
-      zombie.teleport(zombie.location, {
-        dimension: zombie.dimension,
-        rotation: zombie.getRotation()
-      });
-
       const tick = system.currentTick;
 
       if (!zombie.getDynamicProperty("mineStart")) {
