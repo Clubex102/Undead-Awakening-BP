@@ -26,22 +26,23 @@ function getLookBlock(entity) {
   const origin = entity.getHeadLocation();
   const dimension = entity.dimension;
 
-  for (let d = STEP; d <= MAX_DISTANCE; d += STEP) {
-    const pos = {
-      x: Math.floor(origin.x + dir.x * d),
-      y: Math.floor(origin.y + dir.y * d),
-      z: Math.floor(origin.z + dir.z * d)
-    };
+  // Distancia fija: justo delante del mob
+  const DISTANCE = 1.2;
 
-    const block = dimension.getBlock(pos);
-    if (!block) continue;
+  const pos = {
+    x: Math.floor(origin.x + dir.x * DISTANCE),
+    y: Math.floor(origin.y + dir.y * DISTANCE),
+    z: Math.floor(origin.z + dir.z * DISTANCE)
+  };
 
-    if (block.typeId !== "minecraft:air") {
-      return { block, pos };
-    }
+  const block = dimension.getBlock(pos);
+  if (!block || block.typeId === "minecraft:air") {
+    return null;
   }
-  return null;
+
+  return { block, pos };
 }
+
 
 /* ================= OFFSETS ================= */
 
