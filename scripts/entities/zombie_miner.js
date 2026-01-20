@@ -2,7 +2,7 @@ import { world, system } from "@minecraft/server";
 
 /* ================= CONFIG ================= */
 
-const BREAK_TIME = 60; // ticks (3 segundos)
+const BREAK_TIME = 20; // ticks (3 segundos)
 const MAX_DISTANCE = 3;
 const STEP = 0.5;
 
