@@ -26,52 +26,25 @@ function getLookBlock(entity) {
   const origin = entity.getHeadLocation();
   const dim = entity.dimension;
 
-  const CHECK_OFFSETS = [
-    { x: 0, y: 0, z: 0 },   // centro
-    { x: 1, y: 0, z: 0 },   // derecha
-    { x: -1, y: 0, z: 0 },  // izquierda
-    { x: 0, y: 0, z: 1 },   // frente lateral
-    { x: 0, y: 0, z: -1 },  // atrás lateral
-    { x: 0, y: 1, z: 0 },   // un poco arriba
-    { x: 0, y: -1, z: 0 }   // un poco abajo
-  ];
-
   for (let d = 0.5; d <= MAX_DISTANCE; d += STEP) {
-    const basePos = {
+    const pos = {
       x: Math.floor(origin.x + dir.x * d),
       y: Math.floor(origin.y + dir.y * d),
       z: Math.floor(origin.z + dir.z * d)
     };
 
-    // Primero el bloque central
-    const center = dim.getBlock(basePos);
-    if (center && center.typeId !== "minecraft:air") {
-      world.sendMessage(`§7[RAY] Centro: ${center.typeId}`);
-      return { block: center, pos: basePos };
-    }
-
-    // Si es aire, revisar vecinos cercanos
-    for (const o of CHECK_OFFSETS) {
-      const pos = {
-        x: basePos.x + o.x,
-        y: basePos.y + o.y,
-        z: basePos.z + o.z
-      };
-
-      const block = dim.getBlock(pos);
-      if (block && block.typeId !== "minecraft:air") {
-        world.sendMessage(
-          `§e[RAY+] Bloque lateral detectado: ${block.typeId} (${pos.x}, ${pos.y}, ${pos.z})`
-        );
-        return { block, pos };
-      }
+    const block = dim.getBlock(pos);
+    if (block && block.typeId !== "minecraft:air") {
+      world.sendMessage(
+        `§7[RAY] Bloque detectado: §f${block.typeId} §7en (${pos.x}, ${pos.y}, ${pos.z})`
+      );
+      return { block, pos };
     }
   }
 
-  world.sendMessage("§c[RAY] Nada detectado");
+  world.sendMessage("§c[RAY] No se detectó ningún bloque");
   return null;
 }
-
 
 /* ================= OFFSETS 2×2 ================= */
 
