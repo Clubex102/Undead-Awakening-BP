@@ -13,7 +13,7 @@ system.runInterval(() => {
   for (const player of world.getPlayers()) {
     const dimension = player.dimension;
 
-    for (const entity of dimension.getEntities({ type: "minecraft:zombie" })) {
+    for (const entity of dimension.getEntities({ type: "udaw:zombieminer" })) {
       const view = entity.getViewDirection();
       const pos = entity.location;
 
