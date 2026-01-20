@@ -27,7 +27,7 @@ function getLookBlock(entity) {
   const dimension = entity.dimension;
 
   // Distancia fija: justo delante del mob
-  const DISTANCE = 1;
+  const DISTANCE = 0.5;
 
   const pos = {
     x: Math.floor(origin.x + dir.x * DISTANCE),
