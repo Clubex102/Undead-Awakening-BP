@@ -35,7 +35,7 @@ system.runInterval(() => {
       const startTick = entity.getDynamicProperty("mining");
 
       if (system.currentTick - startTick >= BREAK_DELAY) {
-        dimension.setBlockType(blockPos, BlockPermutation.resolve("minecraft:air"));
+        dimension.setBlockType(blockPos, "minecraft:air");
         world.sendMessage(`§c[UDaw] §fEl Zombie Miner ha minado un bloque de §6${block.typeId}§f.`);
         entity.setDynamicProperty("mining", null);
       }
