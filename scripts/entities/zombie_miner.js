@@ -1,8 +1,7 @@
 import {
   world,
   system,
-  BlockPermutation,
-  Vector
+  BlockPermutation
 } from "@minecraft/server";
 
 const BREAK_TIME = 60; // ticks (3 segundos)
