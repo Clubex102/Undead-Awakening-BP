@@ -92,6 +92,7 @@ system.runInterval(() => {
 
         zombie.setDynamicProperty("startMine", null);
         zombie.setDynamicProperty("miningPos", null);
+        zombie.getComponent("movement").resetToDefaultValue();
       }
     }
   }
