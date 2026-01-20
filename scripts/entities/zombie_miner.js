@@ -87,7 +87,7 @@ system.runInterval(() => {
       if (tick - start >= BREAK_TIME) {
         zombie.dimension.setBlockType(
           target.pos,
-          BlockPermutation.resolve("minecraft:air")
+          "minecraft:air"
         );
 
         zombie.setDynamicProperty("startMine", null);
