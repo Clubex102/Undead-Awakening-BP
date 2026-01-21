@@ -12,37 +12,29 @@ const DIMENSIONS = ["overworld", "nether", "the_end"];
 const BREAKABLE = new Set([
   "minecraft:dirt",
   "minecraft:grass_block",
-  "minecraft:sand",
-  "minecraft:gravel",
-  "minecraft:stone",
-"minecraft:coal_ore",
-"minecraft:iron_ore",
-"minecraft:gold_ore",
-"minecraft:diamond_ore",
-"minecraft:emerald_ore",
-"minecraft:redstone_ore",
-"minecraft:lapis_ore",
-"minecraft:copper_ore",
-"minecraft:netherrack",
-"minecraft:nether_gold_ore",
-"minecraft:nether_quartz_ore",
-"minecraft:cobblestone",
-"minecraft:deepslate",
-"minecraft:deepslate_coal_ore",
-"minecraft:deepslate_iron_ore",
-"minecraft:deepslate_gold_ore",
-"minecraft:deepslate_diamond_ore",
-"minecraft:deepslate_emerald_ore",
-"minecraft:deepslate_redstone_ore",
-"minecraft:deepslate_lapis_ore",
-"minecraft:deepslate_copper_ore",
-"minecraft:andesite",
-"minecraft:diorite",
-"minecraft:granite",
-"minecraft:tuff",
-"minecraft:calcite",
-"minecraft:dripstone_block",
-"minecraft:basalt"
+ "minecraft:oak_log", "minecraft:oak_wood", "minecraft:stripped_oak_log", "minecraft:stripped_oak_wood",
+ "minecraft:spruce_log", "minecraft:spruce_wood", "minecraft:stripped_spruce_log", "minecraft:stripped_spruce_wood",
+ "minecraft:birch_log", "minecraft:birch_wood", "minecraft:stripped_birch_log", "minecraft:stripped_birch_wood",
+ "minecraft:jungle_log", "minecraft:jungle_wood", "minecraft:stripped_jungle_log", "minecraft:stripped_jungle_wood",
+ "minecraft:acacia_log", "minecraft:acacia_wood", "minecraft:stripped_acacia_log", "minecraft:stripped_acacia_wood",
+ "minecraft:dark_oak_log", "minecraft:dark_oak_wood", "minecraft:stripped_dark_oak_log", "minecraft:stripped_dark_oak_wood",
+ "minecraft:mangrove_log", "minecraft:mangrove_wood", "minecraft:stripped_mangrove_log", "minecraft:stripped_mangrove_wood",
+ "minecraft:cherry_log", "minecraft:cherry_wood", "minecraft:stripped_cherry_log", "minecraft:stripped_cherry_wood",
+ "minecraft:bamboo_block", "minecraft:stripped_bamboo_block",
+ "minecraft:crimson_stem", "minecraft:crimson_hyphae", "minecraft:stripped_crimson_stem", "minecraft:stripped_crimson_hyphae",
+ "minecraft:warped_stem", "minecraft:warped_hyphae", "minecraft:stripped_warped_stem", "minecraft:stripped_warped_hyphae",
+ "minecraft:oak_leaves", "minecraft:spruce_leaves", "minecraft:birch_leaves", "minecraft:jungle_leaves", "minecraft:acacia_leaves",
+  "minecraft:dark_oak_leaves", "minecraft:mangrove_leaves", "minecraft:cherry_leaves",
+  "minecraft:oak_slab", "minecraft:spruce_slab", "minecraft:birch_slab", "minecraft:jungle_slab", "minecraft:acacia_slab", "minecraft:dark_oak_slab", 
+  "minecraft:mangrove_slab", "minecraft:cherry_slab", "minecraft:bamboo_slab", "minecraft:crimson_slab", "minecraft:warped_slab",
+  "minecraft:oak_stairs", "minecraft:spruce_stairs", "minecraft:birch_stairs", "minecraft:jungle_stairs", "minecraft:acacia_stairs", "minecraft:dark_oak_stairs",
+   "minecraft:mangrove_stairs", "minecraft:cherry_stairs", "minecraft:bamboo_stairs", "minecraft:crimson_stairs", "minecraft:warped_stairs",
+   "minecraft:oak_fence", "minecraft:spruce_fence", "minecraft:birch_fence", "minecraft:jungle_fence", "minecraft:acacia_fence", "minecraft:dark_oak_fence", "minecraft:mangrove_fence",
+    "minecraft:cherry_fence", "minecraft:bamboo_fence", "minecraft:crimson_fence", "minecraft:warped_fence",
+    "minecraft:oak_door", "minecraft:spruce_door", "minecraft:birch_door", "minecraft:jungle_door", "minecraft:acacia_door", "minecraft:dark_oak_door", "minecraft:mangrove_door", 
+    "minecraft:cherry_door", "minecraft:bamboo_door", "minecraft:crimson_door", "minecraft:warped_door",
+"minecraft:oak_trapdoor", "minecraft:spruce_trapdoor", "minecraft:birch_trapdoor", "minecraft:jungle_trapdoor", "minecraft:acacia_trapdoor", "minecraft:dark_oak_trapdoor", 
+"minecraft:mangrove_trapdoor", "minecraft:cherry_trapdoor", "minecraft:bamboo_trapdoor", "minecraft:crimson_trapdoor", "minecraft:warped_trapdoor"
 ]);
 
 /* ================= RAYCAST ================= */
@@ -148,7 +140,7 @@ function getMineable2x2(dimension, basePos, offsets) {
 system.runInterval(() => {
   for (const dimId of DIMENSIONS) {
     const dimension = world.getDimension(dimId);
-    const zombies = dimension.getEntities({ type: "udaw:zombieminer" });
+    const zombies = dimension.getEntities({ type: "udaw:zombiewc" });
 
     for (const zombie of zombies) {
       const target = getLookBlock(zombie);

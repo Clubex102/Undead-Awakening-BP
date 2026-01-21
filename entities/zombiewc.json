@@ -3,11 +3,40 @@
   "minecraft:entity": {
     "description": {
       "animations": {},
-      "scripts": {},
       "identifier": "udaw:zombiewc",
       "is_spawnable": true,
       "is_summonable": true,
       "spawn_category": "monster"
+    },
+    "component_groups": {
+                  "udaw:breaking": {
+                "minecraft:break_blocks": {
+                "breakable_blocks": [
+                    "minecraft:stone",
+                    "minecraft:dirt"
+                ]
+                }
+            },
+
+            "udaw:mining_on_timer": {
+                "minecraft:timer": {
+                "time": 4,
+                "looping": false,
+                "time_down_event": {
+                    "event": "udaw:stop_mining"
+                }
+                }
+            },
+
+            "udaw:mining_off_timer": {
+                "minecraft:timer": {
+                "time": 2,
+                "looping": false,
+                "time_down_event": {
+                    "event": "udaw:start_mining"
+                }
+                }
+            }
     },
     "components": {
       "minecraft:health": {
@@ -51,9 +80,9 @@
       "minecraft:behavior.nearest_attackable_target": {
         "priority": 0,
         "must_see": false,
-        "must_see_forget_duration": 30,
+        "must_see_forget_duration": 100,
         "reselect_targets": true,
-        "within_radius": 80,
+        "within_radius": 100,
         "entity_types": [
           {
             "filters": {
@@ -90,7 +119,7 @@
                 }
               ]
             },
-            "max_dist": 30
+            "max_dist": 100
           }
         ]
       },
@@ -125,7 +154,8 @@
       "minecraft:target_nearby_sensor": {
         "must_see": false,
         "inside_range": 100,
-        "outside_range": 40
+        "outside_range": 130
+
       },
       "minecraft:navigation.walk": {
         "avoid_damage_blocks": true,
@@ -156,7 +186,38 @@
       },
       "minecraft:experience_reward": {
         "on_death": "query.last_hit_by_player ? Math.Random(3,5) : 0"
-      }
+        }
+      },
+      
+       "events": {
+            "udaw:start_mining": {
+                "add": {
+                "component_groups": [
+                    "udaw:breaking",
+                    "udaw:mining_on_timer"
+                ]
+                },
+                "remove": {
+                "component_groups": [
+                    "udaw:mining_off_timer"
+                ]
+                }
+            },
+
+            "udaw:stop_mining": {
+                "remove": {
+                "component_groups": [
+                    "udaw:breaking",
+                    "udaw:mining_on_timer"
+                ]
+                },
+                "add": {
+                "component_groups": [
+                    "udaw:mining_off_timer"
+                ]
+                }
+              }
+            }
+        }
     }
-  }
-}
+
