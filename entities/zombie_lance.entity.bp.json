@@ -15,7 +15,7 @@
                 "max_turn": 35
             },
             "minecraft:movement": {
-                "value": 0.35
+                "value": 0.25
             },
             "minecraft:can_climb": {},
             "minecraft:attack": {
@@ -53,7 +53,7 @@
                 "inside_range": 1,
                 "outside_range": 20
             },
-            "minecraft:navigation.generic": {
+            "minecraft:navigation.walk": {
                 "avoid_damage_blocks": true,
                 "avoid_portals": true,
                 "avoid_sun": false,
@@ -86,18 +86,20 @@
 
                 ]
             },
-            
-
-            "minecraft:behavior.melee_attack": {
-                "melee_fov": 90,
-                "track_target": false,
-                "attack_types": "melee",
-                "random_stop_interval": 0,
-                "reach_multiplier": 2,
-                "attack_once": false,
-                "require_complete_path": false,
-                "cooldown_time": 1.5,
-                "priority": 0
+            "minecraft:behavior.ram_attack": {
+                "cooldown_range": [
+                    3,
+                    5
+                ],
+                "knockback_force": 5,
+                "knockback_height": 0.1,
+                "min_ram_distance": 4,
+                "pre_ram_sound": "example",
+                "ram_distance": 7,
+                "ram_impact_sound": "example",
+                "ram_speed": 4,
+                "priority": 0,
+                "run_speed": 1
             },
             "minecraft:behavior.break_door": {
                 "priority": 1

@@ -56,6 +56,10 @@
                 "value": 20,
                 "max": 20
             },
+            "minecraft:behavior.move_towards_target": {
+                "within_radius": 30,
+                "priority": 1
+            },
             
             "minecraft:pushable": {
                 "is_pushable": true,
