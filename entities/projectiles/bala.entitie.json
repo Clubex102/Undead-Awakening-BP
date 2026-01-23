@@ -2,7 +2,7 @@
     "format_version": "1.21.60",
     "minecraft:entity": {
         "description": {
-            "identifier": "udaw:ball_shoot",
+            "identifier": "udaw:bullet",
             "runtime_identifier": "minecraft:snowball"
         },
         "components": {
@@ -16,10 +16,15 @@
                 "on_hit": {
                     "catch_fire": false,
                     "impact_damage": {
+                        "damage": 8,
+                        "destroy_on_hit": true,
+                        "max_critical_damage": 12,
                         "apply_knockback_to_blocking_targets": true
                     }
                 },
-                "power": 2,
+                "is_dangerous": true,
+                "multiple_targets": true,
+                "power": 3,
                 "shoot_target": true,
                 "should_bounce": false
             }
