@@ -153,7 +153,6 @@ system.runInterval(() => {
       }
 
       if (!zombie.getDynamicProperty("mineStart")) {
-        world.sendMessage("§6[MINE] Iniciando minado...");
         zombie.setDynamicProperty("mineStart", tick);
         zombie.setDynamicProperty("minePos", JSON.stringify(target.pos));
         continue;
