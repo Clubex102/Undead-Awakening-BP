@@ -86,24 +86,23 @@
 
                 ]
             },
+            
             "minecraft:behavior.ram_attack": {
                 "cooldown_range": [
-                    3,
-                    5
+                    1
+                    , 2
                 ],
                 "knockback_force": 5,
                 "knockback_height": 0.1,
-                "min_ram_distance": 4,
+                "min_ram_distance": 2,
                 "pre_ram_sound": "example",
                 "ram_distance": 7,
                 "ram_impact_sound": "example",
-                "ram_speed": 4,
+                "ram_speed": 2,
                 "priority": 0,
                 "run_speed": 1
             },
-            "minecraft:behavior.break_door": {
-                "priority": 1
-            },
+            
             "minecraft:behavior.nearest_attackable_target": {
                 "attack_interval": 0,
                 "attack_interval_min": 0,
@@ -138,13 +137,13 @@
                         "filters": {
                             "test": "is_family",
                             "subject": "other",
-                            "value": "iron_golem"
+                            "value": "irongolem"
                         }
                     }, {
                         "filters": {
                             "test": "is_family",
                             "subject": "other",
-                            "value": "snow_golem"
+                            "value": "snowgolem"
                         }
                     }, {
                         "filters": {

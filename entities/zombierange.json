@@ -103,8 +103,8 @@
                                 { "test": "is_family", "value": "player", "subject": "other" },
                                 { "test": "is_family", "value": "villager", "subject": "other" },
                                 { "test": "is_family", "value": "illager", "subject": "other" },
-                                { "test": "is_family", "value": "snow_golem", "subject": "other" },
-                                { "test": "is_family", "value": "iron_golem", "subject": "other" },
+                                { "test": "is_family", "value": "snowgolem", "subject": "other" },
+                                { "test": "is_family", "value": "irongolem", "subject": "other" },
                                 { "test": "is_family", "value": "witch", "subject": "other" }
                             ]
                         },

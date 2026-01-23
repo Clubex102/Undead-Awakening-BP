@@ -92,6 +92,11 @@
                                     "test": "is_family",
                                     "value": "illager",
                                     "subject": "other"
+                                },
+                                {
+                                    "test": "is_family",
+                                    "value": "irongolem",
+                                    "subject": "other"
                                 }
                             ]
                         },

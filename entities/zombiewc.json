@@ -104,12 +104,12 @@
                 },
                 {
                   "test": "is_family",
-                  "value": "snow_golem",
+                  "value": "snowgolem",
                   "subject": "other"
                 },
                 {
                   "test": "is_family",
-                  "value": "iron_golem",
+                  "value": "irongolem",
                   "subject": "other"
                 },
                 {
