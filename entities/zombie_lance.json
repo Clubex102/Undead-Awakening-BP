@@ -86,21 +86,16 @@
 
                 ]
             },
-            
-            "minecraft:behavior.ram_attack": {
-                "cooldown_range": [
-                    1
-                    , 2
-                ],
-                "knockback_force": 5,
-                "knockback_height": 0.1,
-                "min_ram_distance": 2,
-                "pre_ram_sound": "example",
-                "ram_distance": 7,
-                "ram_impact_sound": "example",
-                "ram_speed": 2,
-                "priority": 0,
-                "run_speed": 1
+        "minecraft:behavior.melee_attack": {
+            "melee_fov": 90,
+            "track_target": true,
+            "attack_types": "melee",
+            "random_stop_interval": 0,
+            "reach_multiplier": 2,
+            "attack_once": false,
+            "require_complete_path": false,
+            "cooldown_time": 1
+
             },
             
             "minecraft:behavior.nearest_attackable_target": {
