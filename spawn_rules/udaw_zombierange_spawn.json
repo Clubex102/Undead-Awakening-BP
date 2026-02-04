@@ -16,10 +16,6 @@
           "max": 7,
           "adjust_for_weather": true
         },
-        "minecraft:herd": {
-          "min_size": 2,
-          "max_size": 2
-        },
         "minecraft:density_limit": {
           "underground": 5,
           "surface": 5

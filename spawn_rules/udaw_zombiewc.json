@@ -2,21 +2,19 @@
   "format_version": "1.8.0",
   "minecraft:spawn_rules": {
     "description": {
-      "identifier": "udaw:zombietnt",
+      "identifier": "udaw:zombiewc",
       "population_control": "monster"
     },
     "conditions": [
       {
         "minecraft:spawns_on_surface": {},
-        "minecraft:spawns_underground": {},
         "minecraft:brightness_filter": {
           "min": 0,
           "max": 7,
           "adjust_for_weather": true
         },
         "minecraft:density_limit": {
-          "surface": 2,
-          "underground": 5
+          "surface": 3
         },
         "minecraft:difficulty_filter": {
           "min": "easy",
