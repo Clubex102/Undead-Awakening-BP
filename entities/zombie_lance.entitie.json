@@ -1,124 +1,177 @@
 {
-  "format_version": "1.21.132",
-  "minecraft:entity": {
-    "description": {
-      "identifier": "udaw:zombie_lance",
-      "is_spawnable": true,
-      "is_summonable": true
-    },
+    "format_version": "1.21.132",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "udaw:zombie_lance",
+            "is_spawnable": true,
+            "is_summonable": true
+        },
+        "component_groups": {
+            
+        },
+        "components": {
+            "minecraft:health": {
+                "value": 35
+            },
+            "minecraft:movement.basic": {
+                "max_turn": 35
+            },
+            "minecraft:movement": {
+                "value": 0.25
+            },
+            "minecraft:can_climb": {},
+            "minecraft:attack": {
+                "damage": 7
+            },
+            "minecraft:jump.static": {
+                "jump_power": 0.42
+            },
+            "minecraft:physics": {
+                "has_collision": true,
+                "has_gravity": true
+            },
+            "minecraft:behavior.random_stroll": {
+                "priority": 7
+            },
+            "minecraft:behavior.look_at_player": {
+                "angle_of_view_vertical": 360,
+                "angle_of_view_horizontal": 360,
+                "look_distance": 4,
+                "probability": 0.02
+            },
+            "minecraft:behavior.random_look_around": {
+                "look_distance": 40
+            },
+            "minecraft:pushable": {
+                "is_pushable": true,
+                "is_pushable_by_piston": true
+            },
+            "minecraft:collision_box": {
+                "height": 2,
+                "width": 0.5
+            },
+            "minecraft:target_nearby_sensor": {
+                "must_see": false,
+                "inside_range": 1,
+                "outside_range": 20
+            },
+            "minecraft:navigation.walk": {
+                "avoid_damage_blocks": true,
+                "avoid_portals": true,
+                "avoid_sun": false,
+                "avoid_water": true,
+                "blocks_to_avoid": [],
+                "can_breach": false,
+                "can_break_doors": false,
+                "can_jump": true,
+                "can_open_doors": false,
+                "can_open_iron_doors": false,
+                "can_pass_doors": true,
+                "can_path_from_air": true,
+                "can_path_over_lava": false,
+                "can_path_over_water": true,
+                "can_sink": true,
+                "can_swim": false,
+                "can_walk": true,
+                "can_walk_in_lava": false,
+                "is_amphibious": false
+            },
+            "minecraft:experience_reward": {
+                "on_death": "query.last_hit_by_player ? Math.random(3,5) : 0"
+                
+            },
+            "minecraft:type_family": {
+                "family": [
+                    "monster",
+                     "zombie", 
+                     "mob"
 
-    "components": {
-      "minecraft:health": {
-        "value": 35
-      },
+                ]
+            },
+        "minecraft:behavior.melee_attack": {
+            "melee_fov": 90,
+            "track_target": true,
+            "attack_types": "melee",
+            "random_stop_interval": 0,
+            "reach_multiplier": 2,
+            "attack_once": false,
+            "require_complete_path": false,
+            "cooldown_time": 1
 
-      "minecraft:movement": {
-        "value": 0.25
-      },
-
-      "minecraft:movement.basic": {
-        "max_turn": 35
-      },
-
-      "minecraft:attack": {
-        "damage": 7
-      },
-
-      "minecraft:jump.static": {
-        "jump_power": 0.42
-      },
-
-      "minecraft:physics": {
-        "has_collision": true,
-        "has_gravity": true
-      },
-
-      "minecraft:can_climb": {},
-
-      "minecraft:collision_box": {
-        "height": 2,
-        "width": 0.6
-      },
-
-      "minecraft:type_family": {
-        "family": ["monster", "zombie", "mob"]
-      },
-
-      "minecraft:behavior.nearest_attackable_target": {
-        "priority": 1,
-        "must_see": false,
-        "entity_types": [
+            },
+            
+            "minecraft:behavior.nearest_attackable_target": {
+                "attack_owner": false,
+                "must_reach": false,
+                "must_see": false,
+                "must_see_forget_duration": 3,
+                "persist_time": 10,
+                "reselect_targets": true,
+                "scan_interval": 10,
+                "set_persistent": true,
+                "target_invisible_multiplier": 0.7,
+                "target_search_height": -1,
+                "target_sneak_visibility_multiplier": 0.8,
+                "entity_types": [
                     {
                         "filters": {
-                            "any_of": [
-                                {
-                                    "test": "is_family",
-                                    "value": "player",
-                                    "subject": "other"
-                                },
-                                {
-                                    "test": "is_family",
-                                    "value": "villager",
-                                    "subject": "other"
-                                },
-                                {
-                                    "test": "is_family",
-                                    "value": "illager",
-                                    "subject": "other"
-                                },
-                                {
-                                    "test": "is_family",
-                                    "value": "snowgolem",
-                                    "subject": "other"
-                                },
-                                {
-                                    "test": "is_family",
-                                    "value": "irongolem",
-                                    "subject": "other"
-                                },
-                                {
-                                    "test": "is_family",
-                                    "value": "witch",
-                                    "subject": "other"
-                                }
-                            ]
-                        },
-                        "max_dist": 30
+                            "test": "is_family",
+                            "subject": "other",
+                            "value": "player"
+                        }
+
+                    },
+                    {
+                        "filters": {
+                            "test": "is_family",
+                            "subject": "other",
+                            "value": "villager"
+                        }
+                    },
+                    {
+                        "filters": {
+                            "test": "is_family",
+                            "subject": "other",
+                            "value": "irongolem"
+                        }
+                    }, {
+                        "filters": {
+                            "test": "is_family",
+                            "subject": "other",
+                            "value": "snowgolem"
+                        }
+                    }, {
+                        "filters": {
+                            "test": "is_family",
+                            "subject": "other",
+                            "value": "witch"
+                        }
+                    },
+                    {
+                        "filters": {
+                            "test": "is_family",
+                            "subject": "other",
+                            "value": "illager"
+                        }
                     }
-                ]
-      },
-
-      "minecraft:behavior.ram_attack": {
-        "priority": 2,
-        "cooldown_range": [3, 6],
-        "min_ram_distance": 4,
-        "ram_distance": 7,
-        "ram_speed": 2,
-        "run_speed": 1,
-        "knockback_force": 5,
-        "knockback_height": 0.2
-      },
-      "minecraft:navigation.generic": {},
-      "minecraft:behavior.melee_attack": {
-        "priority": 3,
-        "track_target": true,
-        "reach_multiplier": 2,
-        "cooldown_time": 1
-      },
-
-      "minecraft:behavior.random_stroll": {
-        "priority": 7
-      },
-
-      "minecraft:behavior.look_at_player": {
-        "priority": 8,
-        "look_distance": 6,
-        "probability": 0.02
-      },
-
-      "minecraft:behavior.random_look_around": {
-        "priority": 9
-      }
+                ],
+                "within_radius": 0
+            },
+            "minecraft:behavior.ram_attack": {
+                    "cooldown_range": [
+                        3,5
+                    ],
+                    "knockback_force": 5,
+                    "knockback_height": 0.1,
+                    "min_ram_distance": 4,
+                    "ram_distance": 7,
+                    "ram_speed": 3,
+                    "priority": 2,
+                    "run_speed": 1        
+                }
+        },
+        "events": { 
+            
+        }
     }
-  }
 }
