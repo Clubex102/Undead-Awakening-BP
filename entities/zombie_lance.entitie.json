@@ -4,7 +4,35 @@
         "description": {
             "identifier": "udaw:zombie_lance",
             "is_spawnable": true,
-            "is_summonable": true
+            "is_summonable": true,
+            "properties": {
+                "ch:attack_state": {
+                    "type": "enum",
+                    "values": [
+                    "none",
+                    "charge_prepare",
+                    "charge_attack",
+                    "charge_end"
+                    ],
+                    "default": "none"
+                },
+
+                "ch:enraged": {
+                    "type": "bool",
+                    "default": false
+                },
+
+                "ch:activated_phase2": {
+                    "type": "bool",
+                    "default": false
+                },
+
+                "ch:charge_power": {
+                    "type": "float",
+                    "range": [0.0, 3.0],
+                    "default": 1.0
+                }
+            }
         },
         "component_groups": {
             
@@ -156,22 +184,75 @@
                     }
                 ],
                 "within_radius": 0
-            },
-            "minecraft:behavior.ram_attack": {
-                    "cooldown_range": [
-                        3,5
-                    ],
-                    "knockback_force": 5,
-                    "knockback_height": 0.1,
-                    "min_ram_distance": 4,
-                    "ram_distance": 7,
-                    "ram_speed": 3,
-                    "priority": 2,
-                    "run_speed": 1        
-                }
+            }
         },
-        "events": { 
-            
-        }
+        "events": {
+            "ch:default": {
+                "set_property": {
+                "ch:attack_state": "none"
+                },
+                "remove": {
+                "component_groups": [
+                    "state_charge_prepare",
+                    "state_charge_move",
+                    "state_charge_end"
+                ]
+                },
+                "add": {
+                "component_groups": [
+                    "state_default"
+                ]
+                }
+            },
+
+            "ch:charge_attack_prepare": {
+                "set_property": {
+                "ch:attack_state": "charge_prepare"
+                },
+                "remove": {
+                "component_groups": [
+                    "state_default"
+                ]
+                },
+                "add": {
+                "component_groups": [
+                    "state_charge_prepare"
+                ]
+                }
+            },
+
+            "ch:charge_attack_move": {
+                "set_property": {
+                "ch:attack_state": "charge_attack"
+                },
+                "remove": {
+                "component_groups": [
+                    "state_charge_prepare"
+                ]
+                },
+                "add": {
+                "component_groups": [
+                    "state_charge_move"
+                ]
+                }
+            },
+
+            "ch:stop_charge_attack_move": {
+                "set_property": {
+                "ch:attack_state": "charge_end"
+                },
+                "remove": {
+                "component_groups": [
+                    "state_charge_move"
+                ]
+                },
+                "add": {
+                "component_groups": [
+                    "state_charge_end"
+                ]
+                }
+            }
+            }
+
     }
 }
