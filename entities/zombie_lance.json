@@ -133,8 +133,6 @@
             },
             
             "minecraft:behavior.nearest_attackable_target": {
-                "attack_interval": 0,
-                "attack_interval_min": 0,
                 "attack_owner": false,
                 "must_reach": false,
                 "must_see": false,
