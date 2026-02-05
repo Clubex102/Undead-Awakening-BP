@@ -48,14 +48,44 @@
         "priority": 1,
         "must_see": false,
         "entity_types": [
-          {
-            "filters": {
-              "test": "is_family",
-              "subject": "other",
-              "value": "player"
-            }
-          }
-        ]
+                    {
+                        "filters": {
+                            "any_of": [
+                                {
+                                    "test": "is_family",
+                                    "value": "player",
+                                    "subject": "other"
+                                },
+                                {
+                                    "test": "is_family",
+                                    "value": "villager",
+                                    "subject": "other"
+                                },
+                                {
+                                    "test": "is_family",
+                                    "value": "illager",
+                                    "subject": "other"
+                                },
+                                {
+                                    "test": "is_family",
+                                    "value": "snowgolem",
+                                    "subject": "other"
+                                },
+                                {
+                                    "test": "is_family",
+                                    "value": "irongolem",
+                                    "subject": "other"
+                                },
+                                {
+                                    "test": "is_family",
+                                    "value": "witch",
+                                    "subject": "other"
+                                }
+                            ]
+                        },
+                        "max_dist": 30
+                    }
+                ]
       },
 
       "minecraft:behavior.ram_attack": {
