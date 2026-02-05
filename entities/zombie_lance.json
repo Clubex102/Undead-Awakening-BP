@@ -1,11 +1,45 @@
 {
-    "format_version": "1.20.80",
+    "format_version": "1.21.132",
     "minecraft:entity": {
         "description": {
             "identifier": "udaw:zombie_lance",
             "is_spawnable": true,
-            "is_summonable": true,
-            "spawn_category": "monster"
+            "is_summonable": true
+        },
+        "component_groups": {
+            "llanta": {
+                "minecraft:attack": {
+                    "damage": 1
+                },
+                "minecraft:behavior.ram_attack": {
+                    "cooldown_range": [
+                        3
+                    ],
+                    "knockback_force": 5,
+                    "knockback_height": 0.1,
+                    "min_ram_distance": 4,
+                    "pre_ram_sound": "example",
+                    "ram_distance": 7,
+                    "ram_impact_sound": "example",
+                    "ram_speed": 2,
+                    "priority": 2,
+                    "run_speed": 1,
+                    "on_start": [
+                        {
+                            "event": "start_event",
+                            "target": "self"
+                        }
+                    ]        
+                },
+                "minecraft:attack_cooldown": {
+                    "attack_cooldown_time": [
+                        3
+                    ],
+                    "attack_cooldown_complete_event": {
+                        "event": "attack_cooldown_complete_event",
+                        "target": "self"
+                    }
+                }
         },
         "components": {
             "minecraft:health": {
@@ -157,6 +191,23 @@
                 ],
                 "within_radius": 0
             }
+            
         }
+    },
+    "events": { "start_event": {
+        "add": {
+          "component_groups": [
+            "attack_cooldown"
+          ]
+        }
+      },
+      "attack_cooldown_complete_event": {
+        "remove": {
+          "component_groups": [
+            "attack_cooldown"
+          ]
+        }
+      }
     }
+  }
 }
