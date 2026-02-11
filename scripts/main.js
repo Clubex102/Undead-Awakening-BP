@@ -17,7 +17,7 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
     startupEvent.itemComponentRegistry.registerCustomComponent("udaw:weapon", {
         onUse(event) {
             const { itemStack, source } = event;
-            shootCommon(source, "minecraft:arrow", 1, 1);
+            shootCommon(source, "udaw:bullet", 1, 1);
             itemStack.getComponent("cooldown").startCooldown(source);
         },
     });
