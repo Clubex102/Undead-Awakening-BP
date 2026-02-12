@@ -16,6 +16,8 @@ export function shootCommon(player, bulletID, bulletCount = 1, spreadAngle = 5) 
 
     let baseDirection = player.getViewDirection();
 
+    player.playSound("flintlockshoot");
+
     for (let i = 0; i < bulletCount; i++) {
         let angleOffset = (i - (bulletCount - 1) / 2) * spreadAngle;
         let rotatedDirection = VECTOR.rotateXZ(baseDirection, angleOffset);

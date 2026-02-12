@@ -20,12 +20,14 @@
                 "angle_offset": 0,
                 "catch_fire": false,
                 "gravity": 0.05,
-                "inertia": 0.99,
+                "inertia": 1.5,
                 "knockback": true,
                 "on_hit": {
                     "catch_fire": false,
+                    
                     "impact_damage": {
                         "damage": 12,
+                        
                         "knockback": true,
                         "destroy_on_hit": true,
                         "max_critical_damage": 12,
@@ -33,6 +35,7 @@
                     }
                 },
                 "is_dangerous": true,
+                "shoot_sound": "flintlockshoot",
                 "multiple_targets": true,
                 "power": 3,
                 "shoot_target": true,
