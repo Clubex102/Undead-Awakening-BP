@@ -39,7 +39,8 @@
                 "multiple_targets": true,
                 "power": 3,
                 "shoot_target": true,
-                "should_bounce": false
+                "should_bounce": false,
+                "particle": "minecraft:basic_flame_particle"
             }
         }
     }
