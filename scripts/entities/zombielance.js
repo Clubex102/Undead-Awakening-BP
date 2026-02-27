@@ -146,13 +146,15 @@ function applyLungeDamage(attacker, direction) {
 function tickLunge(entity, state) {
     if (state.phase === "lunge") {
 
-        // applyKnockback es más fiable para mobs que applyImpulse
-        entity.applyKnockback(
-            state.direction.x,
-            state.direction.z,
-            CONFIG.LUNGE_SPEED,
-            0.0
-        );
+        // clearVelocity resetea el movimiento previo del mob,
+        // luego applyImpulse aplica el empuje limpio en la dirección fija.
+        // (applyKnockback solo existe en Player, no en Entity genérica)
+        entity.clearVelocity();
+        entity.applyImpulse({
+            x: state.direction.x * CONFIG.LUNGE_SPEED,
+            y: 0.0,
+            z: state.direction.z * CONFIG.LUNGE_SPEED,
+        });
 
         const half = Math.floor(CONFIG.LUNGE_DURATION_TICKS / 2);
         if (!state.damageDone && state.ticksLeft <= half) {
