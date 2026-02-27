@@ -146,15 +146,21 @@ function applyLungeDamage(attacker, direction) {
 function tickLunge(entity, state) {
     if (state.phase === "lunge") {
 
-        // clearVelocity resetea el movimiento previo del mob,
-        // luego applyImpulse aplica el empuje limpio en la dirección fija.
-        // (applyKnockback solo existe en Player, no en Entity genérica)
-        entity.clearVelocity();
-        entity.applyImpulse({
-            x: state.direction.x * CONFIG.LUNGE_SPEED,
-            y: 0.0,
-            z: state.direction.z * CONFIG.LUNGE_SPEED,
-        });
+        // Movimiento por teleport incremental — compatible con @minecraft/server 1.21.0
+        // sin depender de clearVelocity ni applyKnockback.
+        const currentPos = entity.location;
+        const rot = entity.getRotation();
+        entity.teleport(
+            {
+                x: currentPos.x + state.direction.x * CONFIG.LUNGE_SPEED,
+                y: currentPos.y,
+                z: currentPos.z + state.direction.z * CONFIG.LUNGE_SPEED,
+            },
+            {
+                dimension: entity.dimension,
+                rotation: { x: rot.x, y: rot.y },
+            }
+        );
 
         const half = Math.floor(CONFIG.LUNGE_DURATION_TICKS / 2);
         if (!state.damageDone && state.ticksLeft <= half) {
