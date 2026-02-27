@@ -20,12 +20,6 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
             const { itemStack, source } = event;
             shootCommon(source, "udaw:bullet", 1, 1);
             itemStack.getComponent("cooldown").startCooldown(source);
-            
-            // Restar 5 puntos de durabilidad
-            const durabilityComponent = itemStack.getComponent("durability");
-            if (durabilityComponent) {
-                durabilityComponent.damage(5, source);
-            }
         },
     });
 });
