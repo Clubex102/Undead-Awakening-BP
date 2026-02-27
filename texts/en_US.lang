@@ -1,2 +1,5 @@
 pack.name=Undead Awakening Behavior Pack
 pack.description=By Caracol Studios
+
+item.udaw:flintlockgun=Flintlock Pistol
+"item.udaw:flintlockgun.description=An old-fashioned firearm that shoots bullets. It has a slow reload time but can deal significant damage.
