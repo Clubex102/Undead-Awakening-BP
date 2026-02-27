@@ -1,53 +1,40 @@
 import { world, system, EntityDamageCause } from "@minecraft/server";
 
 // =============================================
-// CONFIGURACIÓN DEL ATAQUE
+// CONFIGURACIÓN
 // =============================================
 const CONFIG = {
-    ENTITY_ID: "udaw:zombie_lance",
-    COOLDOWN_TICKS: 100,          // 5 segundos (20 ticks = 1 segundo)
-    LUNGE_SPEED: 0.6,             // Velocidad de movimiento por tick
-    LUNGE_DURATION_TICKS: 8,      // Duración total del lanzamiento (ticks)
-    DAMAGE: 6,                    // Daño aplicado
-    DAMAGE_RANGE: 1.5,            // Radio de hitbox de daño al frente
-    MIN_TARGET_DISTANCE: 3,       // Distancia mínima al objetivo para activar
-    MAX_TARGET_DISTANCE: 10,      // Distancia máxima al objetivo para activar
-    DAMAGE_REACH: 2.2,            // Cuántos bloques hacia adelante se revisa el daño
+    ENTITY_TYPE_ID:       "udaw:zombie_lance",
+    COOLDOWN_TICKS:       100,   // 5 segundos (20 ticks = 1s)
+    LUNGE_DURATION_TICKS: 10,    // Duración de la estocada en ticks
+    LUNGE_SPEED:          0.5,   // Fuerza del impulso por tick (knockback horizontal)
+    DAMAGE:               6,     // Daño aplicado al impactar
+    DAMAGE_REACH:         2.0,   // Metros hacia adelante donde se comprueba el daño
+    DAMAGE_RADIUS:        1.5,   // Radio del área de daño en ese punto
+    MIN_RANGE:            3,     // Distancia mínima al objetivo para activar la estocada
+    MAX_RANGE:            10,    // Distancia máxima al objetivo para activar la estocada
+    FACING_DOT_THRESHOLD: 0.6,   // Qué tan "de frente" debe estar mirando al objetivo (0-1)
 };
 
-// Mapa de estado por entidad (usando entity.id como clave)
-const lungeState = new Map();
+// Estado por entidad: entityId (string) -> objeto de estado
+const lungeMap = new Map();
 
 // =============================================
 // UTILIDADES
 // =============================================
 
-/**
- * Obtiene el vector de dirección hacia adelante de una entidad
- * basado en su rotación (yaw).
- */
+/** Vector hacia adelante según el yaw de la entidad */
 function getForwardVector(entity) {
-    const rotation = entity.getRotation();
-    const yawRad = (rotation.y * Math.PI) / 180;
+    const rot = entity.getRotation();
+    const rad = (rot.y * Math.PI) / 180;
     return {
-        x: -Math.sin(yawRad),
+        x: -Math.sin(rad),
         y: 0,
-        z: Math.cos(yawRad),
+        z:  Math.cos(rad),
     };
 }
 
-/**
- * Distancia 2D (ignorando Y) entre dos posiciones.
- */
-function dist2D(a, b) {
-    const dx = a.x - b.x;
-    const dz = a.z - b.z;
-    return Math.sqrt(dx * dx + dz * dz);
-}
-
-/**
- * Distancia 3D entre dos posiciones.
- */
+/** Distancia 3D */
 function dist3D(a, b) {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
@@ -55,147 +42,134 @@ function dist3D(a, b) {
     return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
-// =============================================
-// LÓGICA DEL ATAQUE
-// =============================================
-
-/**
- * Inicia el ataque de estocada si las condiciones se cumplen.
- */
-function tryStartLunge(entity) {
-    const id = entity.id;
-
-    // Verificar cooldown
-    const state = lungeState.get(id);
-    if (state) return; // Ya está en ataque o cooldown
-
-    // Buscar objetivo (jugador más cercano en rango válido)
-    const pos = entity.location;
-    const target = findValidTarget(entity, pos);
-    if (!target) return;
-
-    // Capturar dirección al inicio del ataque (fija durante todo el lanzamiento)
-    const forward = getForwardVector(entity);
-
-    // Iniciar estado de lunge
-    lungeState.set(id, {
-        phase: "lunge",        // "lunge" o "cooldown"
-        ticksLeft: CONFIG.LUNGE_DURATION_TICKS,
-        direction: forward,
-        damageDone: false,
-        cooldownLeft: 0,
-    });
+/** Normaliza un vector 2D (XZ) */
+function normalize2D(v) {
+    const len = Math.sqrt(v.x * v.x + v.z * v.z);
+    if (len === 0) return { x: 0, z: 0 };
+    return { x: v.x / len, z: v.z / len };
 }
 
+/** Producto punto 2D */
+function dot2D(a, b) {
+    return a.x * b.x + a.z * b.z;
+}
+
+// =============================================
+// BÚSQUEDA DE OBJETIVO
+// =============================================
+
 /**
- * Busca un objetivo válido en el rango min-max del ataque.
+ * Devuelve la entidad objetivo más cercana dentro del rango válido
+ * que esté aproximadamente enfrente de la entidad atacante.
  */
-function findValidTarget(entity, pos) {
-    // Busca jugadores en el rango máximo dentro de la dimensión
-    const nearbyEntities = entity.dimension.getEntities({
+function findTarget(attacker) {
+    const pos  = attacker.location;
+    const fwd  = getForwardVector(attacker);
+
+    const candidates = attacker.dimension.getEntities({
         location: pos,
-        maxDistance: CONFIG.MAX_TARGET_DISTANCE,
-        excludeTypes: [CONFIG.ENTITY_ID],
-        excludeFamilies: ["zombie_lance_family"], // opcional
+        maxDistance: CONFIG.MAX_RANGE,
     });
 
-    let closest = null;
-    let closestDist = Infinity;
+    let best     = null;
+    let bestDist = Infinity;
 
-    for (const e of nearbyEntities) {
-        if (e.typeId === "minecraft:player" || e.typeId !== CONFIG.ENTITY_ID) {
-            const d = dist3D(pos, e.location);
-            if (d >= CONFIG.MIN_TARGET_DISTANCE && d < closestDist) {
-                closest = e;
-                closestDist = d;
-            }
+    for (const e of candidates) {
+        if (e === attacker) continue;
+        if (e.typeId === CONFIG.ENTITY_TYPE_ID) continue;
+
+        const d = dist3D(pos, e.location);
+        if (d < CONFIG.MIN_RANGE) continue;
+        if (d > CONFIG.MAX_RANGE) continue;
+
+        // Comprobar que el objetivo esté dentro del cono frontal
+        const toTarget = normalize2D({
+            x: e.location.x - pos.x,
+            z: e.location.z - pos.z,
+        });
+        const facing = dot2D(fwd, toTarget);
+        if (facing < CONFIG.FACING_DOT_THRESHOLD) continue;
+
+        if (d < bestDist) {
+            best     = e;
+            bestDist = d;
         }
     }
 
-    return closest;
+    return best;
 }
 
+// =============================================
+// DAÑO
+// =============================================
+
 /**
- * Tick de actualización para una entidad en estado de lunge.
+ * Aplica daño en el punto de impacto de la estocada.
  */
-function tickLunge(entity, state) {
-    const id = entity.id;
+function applyLungeDamage(attacker, direction) {
+    const pos = attacker.location;
 
-    if (state.phase === "lunge") {
-        // Mover la entidad en la dirección fija
-        const vel = entity.getVelocity();
-        entity.applyImpulse({
-            x: state.direction.x * CONFIG.LUNGE_SPEED,
-            y: vel.y,           // Respetar gravedad
-            z: state.direction.z * CONFIG.LUNGE_SPEED,
+    const checkPos = {
+        x: pos.x + direction.x * CONFIG.DAMAGE_REACH,
+        y: pos.y + 0.8,
+        z: pos.z + direction.z * CONFIG.DAMAGE_REACH,
+    };
+
+    const nearby = attacker.dimension.getEntities({
+        location: checkPos,
+        maxDistance: CONFIG.DAMAGE_RADIUS,
+    });
+
+    for (const e of nearby) {
+        if (e === attacker) continue;
+        if (e.typeId === CONFIG.ENTITY_TYPE_ID) continue;
+
+        const toE = normalize2D({
+            x: e.location.x - pos.x,
+            z: e.location.z - pos.z,
         });
+        if (dot2D(direction, toE) < 0.3) continue;
 
-        // Aplicar daño UNA sola vez a mitad del lunge
-        if (!state.damageDone && state.ticksLeft <= Math.floor(CONFIG.LUNGE_DURATION_TICKS / 2)) {
+        try {
+            e.applyDamage(CONFIG.DAMAGE, {
+                cause: EntityDamageCause.entityAttack,
+                damagingEntity: attacker,
+            });
+        } catch (_) { /* entidad removida */ }
+    }
+}
+
+// =============================================
+// TICK DE LUNGE
+// =============================================
+
+function tickLunge(entity, state) {
+    if (state.phase === "lunge") {
+
+        // applyKnockback es más fiable para mobs que applyImpulse
+        entity.applyKnockback(
+            state.direction.x,
+            state.direction.z,
+            CONFIG.LUNGE_SPEED,
+            0.0
+        );
+
+        const half = Math.floor(CONFIG.LUNGE_DURATION_TICKS / 2);
+        if (!state.damageDone && state.ticksLeft <= half) {
             applyLungeDamage(entity, state.direction);
             state.damageDone = true;
         }
 
         state.ticksLeft--;
-
         if (state.ticksLeft <= 0) {
-            // Pasar a cooldown
-            state.phase = "cooldown";
+            state.phase        = "cooldown";
             state.cooldownLeft = CONFIG.COOLDOWN_TICKS;
         }
 
     } else if (state.phase === "cooldown") {
         state.cooldownLeft--;
-
         if (state.cooldownLeft <= 0) {
-            lungeState.delete(id);
-        }
-    }
-}
-
-/**
- * Aplica daño a entidades que estén en el arco frontal de la estocada.
- */
-function applyLungeDamage(entity, direction) {
-    const pos = entity.location;
-    const dimension = entity.dimension;
-
-    // Centro del área de daño: un poco adelante de la entidad
-    const damageCenter = {
-        x: pos.x + direction.x * (CONFIG.DAMAGE_REACH * 0.6),
-        y: pos.y + 0.5,
-        z: pos.z + direction.z * (CONFIG.DAMAGE_REACH * 0.6),
-    };
-
-    const targets = dimension.getEntities({
-        location: damageCenter,
-        maxDistance: CONFIG.DAMAGE_RANGE,
-    });
-
-    for (const target of targets) {
-        if (target === entity) continue;
-        if (target.typeId === CONFIG.ENTITY_ID) continue; // No dañar a sus iguales
-
-        // Verificar que el objetivo esté "hacia adelante"
-        const toTarget = {
-            x: target.location.x - pos.x,
-            z: target.location.z - pos.z,
-        };
-        const len = Math.sqrt(toTarget.x * toTarget.x + toTarget.z * toTarget.z);
-        if (len === 0) continue;
-
-        const dot = (toTarget.x / len) * direction.x + (toTarget.z / len) * direction.z;
-
-        // dot > 0.4 = dentro de ~66° hacia adelante
-        if (dot > 0.4) {
-            try {
-                target.applyDamage(CONFIG.DAMAGE, {
-                    cause: EntityDamageCause.entityAttack,
-                    damagingEntity: entity,
-                });
-            } catch (_) {
-                // El objetivo puede haberse removido
-            }
+            lungeMap.delete(entity.id);
         }
     }
 }
@@ -204,48 +178,62 @@ function applyLungeDamage(entity, direction) {
 // LOOP PRINCIPAL
 // =============================================
 
-system.runInterval(() => {
-    // Actualizar entidades ya en estado de lunge
-    for (const [id, state] of lungeState.entries()) {
-        let entity;
-        try {
-            // Intentar obtener la entidad por ID
-            // En Bedrock Scripting API se busca en todas las dimensiones
-            for (const dim of ["overworld", "nether", "the_end"]) {
-                try {
-                    const dim_obj = world.getDimension(dim);
-                    const candidates = dim_obj.getEntities({ type: CONFIG.ENTITY_ID });
-                    entity = candidates.find(e => e.id === id);
-                    if (entity) break;
-                } catch (_) {}
-            }
-        } catch (_) {}
+// Nombres correctos de dimensiones en la Bedrock Scripting API
+const DIMENSIONS = ["overworld", "nether", "the end"];
 
-        if (!entity || !entity.isValid()) {
-            lungeState.delete(id);
+system.runInterval(() => {
+
+    // 1. Actualizar entidades que ya están en lunge/cooldown
+    for (const [id, state] of lungeMap.entries()) {
+        let found = null;
+
+        for (const dimName of DIMENSIONS) {
+            try {
+                const dim = world.getDimension(dimName);
+                const list = dim.getEntities({ typeId: CONFIG.ENTITY_TYPE_ID });
+                found = list.find(e => e.id === id);
+                if (found) break;
+            } catch (_) { continue; }
+        }
+
+        if (!found || !found.isValid()) {
+            lungeMap.delete(id);
             continue;
         }
 
-        tickLunge(entity, state);
+        tickLunge(found, state);
     }
 
-    // Buscar nuevas entidades que deberían atacar
-    for (const dim of ["overworld", "nether", "the_end"]) {
-        let dimension;
+    // 2. Detectar nuevas entidades que deban iniciar el ataque
+    for (const dimName of DIMENSIONS) {
+        let dim;
         try {
-            dimension = world.getDimension(dim);
-        } catch (_) {
-            continue;
-        }
+            dim = world.getDimension(dimName);
+        } catch (_) { continue; }
 
-        const zombies = dimension.getEntities({ type: CONFIG.ENTITY_ID });
+        let zombies;
+        try {
+            zombies = dim.getEntities({ typeId: CONFIG.ENTITY_TYPE_ID });
+        } catch (_) { continue; }
 
         for (const zombie of zombies) {
             if (!zombie.isValid()) continue;
-            if (lungeState.has(zombie.id)) continue; // Ya en ataque/cooldown
+            if (lungeMap.has(zombie.id)) continue;
 
-            // El zombie ataca si tiene un objetivo (target) válido en rango
-            tryStartLunge(zombie);
+            const target = findTarget(zombie);
+            if (!target) continue;
+
+            // Dirección capturada al inicio — fija durante todo el lunge
+            const direction = getForwardVector(zombie);
+
+            lungeMap.set(zombie.id, {
+                phase:        "lunge",
+                ticksLeft:    CONFIG.LUNGE_DURATION_TICKS,
+                direction:    direction,
+                damageDone:   false,
+                cooldownLeft: 0,
+            });
         }
     }
-}, 1); // Cada tick
+
+}, 1);
