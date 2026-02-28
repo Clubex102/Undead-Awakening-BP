@@ -4,21 +4,11 @@
         "description": {
             "identifier": "udaw:flint_gun"
         },
-        "unlock": {
-            "context": "",
-            "criteria": {
-                "has_iron_ingot": {
-                    "trigger": "minecraft:inventory_changed",
-                    "conditions": {
-                        "items": [
-                            {
-                                "item": "minecraft:iron_ingot"
-                            }
-                        ]
-                    }
-                }
+        "unlock": [
+            {
+                "item": "minecraft:iron_ingot"
             }
-        },
+        ],
         "tags": [
             "crafting_table"
         ],
