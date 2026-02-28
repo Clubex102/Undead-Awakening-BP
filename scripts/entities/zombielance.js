@@ -131,6 +131,9 @@ system.runInterval(() => {
                 const tPos = target.location;
                 const dir  = normalize2D(tPos.x - pos.x, tPos.z - pos.z);
 
+                // Reproducir animación de ataque
+                entity.playAnimation("animation.zombielance.attack2");
+
                 // Aplicar impulso SOLO al zombie_lance
                 entity.applyImpulse({
                     x: dir.x * DASH_POWER,
