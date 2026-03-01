@@ -2,28 +2,22 @@
   "format_version": "1.8.0",
   "minecraft:spawn_rules": {
     "description": {
-      "identifier": "udaw:spawner",
+      "identifier": "udaw:zombie_lance",
       "population_control": "monster"
     },
     "conditions": [
-      
       {
-        "minecraft:spawns_on_surface": {    
-        },
-        "minecraft:spawns_underground": {
-        },
+        "minecraft:spawns_on_surface": {},
         "minecraft:brightness_filter": {
           "min": 0,
           "max": 7,
           "adjust_for_weather": true
         },
         "minecraft:weight": {
-          "default": 90
+          "default": 2
         },
         "minecraft:density_limit": {
-          "surface": 7,
-          "underground": 5
-        
+          "surface": 1
         },
         "minecraft:difficulty_filter": {
           "min": "easy",
@@ -38,6 +32,3 @@
     ]
   }
 }
-
-
-
