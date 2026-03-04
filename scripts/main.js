@@ -13,7 +13,6 @@ import { shootCommon, shootRepeat } from "./globalVar/u.js";
 import "./entities/zombie_miner.js";
 import "./entities/zombiewc.js";
 import "./entities/zombielance.js";
-import "./entities/spawner.js";
 import "./entities/zombietnt.js";
 
 const AMMO_ITEM = "minecraft:iron_nugget"; // ID de pepitas de hierro

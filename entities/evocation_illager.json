@@ -27,6 +27,34 @@
             "target": "self"
           }
         }
+      },
+      "minecraft:raid_configuration": {
+        "minecraft:dweller": {
+          "dwelling_type": "village",
+          "dweller_role": "hostile",
+          "update_interval_base": 60,
+          "update_interval_variant": 40,
+          "can_find_poi": false,
+          "can_migrate": true,
+          "first_founding_reward": 0
+        },
+        "minecraft:behavior.move_to_village": {
+          "priority": 6,
+          "speed_multiplier": 0.7
+        },
+        "minecraft:ambient_sound_interval": {
+          "value": 2.0,
+          "range": 4.0,
+          "event_name": "ambient.in.raid"
+        }
+      },
+      "minecraft:raid_persistence": {
+        "minecraft:persistent": {}
+      },
+      "minecraft:raid_despawn": {
+        "minecraft:despawn": {
+          "despawn_from_distance": {}
+        }
       }
     },
 
@@ -227,6 +255,7 @@
               "any_of": [
                 { "test": "is_family", "subject": "other", "value": "player" },
                 { "test": "is_family", "subject": "other", "value": "snowgolem" },
+                 { "test": "is_family", "subject": "other", "value": "zombie" },
                 { "test": "is_family", "subject": "other", "value": "irongolem" },
                 { "test": "is_family", "subject": "other", "value": "wandering_trader" }
               ]
@@ -284,6 +313,8 @@
       "minecraft:follow_range": {
         "value": 64
       },
+      "minecraft:can_join_raid": {
+      },
       "minecraft:conditional_bandwidth_optimization": {
       }
     },
@@ -291,17 +322,21 @@
     "events": {
       "minecraft:spawn_for_raid": {
         "add": {
-          "component_groups": []
+          "component_groups": [
+            "minecraft:raid_configuration",
+            "minecraft:raid_despawn",
+            "minecraft:raid_persistence"
+          ]
         }
       },
-      "minecraft:start_celebrating": {
+      "minecraft:start_celebrating": { 
         "sequence": [
           {
             "add": { "component_groups": [ "minecraft:celebrate" ] }
           },
           {
             "filters": { "test": "has_nametag", "value": false },
-            "remove": { "component_groups": [] }
+            "remove": { "component_groups": [ "minecraft:raid_persistence" ] }
           }
         ]
       },
@@ -311,11 +346,8 @@
       "minecraft:raid_expired": {
         "sequence": [
           {
-            "add": { "component_groups": [ "minecraft:celebrate" ] }
-          },
-          {
             "filters": { "test": "has_nametag", "value": false },
-            "remove": { "component_groups": [] }
+            "remove": { "component_groups": [ "minecraft:raid_persistence" ] }
           }
         ]
       }

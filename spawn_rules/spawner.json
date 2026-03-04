@@ -14,15 +14,15 @@
         },
         "minecraft:brightness_filter": {
           "min": 0,
-          "max": 7,
+          "max": 8,
           "adjust_for_weather": true
         },
         "minecraft:weight": {
-          "default": 90
+          "default": 30
         },
         "minecraft:density_limit": {
-          "surface": 6,
-          "underground": 3
+          "surface": 1,
+          "underground": 1
         
         },
         "minecraft:difficulty_filter": {

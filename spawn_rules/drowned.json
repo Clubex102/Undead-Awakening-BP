@@ -22,11 +22,11 @@
         },
 
         "minecraft:weight": {
-          "default": 0
+          "default": 4
         },
 
         "minecraft:density_limit": {
-          "surface": 0
+          "surface": 3
         },
 
         "minecraft:herd": {
