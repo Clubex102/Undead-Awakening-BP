@@ -4,7 +4,7 @@ const SPAWNER_ID          = "udaw:spawner";
 const ZOMBIE_ID           = "udaw:zombiecomun";
 const MAX_ZOMBIES_PER_ZONE = 35;  // Límite por zona de jugador
 const ZONE_RADIUS          = 128; // Radio en bloques para contar zombies "locales"
-const ZOMBIES_PER_SPAWNER  = 3;
+const ZOMBIES_PER_SPAWNER  = 5;   // Cuántos zombies intenta spawnear cada spawner
 
 function dist3D(a, b) {
     const dx = a.x - b.x;

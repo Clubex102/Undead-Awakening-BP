@@ -14,6 +14,7 @@ import "./entities/zombie_miner.js";
 import "./entities/zombiewc.js";
 import "./entities/zombielance.js";
 import "./entities/spawner.js";
+import "./entities/zombietnt.js";
 
 const AMMO_ITEM = "minecraft:iron_nugget"; // ID de pepitas de hierro
 const FIRE_COOLDOWN_TICKS = 20; // Debe coincidir con el cooldown del item en su JSON

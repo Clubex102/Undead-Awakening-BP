@@ -115,7 +115,7 @@ system.runInterval(() => {
             try {
                 // Validación crítica: asegurar que es realmente un zombie_lance
                 if (entity.typeId !== ENTITY_TYPE_ID) continue;
-                
+
                 const id = entity.id;
 
                 // Verificar cooldown
@@ -130,6 +130,14 @@ system.runInterval(() => {
                 const pos  = entity.location;
                 const tPos = target.location;
                 const dir  = normalize2D(tPos.x - pos.x, tPos.z - pos.z);
+
+                // Sonidos de anticipación antes del dash
+                try {
+                    // Gruñido grave de zombie — preparación del ataque
+                    entity.dimension.runCommand(`playsound mob.zombie.hurt @a ${pos.x} ${pos.y} ${pos.z} 1.0 0.6`);
+                    // Whoosh de lanza — levanta el arma
+                    entity.dimension.runCommand(`playsound item.trident.throw @a ${pos.x} ${pos.y} ${pos.z} 1.0 0.7`);
+                } catch (_) {}
 
                 // Reproducir animación de ataque
                 entity.playAnimation("animation.zombielance.attack2");
@@ -155,4 +163,4 @@ system.runInterval(() => {
         }
     }
 
-}, 10); // Revisar cada 10 ticks es suficiente, no necesita ser cada tick
+}, 10);
