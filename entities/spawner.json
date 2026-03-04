@@ -26,31 +26,10 @@
       "startdespawn": {
         "add": {
           "component_groups": ["despawn"]
-        }
-      },
-      "minecraft:entity_spawned": {
-        "sequence": [
-          {
-            "filters": {
-              "test": "",
-              "operator": "==",
-              "value": true
-            },
-            "sequence": [
-              {
-                "queue_command": {
-                  "command": [
-                    "summon udaw:zombiecomun ~~~",
-                    "summon udaw:zombiecomun ~~~",
-                    "summon udaw:zombiecomun ~~~",
-                    "summon udaw:zombiecomun ~~~",
-                    "summon udaw:zombiecomun ~~~"
-                  ]
-                }
-              }
-            ]
+        
+              
+            
           }
-        ]
       }
     }
   }

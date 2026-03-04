@@ -12,30 +12,46 @@ const DIMENSIONS = ["overworld", "nether", "the_end"];
 const BREAKABLE = new Set([
   "minecraft:dirt",
   "minecraft:grass_block",
- "minecraft:oak_log", "minecraft:oak_wood", "minecraft:stripped_oak_log", "minecraft:stripped_oak_wood",
- "minecraft:spruce_log", "minecraft:spruce_wood", "minecraft:stripped_spruce_log", "minecraft:stripped_spruce_wood",
- "minecraft:birch_log", "minecraft:birch_wood", "minecraft:stripped_birch_log", "minecraft:stripped_birch_wood",
- "minecraft:jungle_log", "minecraft:jungle_wood", "minecraft:stripped_jungle_log", "minecraft:stripped_jungle_wood",
- "minecraft:acacia_log", "minecraft:acacia_wood", "minecraft:stripped_acacia_log", "minecraft:stripped_acacia_wood",
- "minecraft:dark_oak_log", "minecraft:dark_oak_wood", "minecraft:stripped_dark_oak_log", "minecraft:stripped_dark_oak_wood",
- "minecraft:mangrove_log", "minecraft:mangrove_wood", "minecraft:stripped_mangrove_log", "minecraft:stripped_mangrove_wood",
- "minecraft:cherry_log", "minecraft:cherry_wood", "minecraft:stripped_cherry_log", "minecraft:stripped_cherry_wood",
- "minecraft:bamboo_block", "minecraft:stripped_bamboo_block",
- "minecraft:crimson_stem", "minecraft:crimson_hyphae", "minecraft:stripped_crimson_stem", "minecraft:stripped_crimson_hyphae",
- "minecraft:warped_stem", "minecraft:warped_hyphae", "minecraft:stripped_warped_stem", "minecraft:stripped_warped_hyphae",
- "minecraft:oak_leaves", "minecraft:spruce_leaves", "minecraft:birch_leaves", "minecraft:jungle_leaves", "minecraft:acacia_leaves",
+  "minecraft:oak_log", "minecraft:oak_wood", "minecraft:stripped_oak_log", "minecraft:stripped_oak_wood",
+  "minecraft:spruce_log", "minecraft:spruce_wood", "minecraft:stripped_spruce_log", "minecraft:stripped_spruce_wood",
+  "minecraft:birch_log", "minecraft:birch_wood", "minecraft:stripped_birch_log", "minecraft:stripped_birch_wood",
+  "minecraft:jungle_log", "minecraft:jungle_wood", "minecraft:stripped_jungle_log", "minecraft:stripped_jungle_wood",
+  "minecraft:acacia_log", "minecraft:acacia_wood", "minecraft:stripped_acacia_log", "minecraft:stripped_acacia_wood",
+  "minecraft:dark_oak_log", "minecraft:dark_oak_wood", "minecraft:stripped_dark_oak_log", "minecraft:stripped_dark_oak_wood",
+  "minecraft:mangrove_log", "minecraft:mangrove_wood", "minecraft:stripped_mangrove_log", "minecraft:stripped_mangrove_wood",
+  "minecraft:cherry_log", "minecraft:cherry_wood", "minecraft:stripped_cherry_log", "minecraft:stripped_cherry_wood",
+  "minecraft:bamboo_block", "minecraft:stripped_bamboo_block",
+  "minecraft:crimson_stem", "minecraft:crimson_hyphae", "minecraft:stripped_crimson_stem", "minecraft:stripped_crimson_hyphae",
+  "minecraft:warped_stem", "minecraft:warped_hyphae", "minecraft:stripped_warped_stem", "minecraft:stripped_warped_hyphae",
+  "minecraft:oak_leaves", "minecraft:spruce_leaves", "minecraft:birch_leaves", "minecraft:jungle_leaves", "minecraft:acacia_leaves",
   "minecraft:dark_oak_leaves", "minecraft:mangrove_leaves", "minecraft:cherry_leaves",
-  "minecraft:oak_slab", "minecraft:spruce_slab", "minecraft:birch_slab", "minecraft:jungle_slab", "minecraft:acacia_slab", "minecraft:dark_oak_slab", 
+  "minecraft:oak_slab", "minecraft:spruce_slab", "minecraft:birch_slab", "minecraft:jungle_slab", "minecraft:acacia_slab", "minecraft:dark_oak_slab",
   "minecraft:mangrove_slab", "minecraft:cherry_slab", "minecraft:bamboo_slab", "minecraft:crimson_slab", "minecraft:warped_slab",
   "minecraft:oak_stairs", "minecraft:spruce_stairs", "minecraft:birch_stairs", "minecraft:jungle_stairs", "minecraft:acacia_stairs", "minecraft:dark_oak_stairs",
-   "minecraft:mangrove_stairs", "minecraft:cherry_stairs", "minecraft:bamboo_stairs", "minecraft:crimson_stairs", "minecraft:warped_stairs",
-   "minecraft:oak_fence", "minecraft:spruce_fence", "minecraft:birch_fence", "minecraft:jungle_fence", "minecraft:acacia_fence", "minecraft:dark_oak_fence", "minecraft:mangrove_fence",
-    "minecraft:cherry_fence", "minecraft:bamboo_fence", "minecraft:crimson_fence", "minecraft:warped_fence",
-    "minecraft:oak_door", "minecraft:spruce_door", "minecraft:birch_door", "minecraft:jungle_door", "minecraft:acacia_door", "minecraft:dark_oak_door", "minecraft:mangrove_door", 
-    "minecraft:cherry_door", "minecraft:bamboo_door", "minecraft:crimson_door", "minecraft:warped_door",
-"minecraft:oak_trapdoor", "minecraft:spruce_trapdoor", "minecraft:birch_trapdoor", "minecraft:jungle_trapdoor", "minecraft:acacia_trapdoor", "minecraft:dark_oak_trapdoor", 
-"minecraft:mangrove_trapdoor", "minecraft:cherry_trapdoor", "minecraft:bamboo_trapdoor", "minecraft:crimson_trapdoor", "minecraft:warped_trapdoor"
+  "minecraft:mangrove_stairs", "minecraft:cherry_stairs", "minecraft:bamboo_stairs", "minecraft:crimson_stairs", "minecraft:warped_stairs",
+  "minecraft:oak_fence", "minecraft:spruce_fence", "minecraft:birch_fence", "minecraft:jungle_fence", "minecraft:acacia_fence", "minecraft:dark_oak_fence", "minecraft:mangrove_fence",
+  "minecraft:cherry_fence", "minecraft:bamboo_fence", "minecraft:crimson_fence", "minecraft:warped_fence",
+  "minecraft:oak_door", "minecraft:spruce_door", "minecraft:birch_door", "minecraft:jungle_door", "minecraft:acacia_door", "minecraft:dark_oak_door", "minecraft:mangrove_door",
+  "minecraft:cherry_door", "minecraft:bamboo_door", "minecraft:crimson_door", "minecraft:warped_door",
+  "minecraft:oak_trapdoor", "minecraft:spruce_trapdoor", "minecraft:birch_trapdoor", "minecraft:jungle_trapdoor", "minecraft:acacia_trapdoor", "minecraft:dark_oak_trapdoor",
+  "minecraft:mangrove_trapdoor", "minecraft:cherry_trapdoor", "minecraft:bamboo_trapdoor", "minecraft:crimson_trapdoor", "minecraft:warped_trapdoor"
 ]);
+
+/* ================= SONIDO ================= */
+
+const LEAF_BLOCKS = new Set([
+  "minecraft:oak_leaves", "minecraft:spruce_leaves", "minecraft:birch_leaves",
+  "minecraft:jungle_leaves", "minecraft:acacia_leaves", "minecraft:dark_oak_leaves",
+  "minecraft:mangrove_leaves", "minecraft:cherry_leaves"
+]);
+
+function playBreakSound(dimension, blockTypeId, pos) {
+  // Hojas suenan diferente a madera
+  const sound = LEAF_BLOCKS.has(blockTypeId) ? "dig.grass" : "dig.wood";
+  try {
+    dimension.runCommand(`playsound ${sound} @a ${pos.x} ${pos.y} ${pos.z} 1.0 1.0`);
+  } catch (_) {}
+}
 
 /* ================= RAYCAST ================= */
 
@@ -70,12 +86,7 @@ function getLookBlock(entity) {
 
       const block = dim.getBlock(pos);
       if (block && block.typeId !== "minecraft:air") {
-        // ⛔ Si está demasiado lejos, ignorar
-        if (d > MAX_MINE_DISTANCE) {
-          
-          return null;
-        }
-
+        if (d > MAX_MINE_DISTANCE) return null;
         return { block, pos };
       }
     }
@@ -84,9 +95,7 @@ function getLookBlock(entity) {
   return null;
 }
 
-
-
-/* ================= OFFSETS 2×2 ================= */
+/* ================= OFFSETS 2x2 ================= */
 
 function get2x2Offsets(entity) {
   const dir = entity.getViewDirection();
@@ -108,7 +117,7 @@ function get2x2Offsets(entity) {
   }
 }
 
-/* ================= 2×2 FLEXIBLE ================= */
+/* ================= 2x2 FLEXIBLE ================= */
 
 function getMineable2x2(dimension, basePos, offsets) {
   const blocks = [];
@@ -122,16 +131,11 @@ function getMineable2x2(dimension, basePos, offsets) {
 
     const block = dimension.getBlock(pos);
     if (block && BREAKABLE.has(block.typeId)) {
-      blocks.push(pos);
+      blocks.push({ pos, typeId: block.typeId });
     }
   }
 
-  if (blocks.length === 0) {
-
-    return null;
-  }
-
-
+  if (blocks.length === 0) return null;
   return blocks;
 }
 
@@ -159,7 +163,6 @@ system.runInterval(() => {
       }
 
       const start = zombie.getDynamicProperty("mineStart");
-
       if (tick - start < BREAK_TIME) continue;
 
       const offsets = get2x2Offsets(zombie);
@@ -171,11 +174,10 @@ system.runInterval(() => {
         continue;
       }
 
-      for (const p of blocks) {
-        dimension.setBlockType(p, "minecraft:air");
+      for (const { pos, typeId } of blocks) {
+        playBreakSound(dimension, typeId, pos);
+        dimension.setBlockType(pos, "minecraft:air");
       }
-
-
 
       zombie.setDynamicProperty("mineStart", null);
       zombie.setDynamicProperty("minePos", null);

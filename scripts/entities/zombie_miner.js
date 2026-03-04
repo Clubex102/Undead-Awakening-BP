@@ -15,35 +15,49 @@ const BREAKABLE = new Set([
   "minecraft:sand",
   "minecraft:gravel",
   "minecraft:stone",
-"minecraft:coal_ore",
-"minecraft:iron_ore",
-"minecraft:gold_ore",
-"minecraft:diamond_ore",
-"minecraft:emerald_ore",
-"minecraft:redstone_ore",
-"minecraft:lapis_ore",
-"minecraft:copper_ore",
-"minecraft:netherrack",
-"minecraft:nether_gold_ore",
-"minecraft:nether_quartz_ore",
-"minecraft:cobblestone",
-"minecraft:deepslate",
-"minecraft:deepslate_coal_ore",
-"minecraft:deepslate_iron_ore",
-"minecraft:deepslate_gold_ore",
-"minecraft:deepslate_diamond_ore",
-"minecraft:deepslate_emerald_ore",
-"minecraft:deepslate_redstone_ore",
-"minecraft:deepslate_lapis_ore",
-"minecraft:deepslate_copper_ore",
-"minecraft:andesite",
-"minecraft:diorite",
-"minecraft:granite",
-"minecraft:tuff",
-"minecraft:calcite",
-"minecraft:dripstone_block",
-"minecraft:basalt"
+  "minecraft:coal_ore",
+  "minecraft:iron_ore",
+  "minecraft:gold_ore",
+  "minecraft:diamond_ore",
+  "minecraft:emerald_ore",
+  "minecraft:redstone_ore",
+  "minecraft:lapis_ore",
+  "minecraft:copper_ore",
+  "minecraft:netherrack",
+  "minecraft:nether_gold_ore",
+  "minecraft:nether_quartz_ore",
+  "minecraft:cobblestone",
+  "minecraft:deepslate",
+  "minecraft:deepslate_coal_ore",
+  "minecraft:deepslate_iron_ore",
+  "minecraft:deepslate_gold_ore",
+  "minecraft:deepslate_diamond_ore",
+  "minecraft:deepslate_emerald_ore",
+  "minecraft:deepslate_redstone_ore",
+  "minecraft:deepslate_lapis_ore",
+  "minecraft:deepslate_copper_ore",
+  "minecraft:andesite",
+  "minecraft:diorite",
+  "minecraft:granite",
+  "minecraft:tuff",
+  "minecraft:calcite",
+  "minecraft:dripstone_block",
+  "minecraft:basalt"
 ]);
+
+/* ================= SONIDO ================= */
+
+const DIRT_BLOCKS = new Set([
+  "minecraft:dirt", "minecraft:grass_block",
+  "minecraft:sand", "minecraft:gravel"
+]);
+
+function playBreakSound(dimension, blockTypeId, pos) {
+  const sound = DIRT_BLOCKS.has(blockTypeId) ? "dig.gravel" : "dig.stone";
+  try {
+    dimension.runCommand(`playsound ${sound} @a ${pos.x} ${pos.y} ${pos.z} 1.0 1.0`);
+  } catch (_) {}
+}
 
 /* ================= RAYCAST ================= */
 
@@ -78,12 +92,7 @@ function getLookBlock(entity) {
 
       const block = dim.getBlock(pos);
       if (block && block.typeId !== "minecraft:air") {
-        // ⛔ Si está demasiado lejos, ignorar
-        if (d > MAX_MINE_DISTANCE) {
-          
-          return null;
-        }
-
+        if (d > MAX_MINE_DISTANCE) return null;
         return { block, pos };
       }
     }
@@ -91,8 +100,6 @@ function getLookBlock(entity) {
 
   return null;
 }
-
-
 
 /* ================= OFFSETS 2×2 ================= */
 
@@ -130,16 +137,11 @@ function getMineable2x2(dimension, basePos, offsets) {
 
     const block = dimension.getBlock(pos);
     if (block && BREAKABLE.has(block.typeId)) {
-      blocks.push(pos);
+      blocks.push({ pos, typeId: block.typeId });
     }
   }
 
-  if (blocks.length === 0) {
-
-    return null;
-  }
-
-
+  if (blocks.length === 0) return null;
   return blocks;
 }
 
@@ -167,7 +169,6 @@ system.runInterval(() => {
       }
 
       const start = zombie.getDynamicProperty("mineStart");
-
       if (tick - start < BREAK_TIME) continue;
 
       const offsets = get2x2Offsets(zombie);
@@ -179,11 +180,11 @@ system.runInterval(() => {
         continue;
       }
 
-      for (const p of blocks) {
-        dimension.setBlockType(p, "minecraft:air");
+      for (const { pos, typeId } of blocks) {
+        // Sonido de rotura antes de eliminar el bloque
+        playBreakSound(dimension, typeId, pos);
+        dimension.setBlockType(pos, "minecraft:air");
       }
-
-
 
       zombie.setDynamicProperty("mineStart", null);
       zombie.setDynamicProperty("minePos", null);
