@@ -2,7 +2,7 @@ import { world, system } from "@minecraft/server";
 
 const SPAWNER_ID          = "udaw:spawner";
 const ZOMBIE_ID           = "udaw:zombiecomun";
-const MAX_ZOMBIES_PER_ZONE = 35;  // Límite por zona de jugador
+const MAX_ZOMBIES_PER_ZONE = 25;  // Límite por zona de jugador
 const ZONE_RADIUS          = 128; // Radio en bloques para contar zombies "locales"
 const ZOMBIES_PER_SPAWNER  = 3;
 
