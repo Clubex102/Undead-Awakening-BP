@@ -191,7 +191,7 @@
         "max_turn": 30
       },
       "minecraft:loot": {
-        "table": "loot_tables/entities/zombie_comun.json"
+        "table": "loot_tables/entities/zombiewc.json"
       },
       "minecraft:experience_reward": {
         "on_death": "query.last_hit_by_player ? Math.Random(3,5) : 0"

@@ -81,7 +81,7 @@
                 "must_see": false,
                 "must_see_forget_duration": 30,
                 "reselect_targets": true,
-                "within_radius": 30,
+                "within_radius": 100,
                 "entity_types": [
                     {
                         "filters": {
@@ -118,7 +118,7 @@
                                 }
                             ]
                         },
-                        "max_dist": 30
+                        "max_dist": 60
                     }
                 ]
             },
@@ -130,7 +130,7 @@
                 "is_pushable_by_piston": true
             },
             "minecraft:collision_box": {
-                "height": 2,
+                "height": 1.8,
                 "width": 0.5
             
             },
@@ -195,7 +195,7 @@
                 "max_turn": 30
             },
             "minecraft:loot": {
-                "table": "loot_tables/entities/zombie_comun.json"
+                "table": "loot_tables/entities/zombieminer.json"
             },
             "minecraft:experience_reward": {
                 "on_death": "query.last_hit_by_player ? Math.Random(3,5) : 0"
