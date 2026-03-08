@@ -50,6 +50,11 @@
                     {}
                 ]
             },
+    "minecraft:ambient_sound_interval": {
+    "event_name": "ambient",
+    "range": 16,
+    "value": 8
+        }, 
             "minecraft:despawn": {
                 "despawn_from_chance": true,
                 "despawn_from_distance": {
@@ -67,7 +72,7 @@
                 "max": 20
             },
             "minecraft:movement": {
-                "value": 0.3
+                "value": 0.25
             },
             "minecraft:jump.static": {
                 "jump_power": 0.42
@@ -112,7 +117,7 @@
                                 }
                             ]
                         },
-                        "max_dist": 30
+                        "max_dist": 100
                     }
                 ]
             },

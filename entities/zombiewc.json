@@ -166,6 +166,11 @@
         "outside_range": 130
 
       },
+    "minecraft:ambient_sound_interval": {
+    "event_name": "ambient",
+    "range": 16,
+    "value": 8
+        }, 
       "minecraft:navigation.walk": {
         "avoid_damage_blocks": true,
         "avoid_portals": true,

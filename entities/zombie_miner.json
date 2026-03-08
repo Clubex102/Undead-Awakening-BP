@@ -118,7 +118,7 @@
                                 }
                             ]
                         },
-                        "max_dist": 60
+                        "max_dist": 100
                     }
                 ]
             },
@@ -139,7 +139,7 @@
             ]
             },
             "minecraft:behavior.melee_attack": {
-                "melee_fov": 90,
+                "melee_fov": 360,
                 "track_target": true,
                 "attack_types": "melee",
                 "random_stop_interval": 0,
@@ -190,6 +190,11 @@
                 "can_walk_in_lava": false,
                 "is_amphibious": false
             },
+    "minecraft:ambient_sound_interval": {
+    "event_name": "ambient",
+    "range": 16,
+    "value": 8
+        }, 
             
             "minecraft:movement.basic": {
                 "max_turn": 30

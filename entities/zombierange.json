@@ -69,7 +69,7 @@
                 "max": 20
             },
             "minecraft:behavior.move_towards_target": {
-                "within_radius": 30,
+                "within_radius": 10,
                 "priority": 1
             },
             
@@ -95,6 +95,11 @@
             "minecraft:behavior.random_stroll": {
                 "priority": 6
             },
+    "minecraft:ambient_sound_interval": {
+    "event_name": "ambient",
+    "range": 16,
+    "value": 8
+        }, 
 
             "minecraft:behavior.look_at_target": {
                 "look_distance": 6,
@@ -120,7 +125,7 @@
                                 { "test": "is_family", "value": "witch", "subject": "other" }
                             ]
                         },
-                        "max_dist": 25
+                        "max_dist": 100
                     }
                 ]
             },

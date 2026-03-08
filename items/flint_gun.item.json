@@ -25,21 +25,25 @@
                 },
                 "max_durability": 200
             },
+            "minecraft:use_modifiers": {
+                "use_duration": 9999,
+                "movement_modifier": 1
+            },
             "minecraft:repairable": {
                 "repair_items": [
                     {
                         "items": [
                             "minecraft:iron_ingot"
                         ],
-                        "repair_amount": "math.min(q.remaining_durability + c.other->q.remaining_durability + math.floor(q.max_durability /20), c.other->q.max_durability)"
+                        "repair_amount": "query.max_durability * 0.25"
                     }
                 ]
             },
-            "minecraft:use_animation": "bow",
-            "minecraft:use_modifiers": {
-                "use_duration": 99999,
-                "movement_modifier": 0.35
+            "minecraft:enchantable": {
+                "slot": "sword",
+                "value": 1
             },
+            "minecraft:use_animation": "crossbow",
             "minecraft:cooldown": {
                 "category": "weapon",
                 "duration": 5

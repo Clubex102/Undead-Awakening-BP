@@ -631,7 +631,7 @@
                 { "test": "in_water", "subject": "other", "operator": "!=", "value": true }
               ]
             },
-            "max_dist": 35
+            "max_dist": 100
           }
         ]
       },

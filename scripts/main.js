@@ -47,12 +47,6 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
                 return;
             }
 
-            // 10% de probabilidad de atasco — antes de consumir munición o disparar
-            if (Math.random() < 0.10) {
-                source.sendMessage("§eThe weapon is jammed.");
-                return;
-            }
-
             // Consumir 1 pepita de hierro
             for (let i = 0; i < inventory.size; i++) {
                 const slot = inventory.getItem(i);

@@ -39,8 +39,7 @@
                 "multiple_targets": true,
                 "power": 3,
                 "shoot_target": true,
-                "should_bounce": false,
-                "particle": "udaw:basic_flame_particle"
+                "should_bounce": false
             }
         }
     }
