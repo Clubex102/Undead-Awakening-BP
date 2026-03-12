@@ -14,22 +14,84 @@ import "./entities/zombie_miner.js";
 import "./entities/zombiewc.js";
 import "./entities/zombielance.js";
 import "./entities/zombietnt.js";
+import "./swordslash.js";
+import "./cannon.js";
 
-const AMMO_ITEM = "minecraft:iron_nugget"; // ID de pepitas de hierro
-const FIRE_COOLDOWN_TICKS = 20; // Debe coincidir con el cooldown del item en su JSON
 
-// Set de jugadores que están en cooldown — evita el loop al mantener presionado
+
+const AMMO_ITEM = "minecraft:iron_nugget";
+const FIRE_COOLDOWN_TICKS = 20;
+const WEAPON_COOLDOWN_DISPLAY = 100;
+
 const firingCooldown = new Set();
+const cooldownDisplays = new Map();
+
+/* ================= CONTAR MUNICIÓN ================= */
+
+function countAmmo(player) {
+    const inventory = player.getComponent("inventory").container;
+    let total = 0;
+    for (let i = 0; i < inventory.size; i++) {
+        const slot = inventory.getItem(i);
+        if (slot && slot.typeId === AMMO_ITEM) total += slot.amount;
+    }
+    return total;
+}
+
+/* ================= ACTIONBAR ================= */
+
+function startCooldownDisplay(player, readyAtTick) {
+    const id = player.id;
+
+    if (cooldownDisplays.has(id)) {
+        system.clearRun(cooldownDisplays.get(id));
+    }
+
+    const loopId = system.runInterval(() => {
+        const remaining = readyAtTick - system.currentTick;
+        const ammo      = countAmmo(player);
+        const ammoText  = ammo > 0 ? `§e⬡ ${ammo}` : `§c⬡ 0`;
+
+        if (remaining <= 0) {
+            try {
+                player.onScreenDisplay.setActionBar(`§aFlintlock §a✦✦✦✦✦ §aListo  ${ammoText}`);
+            } catch (_) {}
+            system.clearRun(cooldownDisplays.get(id));
+            cooldownDisplays.delete(id);
+            return;
+        }
+
+        const progress = Math.max(0, remaining / WEAPON_COOLDOWN_DISPLAY);
+        const filled   = Math.round(progress * 5);
+        const empty    = 5 - filled;
+        const bar      = "§c" + "✦".repeat(filled) + "§7" + "✦".repeat(empty);
+        const seconds  = (remaining / 20).toFixed(1);
+
+        try {
+            player.onScreenDisplay.setActionBar(`§eFlintlock ${bar} §7${seconds}s  ${ammoText}`);
+        } catch (_) {}
+    }, 2);
+
+    cooldownDisplays.set(id, loopId);
+}
+
+function showAmmoOnly(player) {
+    const ammo     = countAmmo(player);
+    const ammoText = ammo > 0 ? `§e⬡ ${ammo}` : `§c⬡ 0`;
+    try {
+        player.onScreenDisplay.setActionBar(`§aFlintlock §a✦✦✦✦✦ §aListo  ${ammoText}`);
+    } catch (_) {}
+}
+
+/* ================= COMPONENTE DEL ARMA ================= */
 
 system.beforeEvents.startup.subscribe((startupEvent) => {
     startupEvent.itemComponentRegistry.registerCustomComponent("udaw:weapon", {
         onUse(event) {
             const { itemStack, source } = event;
 
-            // Salir si este jugador ya disparó y sigue en cooldown
             if (firingCooldown.has(source.id)) return;
 
-            // Buscar pepitas de hierro en cualquier slot del inventario
             const inventory = source.getComponent("inventory").container;
             let hasAmmo = false;
 
@@ -41,13 +103,12 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
                 }
             }
 
-            // Sin munición: mensaje solo visible para ese jugador, nada más
             if (!hasAmmo) {
                 source.sendMessage("§cI haven't ammo.");
+                showAmmoOnly(source);
                 return;
             }
 
-            // Consumir 1 pepita de hierro
             for (let i = 0; i < inventory.size; i++) {
                 const slot = inventory.getItem(i);
                 if (slot && slot.typeId === AMMO_ITEM) {
@@ -55,22 +116,19 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
                         slot.amount -= 1;
                         inventory.setItem(i, slot);
                     } else {
-                        inventory.setItem(i, undefined); // Eliminar el stack vacío
+                        inventory.setItem(i, undefined);
                     }
                     break;
                 }
             }
 
-            // Restar 1 de durabilidad al arma
             const durability = itemStack.getComponent("durability");
             if (durability) {
                 durability.damage = Math.min(durability.damage + 1, durability.maxDurability);
-                // Actualizar el item en la mano del jugador
                 const heldSlot = source.getComponent("equippable");
                 heldSlot.setEquipment("Mainhand", itemStack);
             }
 
-            // Partículas de disparo en la boca del cañón
             const rot = source.getRotation();
             const rad = (rot.y * Math.PI) / 180;
             const muzzlePos = {
@@ -78,34 +136,29 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
                 y: source.location.y + 1.4,
                 z: source.location.z + (Math.cos(rad) * 0.8),
             };
-            // Nube de humo densa — efecto de pólvora quemada
             source.dimension.spawnParticle("minecraft:large_explosion", muzzlePos);
             source.dimension.spawnParticle("minecraft:large_explosion", muzzlePos);
             source.dimension.spawnParticle("minecraft:large_explosion", muzzlePos);
-             source.dimension.spawnParticle("minecraft:campfire_smoke_particle", muzzlePos);
-             source.dimension.spawnParticle("minecraft:campfire_smoke_particle", muzzlePos);
-             source.dimension.spawnParticle("minecraft:campfire_smoke_particle", muzzlePos);
-             source.dimension.spawnParticle("minecraft:campfire_smoke_particle", muzzlePos);
-                source.dimension.spawnParticle("minecraft:campfire_smoke_particle", muzzlePos);
-            // Chispa/llama — fogonazo del cañón
+            source.dimension.spawnParticle("minecraft:campfire_smoke_particle", muzzlePos);
+            source.dimension.spawnParticle("minecraft:campfire_smoke_particle", muzzlePos);
+            source.dimension.spawnParticle("minecraft:campfire_smoke_particle", muzzlePos);
+            source.dimension.spawnParticle("minecraft:campfire_smoke_particle", muzzlePos);
+            source.dimension.spawnParticle("minecraft:campfire_smoke_particle", muzzlePos);
             source.dimension.spawnParticle("minecraft:basic_flame_particle", muzzlePos);
             source.dimension.spawnParticle("minecraft:basic_flame_particle", muzzlePos);
             source.dimension.spawnParticle("minecraft:basic_flame_particle", muzzlePos);
             source.dimension.spawnParticle("minecraft:basic_flame_particle", muzzlePos);
             source.dimension.spawnParticle("minecraft:basic_flame_particle", muzzlePos);
-            // Humo blanco que sube y se disipa — vapor de pólvora residual
             source.dimension.spawnParticle("minecraft:evaporation_manual", muzzlePos);
-            
-            
 
-            // Camera shake ligero para simular retroceso
             source.runCommand("camerashake add @s 0.5 0.15 rotational");
 
-            // Registrar cooldown manual — se limpia automáticamente tras FIRE_COOLDOWN_TICKS
             firingCooldown.add(source.id);
             system.runTimeout(() => firingCooldown.delete(source.id), FIRE_COOLDOWN_TICKS);
 
-            // Disparo normal
+            const readyAt = system.currentTick + WEAPON_COOLDOWN_DISPLAY;
+            startCooldownDisplay(source, readyAt);
+
             shootCommon(source, "udaw:bullet", 1, 1);
             itemStack.getComponent("cooldown").startCooldown(source);
         }

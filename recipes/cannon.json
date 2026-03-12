@@ -1,0 +1,35 @@
+{
+    "format_version": "1.21.10",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "udaw:cannon"
+        },
+        "unlock": [
+            {
+                "item": "minecraft:iron_ingot"
+            }
+        ],
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern": [
+            "HHB",
+            "PPP"
+        ],
+        "key": {
+            "H": {
+                "item": "minecraft:iron_ingot"
+            },
+            "P": {
+                "item": "minecraft:planks"
+            },
+            "B": {
+                "item": "minecraft:iron_block"
+            }
+        },
+        "result": {
+            "item": "udaw:cannon",
+            "count": 1
+        }
+    }
+}
