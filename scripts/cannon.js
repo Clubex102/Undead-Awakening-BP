@@ -6,7 +6,7 @@ const AMMO_COST        = 10;
 const BULLET_ID        = "udaw:cannonbullet";
 const FLINT_STEEL      = "minecraft:flint_and_steel";
 const FIRE_CHARGE      = "minecraft:fire_charge";
-const ACTIONBAR_RADIUS = 2;
+const ACTIONBAR_RADIUS = 5;
 
 const cannonStates  = new Map();
 const interactLock  = new Set(); // evita ejecucion doble por tick
@@ -51,7 +51,7 @@ function getMuzzlePos(blockPos, facing) {
 // Patron abanico horizontal: 10 balas en angulos fijos en el plano XZ
 function getFanOffsets(dir) {
     // Angulos en grados desde el centro: -20, -15, -10, -5, 0, 0, 5, 10, 15, 20
-    const angles = [-20, -15, -10, -5, 0, 0, 5, 10, 15, 20];
+    const angles = [-15, -10, -5, -5, 0, 0, 5, 5, 10, 15];
     return angles.map(deg => {
         const rad = (deg * Math.PI) / 180;
         const cos = Math.cos(rad);
@@ -72,7 +72,7 @@ function fireCannon(player, blockPos, facing) {
     const offsets = getFanOffsets(dir);
 
     try {
-        dim.runCommand(`playsound cannonshoot @a ${muzzle.x} ${muzzle.y} ${muzzle.z} 2.0 1.0`);
+        dim.runCommand(`playsound random.explode @a ${muzzle.x} ${muzzle.y} ${muzzle.z} 2.0 1.0`);
     } catch (_) {}
 
     try {
@@ -182,6 +182,19 @@ world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
             }
             consumeAmmo(player);
             setState(pos, "loaded");
+
+            // Sonido de carga
+            try {
+                const p = { x: pos.x + 0.5, y: pos.y + 0.5, z: pos.z + 0.5 };
+                player.dimension.runCommand(`playsound random.pop @a ${p.x} ${p.y} ${p.z} 1.0 0.8`);
+            } catch (_) {}
+
+            // Particulas verdes tipo hueso
+            try {
+                const p = { x: pos.x + 0.5, y: pos.y + 0.8, z: pos.z + 0.5 };
+                for (let i = 0; i < 3; i++) player.dimension.spawnParticle("minecraft:crop_growth_emitter", p);
+            } catch (_) {}
+
             player.onScreenDisplay.setActionBar("§aCannon — Loaded and ready! §7(use flint & steel to fire)");
             return;
         }

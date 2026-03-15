@@ -14,7 +14,6 @@ import "./entities/zombie_miner.js";
 import "./entities/zombiewc.js";
 import "./entities/zombielance.js";
 import "./entities/zombietnt.js";
-import "./swordslash.js";
 import "./cannon.js";
 
 
