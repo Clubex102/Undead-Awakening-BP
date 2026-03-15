@@ -6,7 +6,7 @@ const AMMO_COST        = 10;
 const BULLET_ID        = "udaw:cannonbullet";
 const FLINT_STEEL      = "minecraft:flint_and_steel";
 const FIRE_CHARGE      = "minecraft:fire_charge";
-const ACTIONBAR_RADIUS = 5;
+const ACTIONBAR_RADIUS = 2;
 
 const cannonStates  = new Map();
 const interactLock  = new Set(); // evita ejecucion doble por tick
@@ -72,7 +72,7 @@ function fireCannon(player, blockPos, facing) {
     const offsets = getFanOffsets(dir);
 
     try {
-        dim.runCommand(`playsound random.explode @a ${muzzle.x} ${muzzle.y} ${muzzle.z} 2.0 1.0`);
+        dim.runCommand(`playsound cannonshoot @a ${muzzle.x} ${muzzle.y} ${muzzle.z} 2.0 1.0`);
     } catch (_) {}
 
     try {
