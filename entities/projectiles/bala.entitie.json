@@ -46,7 +46,6 @@
                     }
                 },
                 "is_dangerous": true,
-                "shoot_sound": "flintlockshoot",
                 "multiple_targets": true,
                 "power": 3,
                 "shoot_target": true,

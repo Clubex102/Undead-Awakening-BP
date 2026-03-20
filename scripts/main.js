@@ -15,6 +15,7 @@ import "./entities/zombiewc.js";
 import "./entities/zombielance.js";
 import "./entities/zombietnt.js";
 import "./cannon.js";
+import "./entities/pillager.js";
 
 
 
@@ -150,6 +151,7 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
             source.dimension.spawnParticle("minecraft:basic_flame_particle", muzzlePos);
             source.dimension.spawnParticle("minecraft:evaporation_manual", muzzlePos);
 
+            source.dimension.runCommand(`playsound flintlockshoot @a[r=20] ${muzzlePos.x} ${muzzlePos.y} ${muzzlePos.z} 1.0 1.0`);
             source.runCommand("camerashake add @s 0.5 0.15 rotational");
 
             firingCooldown.add(source.id);
