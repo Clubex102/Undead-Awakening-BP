@@ -2,192 +2,207 @@ import { world, system } from "@minecraft/server";
 
 /* ================= CONFIG ================= */
 
-const BREAK_TIME = 40;
-const MAX_DISTANCE = 4.0;
+const BREAK_TIME      = 40;
+const MAX_DISTANCE    = 4.0;
 const MAX_MINE_DISTANCE = 1.4;
-const STEP = 0.15;
+const STEP            = 0.15;
+const DIMENSIONS      = ["overworld", "nether", "the_end"];
 
-const DIMENSIONS = ["overworld", "nether", "the_end"];
+/* ================= FILTRO DE BLOQUES ================= */
 
-const BREAKABLE = new Set([
-  "minecraft:dirt",
-  "minecraft:grass_block",
-  "minecraft:sand",
-  "minecraft:gravel",
-  "minecraft:stone",
-  "minecraft:coal_ore",
-  "minecraft:iron_ore",
-  "minecraft:gold_ore",
-  "minecraft:diamond_ore",
-  "minecraft:emerald_ore",
-  "minecraft:redstone_ore",
-  "minecraft:lapis_ore",
-  "minecraft:copper_ore",
-  "minecraft:netherrack",
-  "minecraft:nether_gold_ore",
-  "minecraft:nether_quartz_ore",
-  "minecraft:cobblestone",
-  "minecraft:deepslate",
-  "minecraft:deepslate_coal_ore",
-  "minecraft:deepslate_iron_ore",
-  "minecraft:deepslate_gold_ore",
-  "minecraft:deepslate_diamond_ore",
-  "minecraft:deepslate_emerald_ore",
-  "minecraft:deepslate_redstone_ore",
-  "minecraft:deepslate_lapis_ore",
-  "minecraft:deepslate_copper_ore",
-  "minecraft:andesite",
-  "minecraft:diorite",
-  "minecraft:granite",
-  "minecraft:tuff",
-  "minecraft:calcite",
-  "minecraft:dripstone_block",
-  "minecraft:basalt"
+const EXCLUDE_CONTAINS = [
+    "_bricks",
+    "_brick",
+    "polished_",
+    "_polished",
+    "chiseled_",
+    "_chiseled",
+    "_block",
+    "terracotta",
+    "mud_brick",
+    "hardened_clay"
+];
+
+const EXCLUDE_EXACT = new Set([
+    "minecraft:brick_block",
+    "minecraft:nether_brick",
+    "minecraft:red_nether_brick",
+    "minecraft:clay",
+    "minecraft:packed_mud"
 ]);
+
+const EXTRA_MINEABLE = new Set([
+    "minecraft:dirt",
+    "minecraft:grass_block",
+    "minecraft:mycelium",
+    "minecraft:podzol",
+    "minecraft:dirt_with_roots",
+    "minecraft:farmland",
+    "minecraft:gravel",
+    "minecraft:sand",
+    "minecraft:red_sand",
+    "minecraft:soul_sand",
+    "minecraft:soul_soil"
+]);
+
+function isMineable(block) {
+    const id = block.typeId;
+
+    if (EXTRA_MINEABLE.has(id)) return true;
+    if (EXCLUDE_EXACT.has(id)) return false;
+
+    for (const fragment of EXCLUDE_CONTAINS) {
+        if (id.includes(fragment)) return false;
+    }
+
+    return block.hasTag("stone")              ||
+           block.hasTag("metal")              ||
+           block.hasTag("diamond_pick_diggable") ||
+           block.hasTag("iron_pick_diggable");
+}
 
 /* ================= SONIDO ================= */
 
-const DIRT_BLOCKS = new Set([
-  "minecraft:dirt", "minecraft:grass_block",
-  "minecraft:sand", "minecraft:gravel"
+const DIRT_IDS = new Set([
+    "minecraft:dirt", "minecraft:grass_block",
+    "minecraft:sand", "minecraft:gravel"
 ]);
 
 function playBreakSound(dimension, blockTypeId, pos) {
-  const sound = DIRT_BLOCKS.has(blockTypeId) ? "dig.gravel" : "dig.stone";
-  try {
-    dimension.runCommand(`playsound ${sound} @a ${pos.x} ${pos.y} ${pos.z} 1.0 1.0`);
-  } catch (_) {}
+    const sound = DIRT_IDS.has(blockTypeId) ? "dig.gravel" : "dig.stone";
+    try {
+        dimension.runCommand(`playsound ${sound} @a ${pos.x} ${pos.y} ${pos.z} 1.0 1.0`);
+    } catch (_) {}
 }
 
 /* ================= RAYCAST ================= */
 
 function getLookBlock(entity) {
-  const dir = entity.getViewDirection();
-  const origin = entity.getHeadLocation();
-  const dim = entity.dimension;
+    const dir    = entity.getViewDirection();
+    const origin = entity.getHeadLocation();
+    const dim    = entity.dimension;
 
-  const CHECK_OFFSETS = [
-    { x: 0, y: 0, z: 0 },
-    { x: 1, y: 0, z: 0 },
-    { x: -1, y: 0, z: 0 },
-    { x: 0, y: 0, z: 1 },
-    { x: 0, y: 0, z: -1 },
-    { x: 0, y: 1, z: 0 },
-    { x: 0, y: -1, z: 0 }
-  ];
+    const CHECK_OFFSETS = [
+        { x: 0, y: 0, z: 0 },
+        { x: 1, y: 0, z: 0 },
+        { x: -1, y: 0, z: 0 },
+        { x: 0, y: 0, z: 1 },
+        { x: 0, y: 0, z: -1 },
+        { x: 0, y: 1, z: 0 },
+        { x: 0, y: -1, z: 0 }
+    ];
 
-  for (let d = 0.5; d <= MAX_DISTANCE; d += STEP) {
-    const basePos = {
-      x: Math.floor(origin.x + dir.x * d),
-      y: Math.floor(origin.y + dir.y * d),
-      z: Math.floor(origin.z + dir.z * d)
-    };
+    for (let d = 0.5; d <= MAX_DISTANCE; d += STEP) {
+        const basePos = {
+            x: Math.floor(origin.x + dir.x * d),
+            y: Math.floor(origin.y + dir.y * d),
+            z: Math.floor(origin.z + dir.z * d)
+        };
 
-    for (const o of CHECK_OFFSETS) {
-      const pos = {
-        x: basePos.x + o.x,
-        y: basePos.y + o.y,
-        z: basePos.z + o.z
-      };
+        for (const o of CHECK_OFFSETS) {
+            const pos = {
+                x: basePos.x + o.x,
+                y: basePos.y + o.y,
+                z: basePos.z + o.z
+            };
 
-      const block = dim.getBlock(pos);
-      if (block && block.typeId !== "minecraft:air") {
-        if (d > MAX_MINE_DISTANCE) return null;
-        return { block, pos };
-      }
+            const block = dim.getBlock(pos);
+            if (block && block.typeId !== "minecraft:air") {
+                if (d > MAX_MINE_DISTANCE) return null;
+                return { block, pos };
+            }
+        }
     }
-  }
 
-  return null;
+    return null;
 }
 
 /* ================= OFFSETS 2×2 ================= */
 
 function get2x2Offsets(entity) {
-  const dir = entity.getViewDirection();
+    const dir = entity.getViewDirection();
 
-  if (Math.abs(dir.x) > Math.abs(dir.z)) {
-    return [
-      { x: 0, y: 0, z: 0 },
-      { x: 0, y: 1, z: 0 },
-      { x: 0, y: 0, z: 1 },
-      { x: 0, y: 1, z: 1 }
-    ];
-  } else {
-    return [
-      { x: 0, y: 0, z: 0 },
-      { x: 1, y: 0, z: 0 },
-      { x: 0, y: 1, z: 0 },
-      { x: 1, y: 1, z: 0 }
-    ];
-  }
+    if (Math.abs(dir.x) > Math.abs(dir.z)) {
+        return [
+            { x: 0, y: 0, z: 0 },
+            { x: 0, y: 1, z: 0 },
+            { x: 0, y: 0, z: 1 },
+            { x: 0, y: 1, z: 1 }
+        ];
+    } else {
+        return [
+            { x: 0, y: 0, z: 0 },
+            { x: 1, y: 0, z: 0 },
+            { x: 0, y: 1, z: 0 },
+            { x: 1, y: 1, z: 0 }
+        ];
+    }
 }
 
-/* ================= 2×2 FLEXIBLE ================= */
+/* ================= 2×2 MINEABLE ================= */
 
 function getMineable2x2(dimension, basePos, offsets) {
-  const blocks = [];
+    const blocks = [];
 
-  for (const o of offsets) {
-    const pos = {
-      x: basePos.x + o.x,
-      y: basePos.y + o.y,
-      z: basePos.z + o.z
-    };
+    for (const o of offsets) {
+        const pos = {
+            x: basePos.x + o.x,
+            y: basePos.y + o.y,
+            z: basePos.z + o.z
+        };
 
-    const block = dimension.getBlock(pos);
-    if (block && BREAKABLE.has(block.typeId)) {
-      blocks.push({ pos, typeId: block.typeId });
+        const block = dimension.getBlock(pos);
+        if (block && isMineable(block)) {
+            blocks.push({ pos, typeId: block.typeId });
+        }
     }
-  }
 
-  if (blocks.length === 0) return null;
-  return blocks;
+    if (blocks.length === 0) return null;
+    return blocks;
 }
 
 /* ================= MAIN LOOP ================= */
 
 system.runInterval(() => {
-  for (const dimId of DIMENSIONS) {
-    const dimension = world.getDimension(dimId);
-    const zombies = dimension.getEntities({ type: "udaw:zombieminer" });
+    for (const dimId of DIMENSIONS) {
+        const dimension = world.getDimension(dimId);
+        const zombies   = dimension.getEntities({ type: "udaw:zombieminer" });
 
-    for (const zombie of zombies) {
-      const target = getLookBlock(zombie);
-      const tick = system.currentTick;
+        for (const zombie of zombies) {
+            const target = getLookBlock(zombie);
+            const tick   = system.currentTick;
 
-      if (!target || !BREAKABLE.has(target.block.typeId)) {
-        zombie.setDynamicProperty("mineStart", null);
-        zombie.setDynamicProperty("minePos", null);
-        continue;
-      }
+            if (!target || !isMineable(target.block)) {
+                zombie.setDynamicProperty("mineStart", null);
+                zombie.setDynamicProperty("minePos", null);
+                continue;
+            }
 
-      if (!zombie.getDynamicProperty("mineStart")) {
-        zombie.setDynamicProperty("mineStart", tick);
-        zombie.setDynamicProperty("minePos", JSON.stringify(target.pos));
-        continue;
-      }
+            if (!zombie.getDynamicProperty("mineStart")) {
+                zombie.setDynamicProperty("mineStart", tick);
+                zombie.setDynamicProperty("minePos", JSON.stringify(target.pos));
+                continue;
+            }
 
-      const start = zombie.getDynamicProperty("mineStart");
-      if (tick - start < BREAK_TIME) continue;
+            const start = zombie.getDynamicProperty("mineStart");
+            if (tick - start < BREAK_TIME) continue;
 
-      const offsets = get2x2Offsets(zombie);
-      const blocks = getMineable2x2(dimension, target.pos, offsets);
+            const offsets = get2x2Offsets(zombie);
+            const blocks  = getMineable2x2(dimension, target.pos, offsets);
 
-      if (!blocks) {
-        zombie.setDynamicProperty("mineStart", null);
-        zombie.setDynamicProperty("minePos", null);
-        continue;
-      }
+            if (!blocks) {
+                zombie.setDynamicProperty("mineStart", null);
+                zombie.setDynamicProperty("minePos", null);
+                continue;
+            }
 
-      for (const { pos, typeId } of blocks) {
-        // Sonido de rotura antes de eliminar el bloque
-        playBreakSound(dimension, typeId, pos);
-        dimension.setBlockType(pos, "minecraft:air");
-      }
+            for (const { pos, typeId } of blocks) {
+                playBreakSound(dimension, typeId, pos);
+                dimension.setBlockType(pos, "minecraft:air");
+            }
 
-      zombie.setDynamicProperty("mineStart", null);
-      zombie.setDynamicProperty("minePos", null);
+            zombie.setDynamicProperty("mineStart", null);
+            zombie.setDynamicProperty("minePos", null);
+        }
     }
-  }
 }, 2);

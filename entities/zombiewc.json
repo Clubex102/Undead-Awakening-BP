@@ -80,7 +80,7 @@
         "angle_of_view_horizontal": 360
       },
       "minecraft:attack": {
-        "damage": 3.5
+        "damage": 6
       },
       "minecraft:behavior.break_door": {
         "priority": 0,
@@ -135,6 +135,10 @@
       "minecraft:behavior.random_look_around": {
         "look_distance": 60
       },
+      "minecraft:behavior.move_towards_target": {
+                "within_radius": 10,
+                "priority": 1
+     },
       "minecraft:pushable": {
         "is_pushable": true,
         "is_pushable_by_piston": true

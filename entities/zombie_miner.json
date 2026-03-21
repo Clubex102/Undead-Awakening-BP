@@ -63,6 +63,11 @@
             "minecraft:behavior.random_stroll": {
                 "priority": 6
             },
+            "minecraft:behavior.move_towards_target": {
+                "within_radius": 10,
+                "priority": 1
+            },
+            
             "minecraft:behavior.look_at_target": {
                 "look_distance": 4,
                 "probability": 0.02,
@@ -70,7 +75,7 @@
                 "angle_of_view_horizontal": 360
             },
             "minecraft:attack": {
-                "damage": 3.5
+                "damage": 5
             },
             "minecraft:behavior.break_door": {
                 "priority": 3,

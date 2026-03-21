@@ -125,7 +125,7 @@
                                 { "test": "is_family", "value": "witch", "subject": "other" }
                             ]
                         },
-                        "max_dist": 100
+                        "max_dist": 50
                     }
                 ]
             },

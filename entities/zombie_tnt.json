@@ -84,6 +84,10 @@
             "minecraft:behavior.random_stroll": {
                 "priority": 6
             },
+            "minecraft:behavior.move_towards_target": {
+                "within_radius": 0
+            },
+            
             
             "minecraft:behavior.nearest_attackable_target": {
                 "priority": 2,
