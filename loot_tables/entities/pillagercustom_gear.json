@@ -1,11 +1,11 @@
 {
   "pools": [
     {
-      "rolls": 1,
+      "rolls": 2,
       "entries": [
         {
           "type": "item",
-          "name": "udaw:flintlockgun",
+          "name": "udaw:flintlockgun", 
           "weight": 1,
           "functions": [
             {
@@ -16,6 +16,11 @@
               }
             }
           ]
+        },
+        {
+          "type": "item",
+          "name": "udaw:arcabuz",
+          "weight": 1
         }
       ]
     }
