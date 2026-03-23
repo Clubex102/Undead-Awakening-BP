@@ -42,7 +42,20 @@ const EXTRA_MINEABLE = new Set([
     "minecraft:sand",
     "minecraft:red_sand",
     "minecraft:soul_sand",
-    "minecraft:soul_soil"
+    "minecraft:soul_soil",
+    "minecraft:deepslate",
+    "minecraft:cobbled_deepslate",
+    "minecraft:deepslate_coal_ore",
+    "minecraft:deepslate_iron_ore",
+    "minecraft:deepslate_gold_ore",
+    "minecraft:deepslate_diamond_ore",
+    "minecraft:deepslate_emerald_ore",
+    "minecraft:deepslate_redstone_ore",
+    "minecraft:deepslate_lapis_ore",
+    "minecraft:deepslate_copper_ore",
+    "minecraft:tuff",
+    "minecraft:dripstone_block",
+    "minecraft:pointed_dripstone"
 ]);
 
 function isMineable(block) {
@@ -55,11 +68,12 @@ function isMineable(block) {
         if (id.includes(fragment)) return false;
     }
 
-    return block.hasTag("stone")              ||
-           block.hasTag("metal")              ||
+    return block.hasTag("stone")                 ||
+           block.hasTag("metal")                 ||
            block.hasTag("diamond_pick_diggable") ||
-           block.hasTag("iron_pick_diggable");
-}
+           block.hasTag("iron_pick_diggable")    ||
+           block.hasTag("stone_pick_diggable")   ||
+           block.hasTag("wood_pick_diggable");}
 
 /* ================= SONIDO ================= */
 
