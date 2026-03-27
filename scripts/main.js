@@ -127,7 +127,7 @@ function fireWeapon(source, itemStack, bulletId, cooldownDisplayTicks, fireCoold
         z: source.location.z + (Math.cos(rad) * 0.8),
     };
  
-    source.dimension.playSound("random.explode", source.location, {
+    source.dimension.playSound(shootSound, source.location, {
     volume: 5,
     maxDistance: 1000
 });
