@@ -128,6 +128,8 @@ function fireWeapon(source, itemStack, bulletId, cooldownDisplayTicks, fireCoold
     };
  
     source.dimension.runCommand(`playsound ${shootSound} @a ${muzzlePos.x} ${muzzlePos.y} ${muzzlePos.z} 1.0 1.0`);
+    source.dimension.runCommand(`playsound ${shootSound} @a[r=30] ${muzzlePos.x} ${muzzlePos.y} ${muzzlePos.z} 1.0 1.0`);
+    source.dimension.playsound.runCommand (`playsound ${shootSound} @a[r=30] ${muzzlePos.x} ${muzzlePos.y} ${muzzlePos.z} 1.0 1.0`);
  
     source.dimension.spawnParticle("minecraft:large_explosion", muzzlePos);
     source.dimension.spawnParticle("minecraft:large_explosion", muzzlePos);
