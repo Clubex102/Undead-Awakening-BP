@@ -127,10 +127,9 @@ function fireWeapon(source, itemStack, bulletId, cooldownDisplayTicks, fireCoold
         z: source.location.z + (Math.cos(rad) * 0.8),
     };
  
-    source.dimension.playSound(shootSound, muzzlePos, {
-    volume: 1,
-    pitch: 1,
-    maxDistance: 1000 
+    source.dimension.playSound("random.explode", source.location, {
+    volume: 5,
+    maxDistance: 1000
 });
  
     source.dimension.spawnParticle("minecraft:large_explosion", muzzlePos);
