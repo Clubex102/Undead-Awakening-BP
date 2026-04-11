@@ -72,11 +72,7 @@
                 "within_radius": 10,
                 "priority": 1
             },
-            
-            "minecraft:pushable": {
-                "is_pushable": true,
-                "is_pushable_by_piston": true
-            },
+            "minecraft:pushable_by_entity": {},
 
             "minecraft:movement": {
                 "value": 0.35

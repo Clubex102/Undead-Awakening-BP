@@ -159,8 +159,10 @@ system.runInterval(() => {
     for (const dimId of DIMENSIONS) {
         const dimension = world.getDimension(dimId);
         const zombies   = dimension.getEntities({ type: "udaw:zombiewc" });
+        const vindicators = dimension.getEntities({ type: "udaw:vindicatorzombie" });
+        const allWorkers = [...zombies, ...vindicators];
 
-        for (const zombie of zombies) {
+        for (const zombie of allWorkers) {
             const target = getLookBlock(zombie);
             const tick   = system.currentTick;
 

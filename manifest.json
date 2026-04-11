@@ -19,7 +19,7 @@
         {
             "type": "data",
             "version": [
-                1,
+                2,
                 0,
                 0
             ],
@@ -30,7 +30,7 @@
             "language": "javascript",
             "uuid": "e02781e1-ebfa-4d69-a26b-c6272e74ceab",
             "version": [
-                1,
+                2,
                 0,
                 0
             ],
@@ -41,7 +41,7 @@
         {
             "uuid": "6243ff13-7098-4ee9-b0af-138da683d402",
             "version": [
-                1,
+                2,
                 0,
                 0
             ]

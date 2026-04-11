@@ -1,9 +1,11 @@
 import { world, system } from "@minecraft/server";
 
-const VANILLA_PILLAGER = "minecraft:pillager";
-const CUSTOM_PILLAGER  = "udaw:pillager";
-const BULLET_ID        = "udaw:bullet";
-const SPAWN_CHANCE     = 0.10; // 10%
+const VANILLA_PILLAGER   = "minecraft:pillager";
+const CUSTOM_PILLAGER    = "udaw:pillager";
+const VANILLA_VINDICATOR = "minecraft:vindicator";
+const PILLAGERZOMBIE_ID  = "udaw:pillagerzombie";
+const BULLET_ID          = "udaw:bullet";
+const SPAWN_CHANCE       = 0.10; // 10%
 
 /* ================= REEMPLAZO ALEATORIO ================= */
 
@@ -69,4 +71,39 @@ world.afterEvents.entitySpawn.subscribe((event) => {
             } catch (_) {}
         });
     }
+});
+
+/* ================= CONVERSIÓN POR ZOMBIE ================= */
+
+world.afterEvents.entityDie.subscribe((event) => {
+    const deadEntity = event.deadEntity;
+    const damageSource = event.damageSource;
+
+    if (!damageSource.damagingEntity) return;
+
+    const attackerTypeId = damageSource.damagingEntity.typeId;
+    if (!attackerTypeId.includes("zombie")) return;
+
+    const loc = deadEntity.location;
+    const dim = deadEntity.dimension;
+
+    system.run(() => {
+        try {
+            /* Convertir pillager vanilla a pillagerzombie */
+            if (deadEntity.typeId === VANILLA_PILLAGER) {
+                const pillagerzombie = dim.spawnEntity(PILLAGERZOMBIE_ID, loc);
+                pillagerzombie.setRotation(deadEntity.getRotation());
+            }
+            /* Convertir pillager custom a pillagerzombie */
+            else if (deadEntity.typeId === CUSTOM_PILLAGER) {
+                const pillagerzombie = dim.spawnEntity(PILLAGERZOMBIE_ID, loc);
+                pillagerzombie.setRotation(deadEntity.getRotation());
+            }
+            /* Convertir vindicator vanilla a vindicatorzombie */
+            else if (deadEntity.typeId === VANILLA_VINDICATOR) {
+                const vindicatorzombie = dim.spawnEntity("udaw:vindicatorzombie", loc);
+                vindicatorzombie.setRotation(deadEntity.getRotation());
+            }
+        } catch (_) {}
+    });
 });

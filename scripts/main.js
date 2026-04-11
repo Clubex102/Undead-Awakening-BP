@@ -15,12 +15,12 @@ import "./entities/zombiewc.js";
 import "./entities/zombielance.js";
 import "./entities/zombietnt.js";
 import "./cannon.js";
+import "./entities/pillagerzombie.js";
 import "./entities/pillager.js";
 
 
 
 const AMMO_ITEM = "minecraft:iron_nugget";
- 
 const firingCooldown  = new Set();
 const cooldownDisplays = new Map();
  
