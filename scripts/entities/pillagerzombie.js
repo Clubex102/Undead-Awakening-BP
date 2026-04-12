@@ -79,7 +79,7 @@ function applyKnockdown(victim) {
     } catch (_) {}
 
     try {
-        let tackleAnim = KNOCKDOWN_ANIM; // por defecto para jugadores
+        let tackleAnim = KNOCKDOWN_ANIM; // por defecto para jugadoresss
         
         if (victim.typeId === "minecraft:iron_golem") {
             tackleAnim = "animation.irongolem.tackled";
