@@ -3,31 +3,24 @@
     "minecraft:entity": {
         "description": {
             "identifier": "udaw:oil_bottle",
-            "is_experimental": false,
+            "runtime_identifier": "snowball",
             "is_summonable": true,
-            "is_spawnable": false,
-            "spawn_category": "misc"
+            "is_spawnable": false
         },
         "components": {
             "minecraft:collision_box": {
                 "height": 0.50,
                 "width": 0.50
             },
-            "minecraft:conditional_bandwidth_optimization": {
-                "default_values": {
-                    "max_dropped_ticks": 3,
-                    "max_optimized_distance": 80.0,
-                    "use_motion_prediction_hints": true
-                }
-            },
             "minecraft:physics": {},
             "minecraft:projectile": {
                 "angle_offset": -20,
-                "catch_fire": true,
                 "gravity": 0.05,
                 "hit_sound": "glass",
                 "on_fire_time": 5,
                 "on_hit": {
+                    "ignite": true,
+                    "remove_on_hit": {},
                     "catch_fire": true,
                     "impact_damage": {
                         "catch_fire": true

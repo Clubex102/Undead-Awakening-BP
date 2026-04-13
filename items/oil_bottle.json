@@ -1,0 +1,22 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:item": {
+        "description": {
+            "identifier": "udaw:oil_bottle",
+            "menu_category": {
+                "category": "equipment"
+            }
+        },
+        "components": {
+            "minecraft:icon": "oilbottle",
+            "minecraft_render_offsets": "main_hand",
+            "minecraft:projectile": {
+                "projectile_entity": "udaw:oil_bottle"
+            },
+            "minecraft:hand_equipped": true,
+            "minecraft:throwable": {
+                "do_swing_animation": true
+            }
+        }
+    }
+}
