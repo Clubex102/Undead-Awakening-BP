@@ -1,0 +1,215 @@
+{
+    "format_version": "1.21.132",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "udaw:zombie_igniter",
+            "is_spawnable": true,
+            "is_summonable": true,
+            "spawn_category": "monster"
+        },
+
+        "component_groups": {
+            "minecraft:ranged_attack": {
+                "minecraft:behavior.ranged_attack": {
+                    "priority": 0,
+                    "attack_interval_min": 1.0,
+                    "attack_interval_max": 3.0,
+                    "attack_radius": 30.0,
+                    "charge_charged_trigger": 1.3,
+                    "charge_shoot_trigger": 2.5,
+                    "attack_radius_min": 10,
+                    "target_in_sight_time": 1,
+                    "set_persistent": true
+                    
+                },
+                "minecraft:shooter": {
+                    "def": "udaw:oil_bottle_v1"
+                },
+                "minecraft:is_charged": {
+                    
+                }
+            }
+            ,
+            "udaw:retaliation_melee": {
+                "minecraft:attack": {
+                    "damage": 2
+                },
+                "minecraft:despawn": {
+                    "despawn_from_chance": true,
+                    "despawn_from_distance": {
+                        "max_distance": 128,
+                        "min_distance": 52
+                    },
+                    "despawn_from_inactivity": true,
+                    "despawn_from_simulation_edge": true,
+                    "min_range_inactivity_timer": 30,
+                    "min_range_random_chance": 800,
+                    "remove_child_entities": false
+                },
+                "minecraft:behavior.melee_box_attack": {
+                    "priority": 1,
+                    "track_target": true
+                }
+            },
+            "udaw:start_retaliation_timer": {
+                "minecraft:timer": {
+                    "looping": false,
+                    "randomInterval": false,
+                    "time": [0.1, 0.1],
+                    "time_down_event": {
+                        "event": "udaw:stop_retaliation"
+                    }
+                }
+            }
+        },
+
+        "components": {
+            "minecraft:health": {
+                "value": 20,
+                "max": 20
+            },
+            "minecraft:behavior.move_towards_target": {
+                "within_radius": 10,
+                "priority": 1
+            },
+            "minecraft:pushable_by_entity": {},
+
+            "minecraft:movement": {
+                "value": 0.35
+            },
+
+            "minecraft:jump.static": {
+                "jump_power": 0.42
+            },
+
+            "minecraft:physics": {
+                "has_collision": true,
+                "has_gravity": true
+            },
+            
+
+            "minecraft:behavior.random_stroll": {
+                "priority": 6
+            },
+            "minecraft:ambient_sound_interval": {
+                "event_name": "ambient",
+                "range": 16,
+                "value": 8
+            }, 
+            "minecraft:behavior.look_at_target": {
+                "look_distance": 6,
+                "probability": 0.02
+            },
+            
+
+            "minecraft:behavior.nearest_attackable_target": {
+                "priority": 0,
+                "must_see": false,
+                "must_see_forget_duration": 30,
+                "reselect_targets": true,
+                "within_radius": 70,
+                "entity_types": [
+                    {
+                        "filters": {
+                            "any_of": [
+                                { "test": "is_family", "value": "player", "subject": "other" },
+                                { "test": "is_family", "value": "villager", "subject": "other" },
+                                { "test": "is_family", "value": "illager", "subject": "other" },
+                                { "test": "is_family", "value": "snowgolem", "subject": "other" },
+                                { "test": "is_family", "value": "irongolem", "subject": "other" },
+                                { "test": "is_family", "value": "witch", "subject": "other" }
+                            ]
+                        },
+                        "max_dist": 50
+                    }
+                ]
+            },
+
+            "minecraft:type_family": {
+                "family": ["mob", "zombie", "monster"]
+            },
+            
+
+            "minecraft:collision_box": {
+                "height": 2,
+                "width": 0.5
+            },
+
+            "minecraft:navigation.walk": {
+                "avoid_damage_blocks": true,
+                "avoid_portals": true,
+                "avoid_sun": false,
+                "avoid_water": true,
+                "blocks_to_avoid": [],
+                "can_breach": false,
+                "can_break_doors": false,
+                "can_jump": true,
+                "can_open_doors": false,
+                "can_open_iron_doors": false,
+                "can_pass_doors": true,
+                "can_path_from_air": false,
+                "can_path_over_lava": false,
+                "can_path_over_water": true,
+                "can_sink": true,
+                "can_swim": true,
+                "can_walk": true,
+                "can_walk_in_lava": false,
+                "is_amphibious": false
+            },
+
+            "minecraft:movement.basic": {
+                "max_turn": 35
+            },
+            "minecraft:is_charged": {
+                
+            },
+
+            "minecraft:behavior.charge_held_item": {
+                "priority": 3,
+                "items": [
+                    "minecraft:arrow"
+                ]
+            },
+            
+            "minecraft:follow_range": {
+                "value": 64
+            },
+
+            "minecraft:experience_reward": {
+                "on_death": "query.last_hit_by_player ? Math.Random(3,5) : 0"
+            }
+            ,
+            "minecraft:on_hurt": {
+                "event": "udaw:retaliate",
+                "target": "self"
+            }
+        },
+        
+
+        "events": {
+            "minecraft:entity_spawned": {
+                "add": {
+                    "component_groups": [
+                        "minecraft:ranged_attack"
+                    ]
+                }
+            },
+            "udaw:retaliate": {
+                "add": {
+                    "component_groups": [
+                        "udaw:retaliation_melee",
+                        "udaw:start_retaliation_timer"
+                    ]
+                }
+            },
+            "udaw:stop_retaliation": {
+                "remove": {
+                    "component_groups": [
+                        "udaw:retaliation_melee",
+                        "udaw:start_retaliation_timer"
+                    ]
+                }
+            }
+        }
+    }
+}
