@@ -167,7 +167,7 @@
             "minecraft:behavior.charge_held_item": {
                 "priority": 3,
                 "items": [
-                    "minecraft:arrow"
+                    "udaw:oil_bottle"
                 ]
             },
             
