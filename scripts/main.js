@@ -1,4 +1,5 @@
 import {
+    world,
     system,
     CustomComponentParameters,
     ItemComponentBeforeDurabilityDamageEvent,
@@ -128,7 +129,7 @@ function fireWeapon(source, itemStack, bulletId, cooldownDisplayTicks, fireCoold
         z: source.location.z + (Math.cos(rad) * 0.8),
     };
  
-    source.dimension.playSound("random.explode", source.location, {volume: 5, maxDistance: 1000});
+    source.dimension.playSound(shootSound, source.location, {volume: 5, maxDistance: 1000});
  
     source.dimension.spawnParticle("minecraft:large_explosion", muzzlePos);
     source.dimension.spawnParticle("minecraft:large_explosion", muzzlePos);
@@ -156,7 +157,8 @@ function fireWeapon(source, itemStack, bulletId, cooldownDisplayTicks, fireCoold
     shootCommon(source, bulletId, 1, 1);
     itemStack.getComponent("cooldown").startCooldown(source);
 }
- 
+
+
 /* ================= COMPONENTES ================= */
  
 system.beforeEvents.startup.subscribe((startupEvent) => {
@@ -188,10 +190,9 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
                 20,
                 "Arquebus",
                 0.9,
-                "arcabusshot"
+                "arquebusshot"
             );
         }
     });
  
 });
- 
