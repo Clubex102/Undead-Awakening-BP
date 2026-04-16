@@ -32,3 +32,18 @@ world.afterEvents.projectileHitEntity.subscribe((event) => {
 
     spawnFire(entity.dimension, entity.location);
 });
+world.afterEvents.projectileHitBlock.subscribe((event) => {
+    if (event.projectile.typeId !== "udaw:oil_bottle_v2") return;
+
+    const block = event.getBlockHit().block;
+    spawnFire(block.dimension, block.location);
+});
+
+world.afterEvents.projectileHitEntity.subscribe((event) => {
+    if (event.projectile.typeId !== "udaw:oil_bottle_v2") return;
+
+    const entity = event.getEntityHit().entity;
+    if (!entity) return;
+
+    spawnFire(entity.dimension, entity.location);
+});

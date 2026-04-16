@@ -1,0 +1,36 @@
+{
+    "format_version": "1.26.0",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "udaw:oil_bottle_v2",
+            "runtime_identifier": "snowball",
+            "is_summonable": true,
+            "is_spawnable": false
+        },
+        "components": {
+            "minecraft:collision_box": {
+                "height": 0.50,
+                "width": 0.50
+            },
+            
+            "minecraft:physics": {},
+            "minecraft:projectile": {
+                "anchor": 1,
+                "splash_range": 4,
+                "multiple_targets": true,
+                "gravity": 0.05,
+                "hit_sound": "glass",
+                "on_fire_time": 5,
+                "on_hit": {
+                    "ignite": true,
+                    "remove_on_hit": {},
+                    "catch_fire": true,
+                    "impact_damage": {
+                        "catch_fire": true
+                    }
+                },
+                "power": 1.6
+            }
+        }
+    }
+}
