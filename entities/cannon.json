@@ -1,0 +1,50 @@
+{
+    "format_version": "1.20.80",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "udaw:cannon",
+            "is_spawnable": true,
+            "is_summonable": true
+        },
+        "component_groups": {},
+        "components": {
+            "minecraft:rideable": {
+                "controlling_seat": 0,
+                "crouching_skip_interact": true,
+                "family_types": [
+                    "player"
+                ],
+                "interact_text": "interact",
+                "pull_in_entities": false,
+                "seats":{
+                    "position": [0, 0.5, -1.8],
+                    "lock_rider_rotation": 90,
+                    "max_rider_count": 1
+                },
+                "rider_can_interact": false,
+                "seat_count": 1
+            },
+            "minecraft:health": {
+                "value": 50,
+                "max": 50
+            },
+            "minecraft:healable": {
+                "force_use": false,
+                "items": [
+                    {
+                        "item": "minecraft:iron_ingot",
+                        "benefit": {
+                            "name": "health",
+                            "value": 20
+                        }
+                    }
+                ]
+            },
+            "minecraft:collision_box": {
+                "height": 1,
+                "width": 2
+            }
+        },
+        "events": {}
+    }
+}
