@@ -2,7 +2,7 @@
     "format_version": "1.21.10",
     "minecraft:recipe_shaped": {
         "description": {
-            "identifier": "udaw:cannon"
+            "identifier": "udaw:cannon_spawn_egg"
         },
         "unlock": [
             {
@@ -28,7 +28,7 @@
             }
         },
         "result": {
-            "item": "udaw:cannon",
+            "item": "udaw:cannon_spawn_egg",
             "count": 1
         }
     }
