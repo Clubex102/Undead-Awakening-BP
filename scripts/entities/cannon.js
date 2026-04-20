@@ -85,7 +85,7 @@ function updateActionBar(player, cannon) {
         } else if (ammo < AMMO_COST) {
             player.onScreenDisplay.setActionBar(`§c${AMMO_COST}/${ammo} §cMunicion insuficiente`);
         } else {
-            player.onScreenDisplay.setActionBar(`§a${AMMO_COST}/${ammo} §7| §eSNEAK AND USE FLINT AND STEEL`);
+            player.onScreenDisplay.setActionBar(`§a${AMMO_COST}/${ammo} §7| §eUSE FLINT AND STEEL`);
         }
     } catch (_) {}
 }
@@ -109,32 +109,36 @@ function fireCannon(player, cannon) {
     const offsets = getFanOffsets(cannon);
     const dim     = cannon.dimension;
 
-    try {
-        dim.runCommand(`playsound cannonshoot @a[r=50] ${muzzle.x} ${muzzle.y} ${muzzle.z} 2.0 1.0`);
-    } catch (_) {}
-
+    // Animacion inmediata
     try { cannon.playAnimation("animation.cannon.shoot"); } catch (_) {}
 
-    try {
-        for (let i = 0; i < 5; i++) dim.spawnParticle("minecraft:large_explosion", muzzle);
-        for (let i = 0; i < 6; i++) dim.spawnParticle("minecraft:campfire_smoke_particle", muzzle);
-        for (let i = 0; i < 3; i++) dim.spawnParticle("minecraft:basic_flame_particle", muzzle);
-        dim.spawnParticle("minecraft:huge_explosion_emitter", muzzle);
-    } catch (_) {}
-
-    try { player.runCommand("camerashake add @s 1.2 0.5 rotational"); } catch (_) {}
-
-    for (let i = 0; i < BULLET_COUNT; i++) {
-        const offset = offsets[i];
+    // Sonido, particulas, camerashake y balas 5 ticks despues
+    system.runTimeout(() => {
         try {
-            const bullet = dim.spawnEntity(BULLET_ID, muzzle);
-            bullet.applyImpulse({
-                x: offset.x * 2.5,
-                y: 0.05,
-                z: offset.z * 2.5
-            });
+            dim.player(`playsound cannonshoot @a[r=50] ${muzzle.x} ${muzzle.y} ${muzzle.z} 2.0 1.0`);
         } catch (_) {}
-    }
+
+        try {
+            for (let i = 0; i < 5; i++) dim.spawnParticle("minecraft:large_explosion", muzzle);
+            for (let i = 0; i < 6; i++) dim.spawnParticle("minecraft:campfire_smoke_particle", muzzle);
+            for (let i = 0; i < 3; i++) dim.spawnParticle("minecraft:basic_flame_particle", muzzle);
+            dim.spawnParticle("minecraft:huge_explosion_emitter", muzzle);
+        } catch (_) {}
+
+        try { player.runCommand("camerashake add @s 1.2 0.5 rotational"); } catch (_) {}
+
+        for (let i = 0; i < BULLET_COUNT; i++) {
+            const offset = offsets[i];
+            try {
+                const bullet = dim.spawnEntity(BULLET_ID, muzzle);
+                bullet.applyImpulse({
+                    x: offset.x * 2.5,
+                    y: 0.05,
+                    z: offset.z * 2.5
+                });
+            } catch (_) {}
+        }
+    }, 5);
 }
 
 /* ================= MONTAR ================= */
@@ -146,13 +150,20 @@ function startCannonLoops(player, cannon) {
 
     const loopId = system.runInterval(() => {
         try {
-            // Desmontar si se agacha o salta (espacio)
-            if (!cannon.isValid || player.isSneaking || player.isJumping) {
+            const cur = cannon.location;
+            const playerPos = player.location;
+
+            // Detectar desmontaje por distancia — si el jugador esta lejos del cañon se bajo
+            const dx = Math.abs(playerPos.x - cannonPos.x);
+            const dz = Math.abs(playerPos.z - cannonPos.z);
+            const dy = Math.abs(playerPos.y - cannonPos.y);
+
+            if (dx > 3 || dz > 3 || dy > 4) {
                 cleanupDismount(player);
                 return;
             }
+
             // Anti-WASD
-            const cur = cannon.location;
             if (Math.abs(cur.x - cannonPos.x) > 0.05 ||
                 Math.abs(cur.z - cannonPos.z) > 0.05) {
                 cannon.teleport(cannonPos, { rotation: cannon.getRotation() });
