@@ -115,7 +115,7 @@ function fireCannon(player, cannon) {
     // Sonido, particulas, camerashake y balas 5 ticks despues
     system.runTimeout(() => {
         try {
-            dim.player(`playsound cannonshoot @a[r=50] ${muzzle.x} ${muzzle.y} ${muzzle.z} 2.0 1.0`);
+            player.runCommand(`playsound cannonshoot @a[r=50] ${muzzle.x} ${muzzle.y} ${muzzle.z} 2.0 1.0`);
         } catch (_) {}
 
         try {
@@ -213,21 +213,21 @@ world.beforeEvents.playerInteractWithEntity.subscribe((event) => {
         return;
     }
 
-    // Flint and steel DESMONTADO — disparar
+    // Flint and steel — disparar siempre
     if (itemStack && itemStack.typeId === FLINT_STEEL) {
-        if (!mountedPlayers.has(player.id)) {
-            event.cancel = true;
-            system.run(() => fireCannon(player, target));
-        }
+        event.cancel = true;
+        system.run(() => fireCannon(player, target));
         return;
     }
 
-    // Clic normal sin item — montar
-    system.runTimeout(() => {
-        try {
-            startCannonLoops(player, target);
-        } catch (e) { console.warn(`[Cannon] error: ${e}`); }
-    }, 20);
+    // Clic normal sin item y sin estar ya montado — montar
+    if (!itemStack && !mountedPlayers.has(player.id)) {
+        system.runTimeout(() => {
+            try {
+                startCannonLoops(player, target);
+            } catch (e) { console.warn(`[Cannon] error: ${e}`); }
+        }, 20);
+    }
 });
 
 /* ================= LIMPIAR AL MORIR ================= */
