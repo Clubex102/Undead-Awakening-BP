@@ -47,7 +47,7 @@ function getMuzzlePos(cannon) {
     const rot = cannon.getRotation();
     const rad = (rot.y * Math.PI) / 180;
     return {
-        x: pos.x + (-Math.sin(rad) * 2.0), // 2 bloques adelante para evitar autodaño
+        x: pos.x + (-Math.sin(rad) * 2.0),
         y: pos.y + 0.7,
         z: pos.z + (Math.cos(rad) * 2.0)
     };
@@ -148,12 +148,9 @@ function startCannonLoops(player, cannon) {
 
     const cannonPos = { ...cannon.location };
 
-    const loopId = system.runInterval(() => {
+    const barLoopId = system.runInterval(() => {
         try {
-            const cur = cannon.location;
             const playerPos = player.location;
-
-            // Detectar desmontaje por distancia — si el jugador esta lejos del cañon se bajo
             const dx = Math.abs(playerPos.x - cannonPos.x);
             const dz = Math.abs(playerPos.z - cannonPos.z);
             const dy = Math.abs(playerPos.y - cannonPos.y);
@@ -163,31 +160,18 @@ function startCannonLoops(player, cannon) {
                 return;
             }
 
-            // Anti-WASD
-            if (Math.abs(cur.x - cannonPos.x) > 0.05 ||
-                Math.abs(cur.z - cannonPos.z) > 0.05) {
-                cannon.teleport(cannonPos, { rotation: cannon.getRotation() });
-            }
+            updateActionBar(player, cannon);
         } catch (_) {
             cleanupDismount(player);
         }
-    }, 1);
-
-    const barLoopId = system.runInterval(() => {
-        try {
-            updateActionBar(player, cannon);
-        } catch (_) {
-            system.clearRun(barLoopId);
-        }
     }, 5);
 
-    mountedPlayers.set(player.id, { cannon, loopId, barLoopId });
+    mountedPlayers.set(player.id, { cannon, barLoopId });
 }
 
 function cleanupDismount(player) {
     const data = mountedPlayers.get(player.id);
     if (!data) return;
-    system.clearRun(data.loopId);
     system.clearRun(data.barLoopId);
     mountedPlayers.delete(player.id);
     try { player.onScreenDisplay.setActionBar(""); } catch (_) {}

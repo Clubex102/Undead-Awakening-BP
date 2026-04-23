@@ -14,6 +14,7 @@ import { shootCommon, shootRepeat } from "./globalVar/u.js";
 import "./entities/zombie_miner.js";
 import "./entities/zombiewc.js";
 import "./entities/zombielance.js";
+import "./entities/pillagerspawner.js"
 import "./entities/zombietnt.js";
 import "./entities/cannon.js";
 import "./entities/pillagerzombie.js";

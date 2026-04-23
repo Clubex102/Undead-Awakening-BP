@@ -34,8 +34,8 @@
                 "max": 50
             },
             "minecraft:movement": {
-                "value": 0,
-                "max": 0
+                "value": 0.1,
+                "max": 0.1
             },
             "minecraft:knockback_resistance": {
                 "value": 1,
