@@ -1,0 +1,35 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:item": {
+        "description": {
+            "identifier": "udaw:arcabuz",
+            "menu_category": {
+                "category": "equipment"
+            }
+        },
+        "components": {
+            "minecraft:display_name": {
+                "value": "%item.udaw.arcabuz\n§e%item.udaw.flintlockgun.description"
+            },
+            "minecraft:icon": "arcabuz",
+            "minecraft:hand_equipped": true,
+            "minecraft:max_stack_size": 1,
+            "minecraft:can_destroy_in_creative": false,
+            "minecraft:custom_components": ["udaw:arquebus"],
+            "minecraft:durability": {
+                "damage_chance": { "min": 10, "max": 20 },
+                "max_durability": 400
+            },
+            "minecraft:use_modifiers": {
+                "use_duration": 10,
+                "movement_modifier": 0.35
+            },
+            "minecraft:repairable": {
+                "repair_items": [{ "items": ["minecraft:iron_ingot"], "repair_amount": "query.max_durability * 0.25" }]
+            },
+            "minecraft:enchantable": { "slot": "sword", "value": 1 },
+            "minecraft:use_animation": "crossbow"
+        }
+    }
+}
+ 
