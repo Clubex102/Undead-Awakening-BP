@@ -43,7 +43,7 @@
                         "damage": 12,
                         
                         "knockback": true,
-                        "destroy_on_hit": true,
+                        "destroy_on_hit": false,
                         "max_critical_damage": 12,
                         "apply_knockback_to_blocking_targets": true
                     }
