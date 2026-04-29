@@ -105,6 +105,7 @@ function spawnMuzzleEffects(player, shootSound) {
     if (shootSound !== "flintlockshoot") {
         dim.playSound(shootSound, player.location, { volume: 5, maxDistance: 1000 });
     }
+
     dim.spawnParticle("minecraft:large_explosion", muzzle);
     dim.spawnParticle("minecraft:large_explosion", muzzle);
     dim.spawnParticle("minecraft:large_explosion", muzzle);
@@ -226,6 +227,7 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
             const loaded = convertItem(item, "udaw:flintlockgun_loaded");
             mainhand.setItem(loaded);
             source.dimension.playSound("crossbow.loading.end", source.location);
+            
 
             const id = source.id;
             loadedPlayers[id] = true;
@@ -242,7 +244,7 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
             if (!hasItem(source, AMMO_ITEM)) {
                 mainhand.setItem(convertItem(item, "udaw:flintlockgun_unusable"));
             } else {
-                source.dimension.playSound("crossbow.loading.start", source.location);
+                source.dimension.playSound("reload2", source.location);
                 system.runTimeout(() => {
                     source.dimension.playSound("crossbow.loading.middle", source.location);
                 }, 10);
