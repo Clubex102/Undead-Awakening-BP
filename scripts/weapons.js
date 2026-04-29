@@ -227,8 +227,6 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
             const loaded = convertItem(item, "udaw:flintlockgun_loaded");
             mainhand.setItem(loaded);
             source.dimension.playSound("crossbow.loading.end", source.location);
-            
-
             const id = source.id;
             loadedPlayers[id] = true;
             system.runTimeout(() => { delete loadedPlayers[id]; }, 7);
@@ -244,7 +242,7 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
             if (!hasItem(source, AMMO_ITEM)) {
                 mainhand.setItem(convertItem(item, "udaw:flintlockgun_unusable"));
             } else {
-                source.dimension.playSound("reload2", source.location);
+                source.dimension.playSound("crossbow.loading.start", source.location);
                 system.runTimeout(() => {
                     source.dimension.playSound("crossbow.loading.middle", source.location);
                 }, 10);
