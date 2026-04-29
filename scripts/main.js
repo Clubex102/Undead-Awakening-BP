@@ -21,6 +21,7 @@ import "./entities/cannon.js";
 import "./entities/pillagerzombie.js";
 import "./entities/pillager.js";
 import "./oil_bottle.js";
+import "./entities/plzombie.js";
 
 
 
