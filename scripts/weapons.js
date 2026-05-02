@@ -1,9 +1,10 @@
 import { EntityEquippableComponent, EntityInventoryComponent, EquipmentSlot, GameMode, ItemDurabilityComponent, ItemEnchantableComponent, ItemStack, system, world } from "@minecraft/server";
 import { shootCommon } from "./globalVar/u.js";
 
-const AMMO_ITEM = "minecraft:iron_nugget";
+const AMMO_ITEM    = "minecraft:iron_nugget";
+const reloadingNow = new Set();
 
-/* ================= UTILIDADES (del repo) ================= */
+/* ================= UTILIDADES ================= */
 
 function removeItem(player, itemId) {
     if (player.getGameMode() !== GameMode.Creative) {
@@ -105,7 +106,6 @@ function spawnMuzzleEffects(player, shootSound) {
     if (shootSound !== "flintlockshoot") {
         dim.playSound(shootSound, player.location, { volume: 5, maxDistance: 1000 });
     }
-
     dim.spawnParticle("minecraft:large_explosion", muzzle);
     dim.spawnParticle("minecraft:large_explosion", muzzle);
     dim.spawnParticle("minecraft:large_explosion", muzzle);
@@ -140,13 +140,15 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
             if (!mainhand || !item) return;
             if (item.typeId !== "udaw:arcabuz") return;
 
-            // Verificar municion
             if (!removeItem(source, AMMO_ITEM)) return;
 
-            // Convertir a estado cargado
+            // Detener sonido de recarga y reproducir sonido de cargado
+            try { source.runCommand("stopsound @s reload1"); } catch (_) {}
+            source.dimension.playSound("reload1", source.location);
+
             const loaded = convertItem(item, "udaw:arcabuz_loaded");
             mainhand.setItem(loaded);
-            source.dimension.playSound("crossbow.loading.end", source.location);
+            reloadingNow.delete(source.id);
 
             const id = source.id;
             loadedPlayers[id] = true;
@@ -160,14 +162,12 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
             if (!mainhand || !item) return;
             if (item.typeId !== "udaw:arcabuz") return;
 
-            // Sin municion — convertir a unusable
             if (!hasItem(source, AMMO_ITEM)) {
                 mainhand.setItem(convertItem(item, "udaw:arcabuz_unusable"));
-            } else {
-                source.dimension.playSound("crossbow.loading.start", source.location);
-                system.runTimeout(() => {
-                    source.dimension.playSound("crossbow.loading.middle", source.location);
-                }, 10);
+            } else if (!reloadingNow.has(source.id)) {
+                reloadingNow.add(source.id);
+                source.dimension.playSound("reload1", source.location);
+                try { source.playAnimation("animation.humanoid.crossbow_hold", { blendOutTime: 0.2, stopExpression: "1" }); } catch (_) {}
             }
         }
     });
@@ -177,6 +177,13 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
         onUse(event) {
             const { source } = event;
             if (loadedPlayers[source.id]) return;
+            if (reloadingNow.has(source.id)) {
+                system.runTimeout(() => {
+                    try { source.runCommand("stopsound @s reload1"); } catch (_) {}
+                }, 3);
+                reloadingNow.delete(source.id);
+                return;
+            }
 
             const mainhand = source.getComponent(EntityEquippableComponent.componentId)
                                    ?.getEquipmentSlot(EquipmentSlot.Mainhand);
@@ -184,12 +191,10 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
             if (!mainhand || !item) return;
             if (item.typeId !== "udaw:arcabuz_loaded") return;
 
-            // Disparar
             spawnMuzzleEffects(source, "arquebusshot");
             source.runCommand("camerashake add @s 0.9 0.15 rotational");
             shootCommon(source, "udaw:bullet2", 1, 1);
 
-            // Reducir durabilidad y convertir a descargado
             const degraded = decreaseItemDurability(source, item);
             mainhand.setItem(degraded ? convertItem(degraded, "udaw:arcabuz") : undefined);
         }
@@ -205,7 +210,6 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
             if (!mainhand || !item) return;
             if (item.typeId !== "udaw:arcabuz_unusable") return;
 
-            // Si ahora tiene municion, volver a estado default
             if (hasItem(source, AMMO_ITEM)) {
                 mainhand.setItem(convertItem(item, "udaw:arcabuz"));
             }
@@ -224,9 +228,13 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
 
             if (!removeItem(source, AMMO_ITEM)) return;
 
+            try { source.runCommand("stopsound @s reload2"); } catch (_) {}
+            source.dimension.playSound("reload2", source.location);
+
             const loaded = convertItem(item, "udaw:flintlockgun_loaded");
             mainhand.setItem(loaded);
-            source.dimension.playSound("crossbow.loading.end", source.location);
+            reloadingNow.delete(source.id);
+
             const id = source.id;
             loadedPlayers[id] = true;
             system.runTimeout(() => { delete loadedPlayers[id]; }, 7);
@@ -241,11 +249,10 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
 
             if (!hasItem(source, AMMO_ITEM)) {
                 mainhand.setItem(convertItem(item, "udaw:flintlockgun_unusable"));
-            } else {
-                source.dimension.playSound("crossbow.loading.start", source.location);
-                system.runTimeout(() => {
-                    source.dimension.playSound("crossbow.loading.middle", source.location);
-                }, 10);
+            } else if (!reloadingNow.has(source.id)) {
+                reloadingNow.add(source.id);
+                source.dimension.playSound("reload2", source.location);
+                try { source.playAnimation("animation.humanoid.crossbow_hold", { blendOutTime: 0.2, stopExpression: "1" }); } catch (_) {}
             }
         }
     });
@@ -255,6 +262,13 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
         onUse(event) {
             const { source } = event;
             if (loadedPlayers[source.id]) return;
+            if (reloadingNow.has(source.id)) {
+                system.runTimeout(() => {
+                    try { source.runCommand("stopsound @s reload2"); } catch (_) {}
+                }, 3);
+                reloadingNow.delete(source.id);
+                return;
+            }
 
             const mainhand = source.getComponent(EntityEquippableComponent.componentId)
                                    ?.getEquipmentSlot(EquipmentSlot.Mainhand);
@@ -289,11 +303,24 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
     });
 });
 
-/* ================= SOLTAR BOTON CARGADO ================= */
+/* ================= SOLTAR BOTON — CANCELAR SONIDO ================= */
 
 world.afterEvents.itemReleaseUse.subscribe((event) => {
     const item = event.itemStack;
     if (!item) return;
-    if (item.typeId !== "udaw:arcabuz_loaded" && item.typeId !== "udaw:flintlockgun_loaded") return;
-    delete loadedPlayers[event.source.id];
+
+    const typeId = item.typeId;
+    const player = event.source;
+
+    if (typeId === "udaw:arcabuz") {
+        try { player.runCommand("stopsound @s reload1"); } catch (_) {}
+        reloadingNow.delete(player.id);
+    } else if (typeId === "udaw:flintlockgun") {
+        try { player.runCommand("stopsound @s reload2"); } catch (_) {}
+        reloadingNow.delete(player.id);
+    }
+
+    if (typeId === "udaw:arcabuz_loaded" || typeId === "udaw:flintlockgun_loaded") {
+        delete loadedPlayers[player.id];
+    }
 });
