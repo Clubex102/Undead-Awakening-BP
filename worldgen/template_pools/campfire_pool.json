@@ -1,0 +1,19 @@
+{
+  "format_version": "1.20.0",
+  "minecraft:template_pool": {
+    "description": {
+      "identifier": "udaw:campfire_pool"
+    },
+    "elements": [
+      {
+        "weight": 1,
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "udaw:campfire",
+          "projection": "rigid",
+          "processors": "minecraft:empty"
+        }
+      }
+    ]
+  }
+}
