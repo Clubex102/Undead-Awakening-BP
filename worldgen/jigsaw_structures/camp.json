@@ -10,7 +10,7 @@
         "value": "has_structure_trail_ruins" 
       } 
     ], 
-    "step": "underground_structures", 
+    "step": "surface_structures", 
     "terrain_adaptation": "bury", 
     "start_pool": "udaw:camp_pool", 
     "max_depth": 7, 
