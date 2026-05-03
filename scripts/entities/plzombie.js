@@ -15,7 +15,7 @@ const MELEE_STUNNERS = new Set([
 
 const stunnedEntities = new Set();
 const stunnCooldowns  = new Map();
-const stunLoops       = new Map(); // id -> loopId del teleport
+const stunLoops       = new Map();
 
 function applyStun(entity) {
     const id   = entity.id;
@@ -29,7 +29,6 @@ function applyStun(entity) {
 
     try { entity.playAnimation("animation.zombieplayer.stunned"); } catch (_) {}
 
-    // Sonidos de stun
     try {
         const pos = entity.location;
         entity.dimension.runCommand(`playsound mob.zombie.hurt @a[r=16] ${pos.x} ${pos.y} ${pos.z} 1.0 0.6`);
@@ -40,7 +39,6 @@ function applyStun(entity) {
         entity.addEffect("weakness", STUN_DURATION, { amplifier: 255, showParticles: false });
     } catch (_) {}
 
-    // Teleport anti-knockback durante el stun
     const stunPos = { ...entity.location };
     const loopId  = system.runInterval(() => {
         try {
@@ -55,7 +53,6 @@ function applyStun(entity) {
     }, 1);
     stunLoops.set(id, loopId);
 
-    // Quitar stun al terminar
     system.runTimeout(() => {
         stunnedEntities.delete(id);
         if (stunLoops.has(id)) {
@@ -71,16 +68,13 @@ world.beforeEvents.entityHurt.subscribe((event) => {
     const victim = event.hurtEntity;
     if (victim.typeId !== ENTITY_ID) return;
 
-    // Permitir daño por comandos (kill, damage) — no tienen damagingEntity
     const cause = event.damageSource?.cause;
     if (cause === "override" || cause === "void" || cause === "suicide" || !event.damageSource?.damagingEntity && cause !== "entityAttack") return;
 
     const attacker = event.damageSource?.damagingEntity;
 
-    // Si esta stunneado — puede recibir cualquier daño
     if (stunnedEntities.has(victim.id)) return;
 
-    // No stunneado — verificar si puede stunnearlo
     let canStun = false;
 
     if (attacker) {
@@ -100,7 +94,6 @@ world.beforeEvents.entityHurt.subscribe((event) => {
         return;
     }
 
-    // Cualquier otro — inmune, sonido de bloqueo
     event.cancel = true;
     try {
         system.run(() => {
@@ -110,60 +103,16 @@ world.beforeEvents.entityHurt.subscribe((event) => {
     } catch (_) {}
 });
 
-/* ================= SPAWN AL MORIR JUGADOR ================= */
+/* ================= LIMPIAR AL MORIR ================= */
 
 world.afterEvents.entityDie.subscribe((event) => {
     const entity = event.deadEntity;
-
-    // Limpiar plzombie muerto
-    if (entity.typeId === ENTITY_ID) {
-        const id = entity.id;
-        stunnedEntities.delete(id);
-        stunnCooldowns.delete(id);
-        if (stunLoops.has(id)) {
-            system.clearRun(stunLoops.get(id));
-            stunLoops.delete(id);
-        }
-        return;
+    if (entity.typeId !== ENTITY_ID) return;
+    const id = entity.id;
+    stunnedEntities.delete(id);
+    stunnCooldowns.delete(id);
+    if (stunLoops.has(id)) {
+        system.clearRun(stunLoops.get(id));
+        stunLoops.delete(id);
     }
-
-    // Spawn al morir jugador por zombie
-    if (entity.typeId !== "minecraft:player") return;
-    if (Math.random() > 0.5) return;
-
-    const attacker = event.damageSource?.damagingEntity;
-    if (!attacker) return;
-
-    // Verificar que el atacante es de familia zombie
-    const isZombie = attacker.hasComponent("minecraft:type_family")
-        ? (() => {
-            try {
-                return attacker.runCommand("testfor @s[family=zombie]"), true;
-            } catch (_) { return false; }
-          })()
-        : false;
-
-    // Alternativa mas confiable — verificar typeId
-    const zombieTypes = [
-        "minecraft:zombie", "minecraft:zombie_villager",
-        "minecraft:husk", "minecraft:drowned",
-        "minecraft:zombie_pigman", "minecraft:zombified_piglin",
-        "udaw:zombiecomun", "udaw:zombieminer", "udaw:zombiewc",
-        "udaw:zombie_lance", "udaw:zombietnt", "udaw:zombierange",
-        "udaw:pillagerzombie", "udaw:vindicatorzombie",
-        "udaw:evocatorzombie", "udaw:zombie_shovel", "udaw:plzombie"
-    ];
-
-    if (!zombieTypes.includes(attacker.typeId)) return;
-
-    system.run(() => {
-        try {
-            const pos  = entity.location;
-            const dim  = entity.dimension;
-            const name = entity.name ?? entity.nameTag ?? "Unknown";
-
-            const plzombie = dim.spawnEntity(ENTITY_ID, pos);
-            plzombie.nameTag = `Fallen: ${name}`;
-        } catch (_) {}
-    });
 });
