@@ -24,5 +24,5 @@
     "start_pool": "udaw:camp_pool", 
     "max_depth": 7,
     "heightmap_projection": "world_surface"
-  } 
+  }
 }
