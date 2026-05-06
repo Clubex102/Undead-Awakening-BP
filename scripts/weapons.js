@@ -1,8 +1,9 @@
 import { EntityEquippableComponent, EntityInventoryComponent, EquipmentSlot, GameMode, ItemDurabilityComponent, ItemEnchantableComponent, ItemStack, system, world } from "@minecraft/server";
 import { shootCommon } from "./globalVar/u.js";
 
-const AMMO_ITEM    = "minecraft:iron_nugget";
-const reloadingNow = new Set();
+const AMMO_ITEM      = "minecraft:iron_nugget";
+const reloadingNow   = new Set();
+const reloadWatchers = new Map(); // playerId -> loopId
 
 /* ================= UTILIDADES ================= */
 
@@ -92,6 +93,42 @@ function convertItem(from, toId) {
     return newItem;
 }
 
+/* ================= SONIDO DE RECARGA ================= */
+
+function startReloadSound(player, soundId, watchItemId) {
+    const pid = player.id;
+    if (reloadingNow.has(pid)) return;
+    reloadingNow.add(pid);
+    player.dimension.playSound(soundId, player.location);
+
+    const watchId = system.runInterval(() => {
+        try {
+            const held = player.getComponent(EntityEquippableComponent.componentId)
+                               ?.getEquipmentSlot(EquipmentSlot.Mainhand)?.getItem();
+            if (!held || held.typeId !== watchItemId) {
+                player.runCommand(`stopsound @s ${soundId}`);
+                reloadingNow.delete(pid);
+                system.clearRun(reloadWatchers.get(pid));
+                reloadWatchers.delete(pid);
+            }
+        } catch (_) {
+            system.clearRun(reloadWatchers.get(pid));
+            reloadWatchers.delete(pid);
+        }
+    }, 5);
+    reloadWatchers.set(pid, watchId);
+}
+
+function stopReloadSound(player, soundId) {
+    const pid = player.id;
+    try { player.runCommand(`stopsound @s ${soundId}`); } catch (_) {}
+    reloadingNow.delete(pid);
+    if (reloadWatchers.has(pid)) {
+        system.clearRun(reloadWatchers.get(pid));
+        reloadWatchers.delete(pid);
+    }
+}
+
 /* ================= PARTICULAS Y SHAKE ================= */
 
 function spawnMuzzleEffects(player, shootSound) {
@@ -142,13 +179,10 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
 
             if (!removeItem(source, AMMO_ITEM)) return;
 
-            // Detener sonido de recarga y reproducir sonido de cargado
-            try { source.runCommand("stopsound @s reload1"); } catch (_) {}
-            source.dimension.playSound("reload1", source.location);
+            stopReloadSound(source, "reload1");
 
             const loaded = convertItem(item, "udaw:arcabuz_loaded");
             mainhand.setItem(loaded);
-            reloadingNow.delete(source.id);
 
             const id = source.id;
             loadedPlayers[id] = true;
@@ -164,9 +198,8 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
 
             if (!hasItem(source, AMMO_ITEM)) {
                 mainhand.setItem(convertItem(item, "udaw:arcabuz_unusable"));
-            } else if (!reloadingNow.has(source.id)) {
-                reloadingNow.add(source.id);
-                source.dimension.playSound("reload1", source.location);
+            } else {
+                startReloadSound(source, "reload1", "udaw:arcabuz");
                 try { source.playAnimation("animation.humanoid.crossbow_hold", { blendOutTime: 0.2, stopExpression: "1" }); } catch (_) {}
             }
         }
@@ -177,13 +210,6 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
         onUse(event) {
             const { source } = event;
             if (loadedPlayers[source.id]) return;
-            if (reloadingNow.has(source.id)) {
-                system.runTimeout(() => {
-                    try { source.runCommand("stopsound @s reload1"); } catch (_) {}
-                }, 3);
-                reloadingNow.delete(source.id);
-                return;
-            }
 
             const mainhand = source.getComponent(EntityEquippableComponent.componentId)
                                    ?.getEquipmentSlot(EquipmentSlot.Mainhand);
@@ -228,12 +254,10 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
 
             if (!removeItem(source, AMMO_ITEM)) return;
 
-            try { source.runCommand("stopsound @s reload2"); } catch (_) {}
-            source.dimension.playSound("reload2", source.location);
+            stopReloadSound(source, "reload2");
 
             const loaded = convertItem(item, "udaw:flintlockgun_loaded");
             mainhand.setItem(loaded);
-            reloadingNow.delete(source.id);
 
             const id = source.id;
             loadedPlayers[id] = true;
@@ -249,9 +273,8 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
 
             if (!hasItem(source, AMMO_ITEM)) {
                 mainhand.setItem(convertItem(item, "udaw:flintlockgun_unusable"));
-            } else if (!reloadingNow.has(source.id)) {
-                reloadingNow.add(source.id);
-                source.dimension.playSound("reload2", source.location);
+            } else {
+                startReloadSound(source, "reload2", "udaw:flintlockgun");
                 try { source.playAnimation("animation.humanoid.crossbow_hold", { blendOutTime: 0.2, stopExpression: "1" }); } catch (_) {}
             }
         }
@@ -262,13 +285,6 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
         onUse(event) {
             const { source } = event;
             if (loadedPlayers[source.id]) return;
-            if (reloadingNow.has(source.id)) {
-                system.runTimeout(() => {
-                    try { source.runCommand("stopsound @s reload2"); } catch (_) {}
-                }, 3);
-                reloadingNow.delete(source.id);
-                return;
-            }
 
             const mainhand = source.getComponent(EntityEquippableComponent.componentId)
                                    ?.getEquipmentSlot(EquipmentSlot.Mainhand);
@@ -303,21 +319,19 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
     });
 });
 
-/* ================= SOLTAR BOTON — CANCELAR SONIDO ================= */
+/* ================= SOLTAR BOTON ================= */
 
 world.afterEvents.itemReleaseUse.subscribe((event) => {
-    const item = event.itemStack;
+    const item   = event.itemStack;
+    const player = event.source;
     if (!item) return;
 
     const typeId = item.typeId;
-    const player = event.source;
 
     if (typeId === "udaw:arcabuz") {
-        try { player.runCommand("stopsound @s reload1"); } catch (_) {}
-        reloadingNow.delete(player.id);
+        stopReloadSound(player, "reload1");
     } else if (typeId === "udaw:flintlockgun") {
-        try { player.runCommand("stopsound @s reload2"); } catch (_) {}
-        reloadingNow.delete(player.id);
+        stopReloadSound(player, "reload2");
     }
 
     if (typeId === "udaw:arcabuz_loaded" || typeId === "udaw:flintlockgun_loaded") {

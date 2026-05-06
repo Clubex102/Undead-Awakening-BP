@@ -2,13 +2,12 @@
   "format_version": "1.8.0",
   "minecraft:spawn_rules": {
     "description": {
-      "identifier": "udaw:zombieminer",
+      "identifier": "udaw:zombie_igniter",
       "population_control": "monster"
     },
     "conditions": [
       {
         "minecraft:spawns_on_surface": {},
-        "minecraft:spawns_underground": {},
         "minecraft:brightness_filter": {
           "min": 0,
           "max": 7,
@@ -18,8 +17,7 @@
           "default": 10
         },
         "minecraft:density_limit": {
-          "surface": 1,
-          "underground": 5
+          "surface": 4
         },
         "minecraft:difficulty_filter": {
           "min": "easy",

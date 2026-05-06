@@ -1,5 +1,5 @@
 {
-  "format_version": "1.21.20",
+  "format_version": "1.21.80",
   "minecraft:template_pool": {
     "description": {
       "identifier": "udaw:camp_pool"
@@ -9,8 +9,9 @@
         "weight": 1,
         "element": {
           "element_type": "minecraft:single_pool_element",
-          "location": "udaw/camp",
-          "projection": "rigid"
+          "location": "udaw:camp",
+          "projection": "rigid",
+          "processors": ""
         }
       }
     ]

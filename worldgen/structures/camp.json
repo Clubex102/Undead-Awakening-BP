@@ -1,6 +1,12 @@
 { 
   "format_version": "1.21.20", 
   "minecraft:jigsaw": { 
+    "start_height": {
+      "type": "constant",
+      "value": {
+        "absolute": 0
+      }
+    },
     "description": { 
         "identifier": "udaw:camp"
     }, 
