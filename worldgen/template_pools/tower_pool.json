@@ -9,7 +9,7 @@
         "weight": 1,
         "element": {
           "element_type": "minecraft:single_pool_element",
-          "location": "udaw:tower",
+          "location": "udaw:udaw/tower",
           "projection": "rigid",
           "processors": ""
         }

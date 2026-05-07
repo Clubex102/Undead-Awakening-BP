@@ -7,10 +7,180 @@
       "is_summonable": true,
       "is_experimental": false
     },
-    "components": {
-      
-      "minecraft:physics": {}
 
+    "component_groups": {
+
+      "udaw:timer_pillager": {
+        "minecraft:timer": {
+          "time": 20.0,
+          "looping": false,
+          "time_down_event": {
+            "event": "udaw:spawn_pillager_now",
+            "target": "self"
+          }
+        }
+      },
+      "udaw:timer_transition_to_vindicator": {
+        "minecraft:timer": {
+          "time": 1.0,
+          "looping": false,
+          "time_down_event": {
+            "event": "udaw:start_vindicator_timer",
+            "target": "self"
+          }
+        }
+      },
+      "udaw:timer_vindicator": {
+        "minecraft:timer": {
+          "time": 20.0,
+          "looping": false,
+          "time_down_event": {
+            "event": "udaw:spawn_vindicator_now",
+            "target": "self"
+          }
+        }
+      },
+      "udaw:timer_transition_to_evocator": {
+        "minecraft:timer": {
+          "time": 1.0,
+          "looping": false,
+          "time_down_event": {
+            "event": "udaw:start_evocator_timer",
+            "target": "self"
+          }
+        }
+      },
+      "udaw:timer_evocator": {
+        "minecraft:timer": {
+          "time": 20.0,
+          "looping": false,
+          "time_down_event": {
+            "event": "udaw:spawn_evocator_now",
+            "target": "self"
+          }
+        }
+      },
+      "udaw:timer_transition_to_pillager": {
+        "minecraft:timer": {
+          "time": 1.0,
+          "looping": false,
+          "time_down_event": {
+            "event": "udaw:start_pillager_timer",
+            "target": "self"
+          }
+        }
+      },
+
+      "udaw:spawn_pillager": {
+        "minecraft:spawn_entity": {
+          "entities": {
+            "min_wait_time": 0,
+            "max_wait_time": 0,
+            "spawn_entity": "udaw:pillagerzombie",
+            "single_use": true,
+            "num_to_spawn": 1
+          }
+        }
+      },
+      "udaw:spawn_vindicator": {
+        "minecraft:spawn_entity": {
+          "entities": {
+            "min_wait_time": 0,
+            "max_wait_time": 0,
+            "spawn_entity": "udaw:vindicatorzombie",
+            "single_use": true,
+            "num_to_spawn": 1
+          }
+        }
+      },
+      "udaw:spawn_evocator": {
+        "minecraft:spawn_entity": {
+          "entities": {
+            "min_wait_time": 0,
+            "max_wait_time": 0,
+            "spawn_entity": "udaw:evocatorzombie",
+            "single_use": true,
+            "num_to_spawn": 1
+          }
+        }
+      }
+
+    },
+
+    "components": {
+      "minecraft:physics": {}
+    },
+
+    "events": {
+      "minecraft:entity_spawned": {
+        "add": { "component_groups": ["udaw:timer_pillager"] }
+      },
+
+      "udaw:spawn_pillager_now": {
+        "sequence": [
+          {
+            "add": { "component_groups": ["udaw:spawn_pillager"] }
+          },
+          {
+            "add": { "component_groups": ["udaw:timer_transition_to_vindicator"] }
+          }
+        ]
+      },
+
+      "udaw:start_vindicator_timer": {
+        "sequence": [
+          {
+            "remove": { "component_groups": ["udaw:spawn_pillager"] }
+          },
+          {
+            "add": { "component_groups": ["udaw:timer_vindicator"] }
+          }
+        ]
+      },
+
+      "udaw:spawn_vindicator_now": {
+        "sequence": [
+          {
+            "add": { "component_groups": ["udaw:spawn_vindicator"] }
+          },
+          {
+            "add": { "component_groups": ["udaw:timer_transition_to_evocator"] }
+          }
+        ]
+      },
+
+      "udaw:start_evocator_timer": {
+        "sequence": [
+          {
+            "remove": { "component_groups": ["udaw:spawn_vindicator"] }
+          },
+          {
+            "add": { "component_groups": ["udaw:timer_evocator"] }
+          }
+        ]
+      },
+
+      "udaw:spawn_evocator_now": {
+        "sequence": [
+          {
+            "add": { "component_groups": ["udaw:spawn_evocator"] }
+          },
+          {
+            "add": { "component_groups": ["udaw:timer_transition_to_pillager"] }
+          }
+        ]
+      },
+
+      "udaw:start_pillager_timer": {
+        "sequence": [
+          {
+            "remove": { "component_groups": ["udaw:spawn_evocator"] }
+          },
+          {
+            "add": { "component_groups": ["udaw:timer_pillager"] }
+          }
+        ]
+      }
     }
   }
 }

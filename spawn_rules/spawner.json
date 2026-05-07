@@ -22,7 +22,7 @@
         },
         "minecraft:density_limit": {
           "surface": 5,
-          "underground": 2
+          "underground": 5
         
         },
         "minecraft:difficulty_filter": {
