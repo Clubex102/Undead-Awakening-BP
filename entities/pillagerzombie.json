@@ -85,7 +85,7 @@
                 "must_see": true,
                 "must_see_forget_duration": 90,
                 "reselect_targets": true,
-                "within_radius": 80,
+                "within_radius": 120,
                 "entity_types": [
                     {
                         "filters": {

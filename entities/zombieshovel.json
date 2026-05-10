@@ -58,7 +58,7 @@
                 "must_see": false,
                 "must_see_forget_duration": 90,
                 "reselect_targets": true,
-                "within_radius": 300,
+                "within_radius": 120,
                 "entity_types": [
                     {
                         "filters": {
@@ -95,7 +95,7 @@
                                 }
                             ]
                         },
-                        "max_dist": 300
+                        "max_dist": 200
                     }
                 ]
             },

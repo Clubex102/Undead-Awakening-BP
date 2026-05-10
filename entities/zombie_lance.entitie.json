@@ -203,7 +203,7 @@
                         }
                     }
                 ],
-                "within_radius": 70
+                "within_radius": 120
             }
         },
         "events": {

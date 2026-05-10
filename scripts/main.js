@@ -13,6 +13,7 @@ import {
 import { shootCommon, shootRepeat } from "./globalVar/u.js";
 import "./entities/zombie_miner.js";
 import "./weapons.js";
+import "./entities/spawner2.js";
 import "./entities/zombiewc.js";
 import "./entities/zombielance.js";
 import "./entities/zombietnt.js";

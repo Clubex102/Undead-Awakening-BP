@@ -2,7 +2,7 @@
     "format_version": "1.21.10",
     "minecraft:recipe_shaped": {
         "description": {
-            "identifier": "udaw:cannon"
+            "identifier": "udaw:oil_bottle"
         },
         "unlock": [
             {
@@ -13,22 +13,23 @@
             "crafting_table"
         ],
         "pattern": [
-            "HHB",
-            "PPP"
+            "HHH",
+            " P ",
+            "TTT"
         ],
         "key": {
             "H": {
-                "item": "minecraft:iron_ingot"
+                "item": "minecraft:porkchop"
             },
             "P": {
-                "item": "minecraft:planks"
+                "item": "minecraft:glass_bottle"
             },
-            "B": {
-                "item": "minecraft:iron_block"
+            "T": {
+                "item": "minecraft:coal"
             }
         },
         "result": {
-            "item": "udaw:cannon",
+            "item": "udaw:oil_bottle",
             "count": 1
         }
     }
