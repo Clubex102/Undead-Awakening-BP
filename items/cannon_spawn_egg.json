@@ -1,0 +1,21 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:item": {
+        "description": {
+            "identifier": "udaw:cannon_spawn_egg",
+            "menu_category": {
+                "category": "equipment"
+            }
+        },
+        "components": {
+            "minecraft:icon": "egg",
+            "minecraft:use_on_release": {
+                "on_release": "summon_entity"
+            },
+            "minecraft:entity_placer": {
+                "entity": "udaw:cannon"
+            },
+            "minecraft:max_stack_size": 64
+        }
+    }
+}
