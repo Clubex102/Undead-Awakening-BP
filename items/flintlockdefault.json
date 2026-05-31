@@ -28,7 +28,7 @@
                 "repair_items": [{ "items": ["minecraft:iron_ingot"], "repair_amount": "query.max_durability * 0.25" }]
             },
             "minecraft:enchantable": { "slot": "sword", "value": 1 },
-            "minecraft:use_animation": "crossbow"
+            "minecraft:use_animation": "spyglass"
         }
     }
 }
