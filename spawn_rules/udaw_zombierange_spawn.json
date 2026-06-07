@@ -9,6 +9,9 @@
       {
         "minecraft:spawns_on_surface": {
         },
+        "minecraft:weight": {
+          "default": 10
+        },
         "minecraft:spawns_underground": {
         },
         "minecraft:brightness_filter": {
