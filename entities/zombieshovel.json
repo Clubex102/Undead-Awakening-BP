@@ -46,7 +46,7 @@
                 "damage": 4.5
             },
             "minecraft:behavior.move_towards_target": {
-                "within_radius": 10,
+                "within_radius": 100,
                 "priority": 1
             },
             "minecraft:behavior.break_door": {
@@ -56,9 +56,9 @@
             "minecraft:behavior.nearest_attackable_target": {
                 "priority": 0,
                 "must_see": false,
-                "must_see_forget_duration": 90,
+                "must_see_forget_duration": 300,
                 "reselect_targets": true,
-                "within_radius": 120,
+                "within_radius": 400,
                 "entity_types": [
                     {
                         "filters": {
@@ -95,7 +95,7 @@
                                 }
                             ]
                         },
-                        "max_dist": 200
+                        "max_dist": 400
                     }
                 ]
             },

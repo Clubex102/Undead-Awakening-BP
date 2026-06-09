@@ -5,8 +5,8 @@ import { world, system, EntityDamageCause } from "@minecraft/server";
 const ENTITY_TYPE_ID   = "udaw:zombie_lance";
 const COOLDOWN_TICKS   = 100;   // 5 segundos
 const MAX_RANGE        = 7;     // Distancia máxima al objetivo para activar
-const DASH_POWER       = 2.0;   // Fuerza del impulso horizontal
-const DASH_POWER_Y     = 0.2;   // Pequeño impulso vertical para que no se atasque en el suelo
+const DASH_POWER       = 1.4;
+const DASH_POWER_Y     = 0.1;
 const DAMAGE           = 6;     // Daño al impactar
 const DAMAGE_RADIUS    = 2.0;   // Radio de daño tras el impulso
 
@@ -138,29 +138,41 @@ system.runInterval(() => {
                     // Whoosh de lanza — levanta el arma
                     entity.dimension.runCommand(`playsound item.trident.throw @a ${pos.x} ${pos.y} ${pos.z} 1.0 0.7`);
                 } catch (_) {}
+// Reproducir animación de ataque
+entity.playAnimation("animation.zombielance.attack2");
 
-                // Reproducir animación de ataque
-                entity.playAnimation("animation.zombielance.attack2");
+// Esperar un poco para que la animación empiece
+system.runTimeout(() => {
 
-                // Aplicar impulso SOLO al zombie_lance
-                entity.applyImpulse({
-                    x: dir.x * DASH_POWER,
-                    y: DASH_POWER_Y,
-                    z: dir.z * DASH_POWER,
-                });
+    try {
 
-                // Aplicar daño a lo que haya cerca tras el impulso
-                system.runTimeout(() => {
-                    try { applyDashDamage(entity); } catch (_) {}
-                }, 4);
+        entity.clearVelocity();
 
-                // Registrar cooldown
-                cooldownMap.set(id, tick + COOLDOWN_TICKS);
+        entity.applyImpulse({
+            x: dir.x * DASH_POWER,
+            y: DASH_POWER_Y,
+            z: dir.z * DASH_POWER,
+        });
 
-            } catch (_) {
-                // Entidad inválida o removida, ignorar
-            }
+    } catch (_) {}
+
+}, 4);
+
+// Aplicar daño cuando ya terminó la mayor parte de la estocada
+system.runTimeout(() => {
+
+    try {
+
+        applyDashDamage(entity);
+
+    } catch (_) {}
+
+}, 8);
+
+// Registrar cooldown inmediatamente para evitar dobles ataques
+cooldownMap.set(id, tick + COOLDOWN_TICKS);
+
+            } catch (_) {}
         }
     }
-
-}, 10);
+});

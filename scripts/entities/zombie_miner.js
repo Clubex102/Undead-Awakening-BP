@@ -313,6 +313,7 @@ const DIRT_BLOCK        = "minecraft:dirt";
 
 const shovelCooldowns = new Map();
 const shovelTracked   = new Set();
+const shovelBuildMemory = new Map();
 
 /* ================= HELPERS ================= */
 
@@ -345,50 +346,111 @@ function getPerp(dir) {
         z: -dir.x
     };
 }
+function directionChanged(entity, target) {
 
+    const memory =
+        shovelBuildMemory.get(entity.id);
+
+    if (!memory)
+        return false;
+
+    const newDir = getHorizDir(
+        entity.location,
+        target.location
+    );
+
+    return (
+        newDir.x !== memory.dirX ||
+        newDir.z !== memory.dirZ
+    );
+}
+function isSkybaseTarget(entity, target) {
+
+    const dim = entity.dimension;
+
+    const targetPos = {
+        x: Math.floor(target.location.x),
+        y: Math.floor(target.location.y),
+        z: Math.floor(target.location.z)
+    };
+
+    let airCount = 0;
+
+    for (let i = 1; i <= 8; i++) {
+
+        try {
+
+            const block = dim.getBlock({
+                x: targetPos.x,
+                y: targetPos.y - i,
+                z: targetPos.z
+            });
+
+            if (
+                block &&
+                block.typeId === "minecraft:air"
+            ) {
+                airCount++;
+            }
+
+        } catch (_) {}
+    }
+
+    return airCount >= 6;
+}
 /* ================= ESCALERA ================= */
 
 function placeStairStep(entity, target) {
 
-    const dim  = entity.dimension;
-    const pos  = entity.location;
-    const dir  = getHorizDir(pos, target.location);
-    const perp = getPerp(dir);
+const dim = entity.dimension;
+
+let memory =
+    shovelBuildMemory.get(entity.id);
+
+let pos;
+let dir;
+
+if (memory) {
+
+    pos = {
+        x: memory.x,
+        y: memory.y,
+        z: memory.z
+    };
+
+} else {
+
+    pos = entity.location;
+}
+
+dir = getHorizDir(
+    pos,
+    target.location
+);
+
+const perp = getPerp(dir);
 
     const baseY = Math.floor(pos.y);
     const baseX = Math.floor(pos.x);
     const baseZ = Math.floor(pos.z);
 
-    const positions = [
+const positions = [
 
-        // Parte baja
-        {
-            x: baseX + dir.x,
-            y: baseY,
-            z: baseZ + dir.z
-        },
+    {
+        x: baseX + dir.x,
+        y: baseY,
+        z: baseZ + dir.z
+    },
 
-        {
-            x: baseX + dir.x + perp.x,
-            y: baseY,
-            z: baseZ + dir.z + perp.z
-        },
-
-        // Parte alta
-        {
-            x: baseX + 2 * dir.x,
-            y: baseY + 1,
-            z: baseZ + 2 * dir.z
-        },
-
-        {
-            x: baseX + 2 * dir.x + perp.x,
-            y: baseY + 1,
-            z: baseZ + 2 * dir.z + perp.z
-        }
-    ];
+    {
+        x: baseX + dir.x + perp.x,
+        y: baseY,
+        z: baseZ + dir.z + perp.z
+    }
+];
 
     let placed = 0;
+let highestPlaced = null;
 
     for (const p of positions) {
 
@@ -398,13 +460,27 @@ function placeStairStep(entity, target) {
 
             if (block && block.typeId === "minecraft:air") {
 
-                dim.setBlockType(p, DIRT_BLOCK);
-                placed++;
+dim.setBlockType(p, DIRT_BLOCK);
+
+highestPlaced = p;
+
+placed++;
             }
 
         } catch (_) {}
     }
+        
+if (highestPlaced) {
 
+    shovelBuildMemory.set(
+        entity.id,
+        {
+            x: highestPlaced.x,
+            y: highestPlaced.y,
+            z: highestPlaced.z
+        }
+    );
+}
     if (placed > 0) {
 
         try {
@@ -418,16 +494,15 @@ function placeStairStep(entity, target) {
 }
 
 /* ================= TARGET ================= */
-
 function findShovelTarget(entity) {
 
     const candidates = entity.dimension.getEntities({
         location: entity.location,
-        maxDistance: 20
+        maxDistance: 30
     });
 
     let best = null;
-    let bestDist = Infinity;
+    let bestScore = -9999;
 
     for (const e of candidates) {
 
@@ -443,17 +518,33 @@ function findShovelTarget(entity) {
             ].includes(e.typeId)
         ) continue;
 
-        const d = dist3D(entity.location, e.location);
+        const dx =
+            e.location.x - entity.location.x;
 
-        if (d < bestDist) {
+        const dz =
+            e.location.z - entity.location.z;
+
+        const horizontalDist =
+            Math.sqrt(dx * dx + dz * dz);
+
+        const heightDiff =
+            e.location.y - entity.location.y;
+
+        let score = 0;
+
+        score += heightDiff * 8;
+
+        score -= horizontalDist;
+
+        if (score > bestScore) {
+
+            bestScore = score;
             best = e;
-            bestDist = d;
         }
     }
 
     return best;
 }
-
 /* ================= CONSTRUCT ================= */
 
 function executeShovelConstruct(entity) {
@@ -546,6 +637,7 @@ world.afterEvents.entityDie.subscribe((event) => {
 
     shovelTracked.delete(entity);
     shovelCooldowns.delete(entity.id);
+    shovelBuildMemory.delete(entity.id);
 });
 
 /* ================= SHOVEL LOOP ================= */
@@ -577,31 +669,63 @@ system.runInterval(() => {
 
             if (tick < readyAt) continue;
 
-            const target = findShovelTarget(entity);
+const target = findShovelTarget(entity);
 
-            if (!target) continue;
+if (!target) continue;
 
-            const dyDiff = Math.abs(
-                target.location.y -
-                entity.location.y
-            );
+const memory =
+    shovelBuildMemory.get(id);
 
-            if (dyDiff <= STAIR_Y_THRESHOLD) {
+if (memory) {
+
+    const movedTarget =
+
+        Math.abs(
+            Math.floor(target.location.x)
+            - memory.targetX
+        ) > 3 ||
+
+        Math.abs(
+            Math.floor(target.location.z)
+            - memory.targetZ
+        ) > 3;
+
+    if (movedTarget) {
+
+        shovelBuildMemory.delete(id);
+    }
+}
+            if (
+    shovelBuildMemory.has(id) &&
+    directionChanged(entity, target)
+) {
+
+    shovelBuildMemory.delete(id);
+}
+
+            const dyDiff =
+    target.location.y -
+    entity.location.y;
+
+if (dyDiff <= STAIR_Y_THRESHOLD) {
+
+    shovelBuildMemory.delete(id);
+
+    continue;
+}
+
+            if (
+                target.typeId === "minecraft:player" &&
+                !isSkybaseTarget(entity, target)
+            ) {
                 continue;
             }
 
-            shovelCooldowns.set(
-                id,
-                tick + STAIR_COOLDOWN
-            );
-
             executeShovelConstruct(entity);
+            shovelCooldowns.set(id, tick + STAIR_COOLDOWN);
 
-        } catch (_) {
+        } catch (_) {}
 
-            shovelTracked.delete(entity);
-            shovelCooldowns.delete(entity.id);
-        }
     }
 
-}, 10);
+}, 2);

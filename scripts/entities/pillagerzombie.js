@@ -194,7 +194,6 @@ function removeSlowness(entity) {
 }
 
 /* ================= KNOCKDOWN ================= */
-
 function applyKnockdown(victim) {
 
     const id   = victim.id;
@@ -215,15 +214,42 @@ function applyKnockdown(victim) {
 
     try {
 
-        victim.addEffect("slowness", KNOCKDOWN_DURATION, {
-            amplifier: 255,
-            showParticles: false
-        });
+        if (victim.typeId === "minecraft:player") {
 
-        victim.addEffect("weakness", KNOCKDOWN_DURATION, {
-            amplifier: 255,
-            showParticles: false
-        });
+            victim.addEffect("weakness", KNOCKDOWN_DURATION, {
+                amplifier: 255,
+                showParticles: false
+            });
+
+            victim.runCommand(
+                "inputpermission set @s movement disabled"
+            );
+
+            system.runTimeout(() => {
+
+                try {
+
+                    victim.runCommand(
+                        "inputpermission set @s movement enabled"
+                    );
+
+                } catch (_) {}
+
+            }, KNOCKDOWN_DURATION);
+
+        } else {
+
+            victim.addEffect("slowness", KNOCKDOWN_DURATION, {
+                amplifier: 255,
+                showParticles: false
+            });
+
+            victim.addEffect("weakness", KNOCKDOWN_DURATION, {
+                amplifier: 255,
+                showParticles: false
+            });
+
+        }
 
     } catch (_) {}
 
@@ -261,7 +287,6 @@ function applyKnockdown(victim) {
 
     } catch (_) {}
 }
-
 /* ================= TACKLE ================= */
 
 function executeTackle(entity) {
