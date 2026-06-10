@@ -25,7 +25,7 @@
               "min_difficulty": "normal"
             },
             "minecraft:jump.static": {
-                "jump_power": 0.42
+                "jump_power": 0.54
             },
             "minecraft:can_climb": {},
             "minecraft:physics":
