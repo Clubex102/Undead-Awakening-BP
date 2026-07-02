@@ -12,6 +12,46 @@
             "spawn_category": "monster"
         },
         "component_groups": {
+            "udaw:stunned": {
+                "minecraft:movement": {
+                    "value": 0
+                },
+                "minecraft:movement.basic": {
+                    "max_turn": 0
+                },
+                "minecraft:spell_effects": {
+                    "add_effects": [
+                        {
+                            "effect": "slowness",
+                            "duration": 3
+                        },
+                        {
+                            "effect": "weakness",
+                            "duration": 3
+                        }
+                    ]
+                }
+            },
+            "udaw:stun_timer": {
+                "minecraft:timer": {
+                    "looping": false,
+                    "randomInterval": false,
+                    "time": [3, 3],
+                    "time_down_event": {
+                        "event": "udaw:stun_end"
+                    }
+                }
+            },
+            "udaw:stun_cooldown": {
+                "minecraft:timer": {
+                    "looping": false,
+                    "randomInterval": false,
+                    "time": [8, 8],
+                    "time_down_event": {
+                        "event": "udaw:stun_cooldown_end"
+                    }
+                }
+            }
         },
         "components": {
             "minecraft:health": {
@@ -102,7 +142,6 @@
                 ]
             },
             "minecraft:behavior.random_look_around": {
-                "look_distance": 60
             },
             "minecraft:collision_box": {
                 "height": 1.5,
@@ -154,7 +193,7 @@
             "blocks_to_avoid": [],
             "can_breach": false,
             "can_break_doors": true,
-            "can_jump": false,
+            "can_jump": true,
             "can_open_doors": false,
             "can_open_iron_doors": false,
             "can_pass_doors": true,
@@ -171,6 +210,35 @@
         "minecraft:movement.basic": {
             "max_turn": 30
         },
+        "minecraft:on_hurt": {
+    "event": "udaw:plzombie_on_hurt",
+    "target": "self",
+    "filters": {
+        "any_of": [
+            {
+                "test": "is_family",
+                "subject": "damager",
+                "value": "irongolem"
+            },
+            {
+                "test": "is_family",
+                "subject": "damager",
+                "value": "ravager"
+            },
+            {
+                "test": "is_family",
+                "subject": "damager",
+                "value": "vindicator"
+            },
+            {
+                "test": "has_equipment",
+                "subject": "damager",
+                "domain": "hand",
+                "value": "minecraft:iron_axe"
+            }
+        ]
+    }
+},
         "minecraft:loot": {
             "table": "loot_tables/entities/zombie_comun.json"
         },
@@ -179,7 +247,83 @@
         }
         },
         "events": {
-                    
+            "udaw:plzombie_on_hurt": {
+                "filters": {
+                    "all_of": [
+                        {
+                            "test": "has_component",
+                            "subject": "self",
+                            "operator": "!=",
+                            "value": "udaw:stun_cooldown"
+                        },
+                        {
+                            "any_of": [
+                                { "test": "is_family", "subject": "other", "value": "irongolem" },
+                                { "test": "is_family", "subject": "other", "value": "ravager" },
+                                { "test": "is_family", "subject": "other", "value": "vindicator" },
+                                {
+                                    "all_of": [
+                                        { "test": "is_family", "subject": "other", "value": "player" },
+                                        { "test": "has_equipment", "domain": "hand", "subject": "other", "value": "minecraft:wooden_axe" }
+                                    ]
+                                },
+                                {
+                                    "all_of": [
+                                        { "test": "is_family", "subject": "other", "value": "player" },
+                                        { "test": "has_equipment", "domain": "hand", "subject": "other", "value": "minecraft:stone_axe" }
+                                    ]
+                                },
+                                {
+                                    "all_of": [
+                                        { "test": "is_family", "subject": "other", "value": "player" },
+                                        { "test": "has_equipment", "domain": "hand", "subject": "other", "value": "minecraft:iron_axe" }
+                                    ]
+                                },
+                                {
+                                    "all_of": [
+                                        { "test": "is_family", "subject": "other", "value": "player" },
+                                        { "test": "has_equipment", "domain": "hand", "subject": "other", "value": "minecraft:golden_axe" }
+                                    ]
+                                },
+                                {
+                                    "all_of": [
+                                        { "test": "is_family", "subject": "other", "value": "player" },
+                                        { "test": "has_equipment", "domain": "hand", "subject": "other", "value": "minecraft:diamond_axe" }
+                                    ]
+                                },
+                                {
+                                    "all_of": [
+                                        { "test": "is_family", "subject": "other", "value": "player" },
+                                        { "test": "has_equipment", "domain": "hand", "subject": "other", "value": "minecraft:netherite_axe" }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "add": {
+                    "component_groups": [
+                        "udaw:stunned",
+                        "udaw:stun_timer",
+                        "udaw:stun_cooldown"
+                    ]
+                }
+            },
+            "udaw:stun_end": {
+                "remove": {
+                    "component_groups": [
+                        "udaw:stunned",
+                        "udaw:stun_timer"
+                    ]
+                }
+            },
+            "udaw:stun_cooldown_end": {
+                "remove": {
+                    "component_groups": [
+                        "udaw:stun_cooldown"
+                    ]
+                }
             }
+        }
         }
 }

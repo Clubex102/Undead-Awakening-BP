@@ -1,0 +1,33 @@
+{
+    "format_version": "1.20.80",
+    "minecraft:item": {
+        "description": {
+            "identifier": "udaw:raid_bottle",
+            "is_experimental": false,
+            "menu_category": {
+                "category": "equipment"
+            }
+        },
+        "components": {
+            "minecraft:display_name": {
+                "value": "ZOMBIE RAID CURSE"
+            },
+            "minecraft:fire_resistant": {
+                "value": true
+            },
+            "minecraft:food": {},
+            "minecraft:glint": true,
+            
+            "minecraft:cooldown": {
+                "category": "items",
+                "duration": 1
+            },
+            "minecraft:interact_button": "Use Item",
+            "minecraft:max_stack_size": 1,
+            "minecraft:use_modifiers": {
+                "use_duration": 30
+            },
+            "minecraft:icon": "raid_bottle"
+        }
+    }
+}
