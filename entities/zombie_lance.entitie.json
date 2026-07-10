@@ -137,14 +137,14 @@
                 ]
             },
         "minecraft:behavior.melee_attack": {
-            "melee_fov": 90,
+            "melee_fov": 360,
             "track_target": true,
             "attack_types": "melee",
             "random_stop_interval": 0,
-            "reach_multiplier": 2,
+            "reach_multiplier": 8,
             "attack_once": false,
             "require_complete_path": false,
-            "cooldown_time": 1
+            "cooldown_time": 3
 
             },
             

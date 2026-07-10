@@ -1,4 +1,4 @@
-{
+ {
     "format_version": "1.21.132",
     "minecraft:entity": {
         "description": {
@@ -35,59 +35,7 @@
             },
             "minecraft:raid_persistence": {
                 "minecraft:persistent": {}
-            },
-            "udaw:evocator_summon_loop": {
-                "minecraft:timer": {
-                    "looping": true,
-                    "randomInterval": false,
-                    "time": [15, 15],
-                    "time_down_event": {
-                        "event": "udaw:evocator_summon_start"
-                    }
-                }
-            },
-            "udaw:evocator_summon_charge": {
-                "minecraft:spell_effects": {
-                    "add_effects": [
-                        {
-                            "effect": "slowness",
-                            "duration": 3
-                        }
-                    ]
-                },
-                "minecraft:behavior.summon_entity": {
-                    "priority": 1,
-                    "summon_choices": [
-                        {
-                            "min_activation_range": 0.0,
-                            "max_activation_range": 64.0,
-                            "cooldown_time": 0.0,
-                            "cast_duration": 3.0,
-                            "weight": 1,
-                            "particle_color": "#FFAA33",
-                            "start_sound_event": "mob.ravager.roar",
-                            "sequence": [
-                                {
-                                    "shape": "circle",
-                                    "target": "self",
-                                    "base_delay": 3.0,
-                                    "delay_per_summon": 0.0,
-                                    "num_entities_spawned": 4,
-                                    "entity_type": "udaw:zombiecomun",
-                                    "size": 2.5
-                                }
-                            ]
-                        }
-                    ]
-                },
-                "minecraft:timer": {
-                    "looping": false,
-                    "time": 3.1,
-                    "time_down_event": {
-                        "event": "udaw:evocator_summon_release"
-                    }
-                }
-            }
+ }
         },
         "components": {
             "minecraft:health": {
@@ -255,36 +203,12 @@
         "minecraft:can_join_raid": {}
         },
         "events": {
-            "minecraft:entity_spawned": {
+ "minecraft:spawn_for_raid": {
                 "add": {
                     "component_groups": [
                         "minecraft:raid_configuration",
-                        "minecraft:raid_persistence",
-                        "udaw:evocator_summon_loop"
-                    ]
-                }
-            },
-            "minecraft:spawn_for_raid": {
-                "add": {
-                    "component_groups": [
-                        "minecraft:raid_configuration",
-                        "minecraft:raid_persistence",
-                        "udaw:evocator_summon_loop"
-                    ]
-                }
-            },
-            "udaw:evocator_summon_start": {
-                "add": {
-                    "component_groups": [
-                        "udaw:evocator_summon_charge"
-                    ]
-                }
-            },
-            "udaw:evocator_summon_release": {
-                "remove": {
-                    "component_groups": [
-                        "udaw:evocator_summon_charge"
-                    ]
+                        "minecraft:raid_persistence"
+                  ]
                 }
             }
         }

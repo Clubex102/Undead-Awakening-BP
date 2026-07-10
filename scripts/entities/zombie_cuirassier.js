@@ -28,7 +28,7 @@ const ATK2_THRESHOLD = 0.90;
 
 const BLOCK_DURATION = 50;    // ticks del bloqueo con timing
 const DASH_DURATION  = 10;    // ticks durante el dash hacia atrás
-const DASH_SPEED     = 0.5;   // impulso aplicado al dash
+const DASH_SPEED     = 0.3;   // impulso aplicado al dash
 const DASH_DISTANCE  = 3.0;   // referencia conceptual para la dirección del dash
 const DASH_ATTACK_INITIAL = 40;   // 2 segundos de slowness extremo
 const DASH_ATTACK_SECOND  = 40;   // 2 segundos de speed 2

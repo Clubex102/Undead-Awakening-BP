@@ -3,7 +3,6 @@
     "minecraft:entity": {
         "description": {
             "identifier": "udaw:cannonbullet",
-            "runtime_identifier": "minecraft:arrow",
             "is_summonable": true
         },
         "components": {

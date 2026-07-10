@@ -348,6 +348,110 @@ function executeTackle(entity) {
     }, 35);
 }
 
+/* ================= BERSERK ================= */
+
+function enterBerserk(entity) {
+
+    const id  = entity.id;
+    const pos = entity.location;
+    const dim = entity.dimension;
+
+    try {
+
+        entity.addEffect("slowness", 20, {
+            amplifier: 255,
+            showParticles: false
+        });
+
+    } catch (_) {}
+
+    try {
+        entity.playAnimation("animation.vindicatorzombie.berserk");
+    } catch (_) {}
+
+    try {
+
+        dim.playSound("mob.ravager.roar", pos, {
+            volume: 1.0,
+            pitch: 1.0
+        });
+
+    } catch (_) {}
+
+    system.runTimeout(() => {
+
+        try {
+
+            entity.addEffect("speed", 600, {
+                amplifier: 1,
+                showParticles: false
+            });
+
+            entity.addEffect("resistance", 600, {
+                amplifier: 1,
+                showParticles: false
+            });
+
+            entity.addEffect("strength", 600, {
+                amplifier: 1,
+                showParticles: false
+            });
+
+        } catch (_) {}
+
+    }, 20);
+
+    const loopId = system.runInterval(() => {
+
+        try {
+
+            const p = entity.location;
+
+            entity.dimension.spawnParticle(
+                "minecraft:villager_angry",
+                {
+                    x: p.x,
+                    y: p.y + 2.0,
+                    z: p.z
+                }
+            );
+
+        } catch (_) {
+
+            system.clearRun(particleLoops.get(id));
+
+            particleLoops.delete(id);
+        }
+
+    }, 10);
+
+    particleLoops.set(id, loopId);
+}
+
+/* ================= BERSERK TRIGGER ================= */
+
+world.afterEvents.entityHurt.subscribe((event) => {
+
+    const entity = event.hurtEntity;
+
+    if (entity.typeId !== VIND_ID)
+        return;
+
+    if (berserkActive.has(entity.id))
+        return;
+
+    const health  = entity.getComponent("minecraft:health");
+
+    const current = health?.currentValue ?? 0;
+    const max     = health?.effectiveMax ?? 1;
+
+    if (current <= max / 2) {
+
+        berserkActive.add(entity.id);
+
+        enterBerserk(entity);
+    }
+});
 
 /* ================= DAÑO SIN KNOCKBACK ================= */
 
@@ -392,7 +496,246 @@ world.afterEvents.entityHitEntity.subscribe((event) => {
 
     applyKnockdown(victim);
 });
+/* ================= EVOCATOR ATAQUE 1 ================= */
 
+function executeEvocatorAttack1(entity) {
+
+    const dim = entity.dimension;
+
+    try {
+
+        entity.addEffect("slowness", EVOCATOR_ANIM1_TICKS, {
+            amplifier: 255,
+            showParticles: false
+        });
+
+    } catch (_) {}
+
+    try {
+        entity.playAnimation("animation.evokerzombie.attack1");
+    } catch (_) {}
+
+    try {
+
+        const p = entity.location;
+
+        dim.playSound("mob.ravager.roar", p, {
+            volume: 1.0,
+            pitch: 1.0
+        });
+
+    } catch (_) {}
+
+    const flameLoop = system.runInterval(() => {
+
+        try {
+
+            const p = entity.location;
+
+            const angle  = Math.random() * Math.PI * 2;
+            const radius = Math.random() * 1.5;
+
+            dim.spawnParticle(BLUE_FLAME, {
+                x: p.x + Math.cos(angle) * radius,
+                y: p.y + Math.random() * 2.0,
+                z: p.z + Math.sin(angle) * radius
+            });
+
+        } catch (_) {}
+
+    }, 4);
+
+    system.runTimeout(() => {
+
+        try {
+
+            const p = entity.location;
+
+            dim.playSound(
+                "mob.evocation_illager.prepare_summon",
+                p,
+                {
+                    volume: 1.0,
+                    pitch: 1.0
+                }
+            );
+
+        } catch (_) {}
+
+    }, 40);
+
+    system.runTimeout(() => {
+
+        try {
+
+            const p = entity.location;
+
+            dim.playSound("mob.ravager.roar", p, {
+                volume: 1.0,
+                pitch: 1.2
+            });
+
+        } catch (_) {}
+
+    }, 70);
+
+    system.runTimeout(() => {
+
+        try {
+
+            system.clearRun(flameLoop);
+
+            const p = entity.location;
+
+            for (let i = 0; i < 4; i++) {
+
+                const angle  = (Math.PI / 2) * i;
+                const radius = 1.5 + Math.random() * 1.5;
+
+                dim.spawnEntity(EVOCATOR_SUMMON, {
+                    x: p.x + Math.cos(angle) * radius,
+                    y: p.y,
+                    z: p.z + Math.sin(angle) * radius
+                });
+            }
+
+        } catch (_) {}
+
+    }, 75);
+}
+
+/* ================= EVOCATOR ATAQUE 2 ================= */
+
+function executeEvocatorAttack2(entity) {
+
+    const dim = entity.dimension;
+
+    try {
+
+        entity.addEffect("slowness", EVOCATOR_ANIM2_TICKS, {
+            amplifier: 255,
+            showParticles: false
+        });
+
+    } catch (_) {}
+
+    try {
+        entity.playAnimation("animation.evokerzombie.attack2");
+    } catch (_) {}
+
+    try {
+
+        const p = entity.location;
+
+        dim.playSound("mob.ravager.roar", p, {
+            volume: 1.0,
+            pitch: 1.0
+        });
+
+    } catch (_) {}
+
+    try {
+
+        const p = entity.location;
+
+        dim.playSound(
+            "mob.evocation_illager.prepare_wololo",
+            p,
+            {
+                volume: 1.0,
+                pitch: 1.0
+            }
+        );
+
+    } catch (_) {}
+
+    const particleLoopId = system.runInterval(() => {
+
+        try {
+
+            const p = entity.location;
+
+            const headY = p.y + 2.0;
+
+            for (let i = 0; i < 5; i++) {
+
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * 1.5;
+
+                dim.spawnParticle(
+                    "minecraft:electric_spark_particle",
+                    {
+                        x: p.x + Math.cos(angle) * radius,
+                        y: headY + Math.random() * 0.8,
+                        z: p.z + Math.sin(angle) * radius
+                    }
+                );
+            }
+
+        } catch (_) {}
+
+    }, 4);
+
+    system.runTimeout(() => {
+
+        try {
+
+            system.clearRun(particleLoopId);
+
+            const p = entity.location;
+
+            const candidates = dim.getEntities({
+                location: p,
+                maxDistance: 20
+            });
+
+            for (const target of candidates) {
+
+                try {
+
+                    if (target === entity)
+                        continue;
+
+                    const id = target.typeId;
+
+                    if (isCreativePlayer(target))
+                        continue;
+
+                    if (
+                        id === "minecraft:villager" ||
+                        id === "minecraft:villager_v2"
+                    ) continue;
+
+                    if (id.startsWith("udaw:"))
+                        continue;
+
+                    if (isNeutralMob(id))
+                        continue;
+
+                    if (
+                        id === "minecraft:item" ||
+                        id === "minecraft:xp_orb"
+                    ) continue;
+
+                    const tPos = target.location;
+
+                    dim.runCommand(
+                        `summon lightning_bolt ${
+                            Math.floor(tPos.x)
+                        } ${
+                            Math.floor(tPos.y)
+                        } ${
+                            Math.floor(tPos.z)
+                        }`
+                    );
+
+                } catch (_) {}
+            }
+
+        } catch (_) {}
+
+    }, 40);
+}
 
 /* ================= SPAWN EVOCATOR ================= */
 
@@ -503,6 +846,61 @@ system.runInterval(() => {
             } catch (_) {}
         }
 
+    }
+
+}, 10);
+/* ================= MAIN LOOP EVOCATOR ================= */
+
+system.runInterval(() => {
+
+    if (evocatorTracked.size === 0)
+        return;
+
+    const tick = system.currentTick;
+
+    for (const entity of evocatorTracked) {
+
+        try {
+
+            const id = entity.id;
+
+            const readyAt =
+                evocatorCooldowns.get(id) ?? 0;
+
+            if (tick < readyAt)
+                continue;
+
+            const target =
+                findEvocatorTarget(entity);
+
+            if (!target)
+                continue;
+
+            const nextAttack =
+                evocatorNextAttack.get(id) ?? 1;
+
+            evocatorCooldowns.set(
+                id,
+                tick + EVOCATOR_COOLDOWN
+            );
+
+            if (nextAttack === 1) {
+
+                evocatorNextAttack.set(id, 2);
+
+                executeEvocatorAttack1(entity);
+
+            } else {
+
+                evocatorNextAttack.set(id, 1);
+
+                executeEvocatorAttack2(entity);
+            }
+
+        } catch (_) {
+
+            evocatorTracked.delete(entity);
+        }
     }
 
 }, 10);
