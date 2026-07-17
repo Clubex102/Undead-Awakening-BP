@@ -3,6 +3,8 @@ import { world, system, GameMode } from "@minecraft/server";
 const RAID_ITEM_ID = "udaw:raid_bottle";
 const RAID_SCAN_RANGE = 100;
 const WAVE_REST_TICKS = 600;
+const RAID_SPAWN_EFFECT_TICKS = 70;
+const RAID_SPAWN_ANIMATION = "animation.zombie.spawn";
 
 const INFANTRY_UNITS = [
     "udaw:zombiecomun",
@@ -23,7 +25,7 @@ const ELITE_UNITS = [
     "udaw:vindicatorzombie"
 ];
 
-const DEBUG = true; // esta madre es para detectar error, debe estar en false si no es para testeo
+const DEBUG = false; // esta madre es para detectar error, debe estar en false si no es para testeo
 
 const state = {
     active: false,
@@ -87,6 +89,45 @@ function announce(player, message) {
     try {
         player?.sendMessage(message);
     } catch {}
+}
+
+function applyRaidSpawnEffects(entity) {
+    if (!isEntityValid(entity)) return;
+
+    const applyEffects = () => {
+        try {
+            if (!isEntityValid(entity)) return;
+            entity.playAnimation(RAID_SPAWN_ANIMATION);
+        } catch {}
+
+        try {
+            if (!isEntityValid(entity)) return;
+            entity.addEffect("minecraft:slowness", RAID_SPAWN_EFFECT_TICKS, {
+                amplifier: 255,
+                showParticles: false
+            });
+            entity.addEffect("minecraft:weakness", RAID_SPAWN_EFFECT_TICKS, {
+                amplifier: 255,
+                showParticles: false
+            });
+            entity.addEffect("minecraft:resistance", RAID_SPAWN_EFFECT_TICKS, {
+                amplifier: 255,
+                showParticles: false
+            });
+        } catch {}
+    };
+
+    applyEffects();
+    system.runTimeout(applyEffects, 2);
+
+    system.runTimeout(() => {
+        try {
+            if (!isEntityValid(entity)) return;
+            entity.removeEffect("minecraft:slowness");
+            entity.removeEffect("minecraft:weakness");
+            entity.removeEffect("minecraft:resistance");
+        } catch {}
+    }, RAID_SPAWN_EFFECT_TICKS + 2);
 }
 
 function getNearbyPlayers(player) {
@@ -164,6 +205,8 @@ function spawnRaidEntity(dimension, base, entityId) {
             entity.addTag("udaw_raid_zombie");
         } catch {}
 
+        applyRaidSpawnEffects(entity);
+
         return entity;
     } catch {
         return null;
@@ -201,7 +244,7 @@ function broadcastWaveStatus(player, opts = {}) {
         state.lastBroadcastTick = tick;
 
         const wave = state.waveIndex;
-        const text = `§eOleada ${wave} - Zombie(s) restantes: ${remaining}`;
+        const text = `§eOleada ${wave}: quedan ${remaining} muertos.`;
 
         if (suppressChat) {
             // actionbar only for nearby players, avoid chat spam
@@ -277,7 +320,7 @@ function scheduleCountdown(player, totalSeconds) {
                     try {
                         const announcer = getAnnouncePlayer();
                         if (!state.active || !announcer) return;
-                        const text = sec > 5 ? `§6La siguiente oleada empieza en ${sec} segundos...` : `§6${sec}...`;
+                        const text = sec > 5 ? `§6La siguiente oleada en ${sec}s...` : `§6${sec}...`;
                         announce(announcer, text);
                         for (const p of getNearbyPlayers(announcer)) {
                             try { if (p.id === announcer.id) continue; p.sendMessage(text); } catch {}
@@ -309,7 +352,7 @@ function startWave(player, waveNumber) {
     state.waitingNext = false;
     state.nextWaveScheduled = false;
 
-    announce(player, `§4Inicio de la oleada ${waveNumber}`);
+    announce(player, `§4La oleada ${waveNumber} ha empezado.`);
 
     const register = (entity) => {
         if (!isEntityValid(entity)) return;
@@ -369,7 +412,7 @@ function finishRaid(player) {
     state.trackedEntities = new Set();
 
     try {
-        player?.sendMessage("§aLa raid de zombies ha terminado.");
+        player?.sendMessage("§aLa raid de muertos ha cedido.");
     } catch {}
 }
 
@@ -377,11 +420,11 @@ function advanceRaid(player) {
     if (!isEntityValid(player)) return;
 
     if (state.active) {
-        announce(player, "§cYa hay una raid activa.");
+        announce(player, "§cYa hay una raid activa. No hay tiempo para dudar.");
         return;
     }
 
-    announce(player, "§4La raid de zombies ha comenzado.");
+    announce(player, "§4Los Muertos Han Llegado.");
 
     system.runTimeout(() => {
         if (!isEntityValid(player)) return;
@@ -397,7 +440,7 @@ function completeWave(player) {
         try { announcer.sendMessage(`DEBUG: completeWave called. wave=${state.waveIndex}, living=${state.livingInWave.size}`); } catch {}
     }
 
-    if (announcer) announce(announcer, `§aLa oleada ${state.waveIndex} ha terminado.`);
+    if (announcer) announce(announcer, `§aLa oleada ${state.waveIndex} ah cedido.`);
 
     if (state.waveIndex >= 5) {
         finishRaid(announcer || player);
@@ -429,7 +472,7 @@ world.afterEvents.itemUse.subscribe((event) => {
     if (!player || !item || item.typeId !== RAID_ITEM_ID) return;
 
     if (state.active) {
-        announce(player, "§cYa hay una raid activa.");
+        announce(player, "§cYa hay una raid activa. No hay tiempo para dudar.");
         return;
     }
 
