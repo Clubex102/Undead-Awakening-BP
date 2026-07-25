@@ -1,49 +1,90 @@
-import { world, system, GameMode } from "@minecraft/server";
+import { world, system, GameMode, EquipmentSlot } from "@minecraft/server";
 
 const RAID_ITEM_ID = "udaw:raid_bottle";
-const RAID_SCAN_RANGE = 100;
+const RAID_SCAN_RANGE = 120;
 const WAVE_REST_TICKS = 600;
 const RAID_SPAWN_EFFECT_TICKS = 70;
 const RAID_SPAWN_ANIMATION = "animation.zombie.spawn";
 
-const INFANTRY_UNITS = [
-    "udaw:zombiecomun",
-    "udaw:zombierange",
-    "udaw:zombie_lance"
+const ZOMBIE_COMUN = "udaw:zombiecomun";
+const ZOMBIE_RANGE = "udaw:zombierange";
+const ZOMBIE_LANCE = "udaw:zombie_lance";
+const ZOMBIE_MINER = "udaw:zombieminer";
+const ZOMBIE_WC = "udaw:zombiewc";
+const ZOMBIE_IGNITER = "udaw:zombie_igniter";
+const PL_ZOMBIE = "udaw:plzombie";
+const ZOMBIE_SHOVEL = "udaw:zombie_shovel";
+const PILLAGER_ZOMBIE = "udaw:pillagerzombie";
+const VINDICATOR_ZOMBIE = "udaw:vindicatorzombie";
+const EVOCATOR_ZOMBIE = "udaw:evocatorzombie";
+const ZOMBIE_CUIRASSIER = "udaw:zombie_cuirassier";
+
+const INFANTRY_UNITS = [ZOMBIE_COMUN, ZOMBIE_RANGE, ZOMBIE_LANCE];
+const INFANTRY_WEIGHTS = [7, 1, 2];
+const SPECIALIST_UNITS = [ZOMBIE_MINER, ZOMBIE_WC, ZOMBIE_IGNITER, PL_ZOMBIE, ZOMBIE_SHOVEL];
+const SPECIALIST_WEIGHTS = [8, 8, 2, 8, 8];
+const ELITE_UNITS = [PILLAGER_ZOMBIE, VINDICATOR_ZOMBIE];
+const CARDINAL_DIRECTIONS = ["NORTE", "SUR", "ESTE", "OESTE"];
+
+const DEATH_INFANTRY_UNITS = [ZOMBIE_COMUN, ZOMBIE_RANGE, ZOMBIE_LANCE, PILLAGER_ZOMBIE, VINDICATOR_ZOMBIE];
+const DEATH_INFANTRY_WEIGHTS = [5, 1, 2, 3, 3];
+const DEATH_SPECIALIST_UNITS = [ZOMBIE_MINER, ZOMBIE_WC, ZOMBIE_IGNITER, PL_ZOMBIE, ZOMBIE_SHOVEL, PILLAGER_ZOMBIE, VINDICATOR_ZOMBIE];
+const DEATH_SPECIALIST_WEIGHTS = [6, 6, 2, 6, 6, 4, 4];
+const WAVE6_ELITE_POOL = [PILLAGER_ZOMBIE, VINDICATOR_ZOMBIE, EVOCATOR_ZOMBIE, ZOMBIE_CUIRASSIER];
+
+const WAVE_COMPLETE_MESSAGES = [
+    "§a§lLa oscuridad se retira... pero no por mucho tiempo.",
+    "§a§lHas sobrevivido... esto no ha hecho más que empezar.",
+    "§a§lLos muertos caen... más vendrán.",
+    "§a§lUn respiro en el infierno.",
+    "§a§lEl ejército de la muerte se reagrupa..."
 ];
 
-const SPECIALIST_UNITS = [
-    "udaw:zombieminer",
-    "udaw:zombiewc",
-    "udaw:zombie_igniter",
-    "udaw:plzombie",
-    "udaw:zombie_shovel"
+const DEATH_WAVE_COMPLETE_MESSAGES = [
+    "§4§l¡Sigues con vida? ¡IMPOSIBLE!",
+    "§4§lEl abismo brama... ¡esto no termina!",
+    "§4§l¡Los condenados no descansan! ¡Prepárate!",
+    "§4§l¡Has visto el infierno y sobrevives!",
+    "§4§l¡La pesadilla se intensifica!"
 ];
 
-const ELITE_UNITS = [
-    "udaw:pillagerzombie",
-    "udaw:vindicatorzombie"
-];
+const TELEPORT_THRESHOLD = 45;
+const MAX_TELEPORT_PER_CYCLE = 15;
 
-const DEBUG = false; // esta madre es para detectar error, debe estar en false si no es para testeo
+const DEBUG = false;
 
 const state = {
     active: false,
     player: null,
+    playerId: null,
     waveIndex: 0,
     livingInWave: new Set(),
     waveSpawned: 0,
-    trackedEntities: new Set()
+    trackedEntities: new Set(),
+    waitingNext: false,
+    nextWaveScheduled: false,
+    lastBroadcastTick: 0,
+    lastRemainingCount: -1,
+    killCounter: 0,
+    currentDirection: "",
+    playerDied: false,
+    deathMode: false,
+    lastKillTick: 0,
+    idleWarningShown: false,
+    zombiesDespawned: false
 };
 
-// internal control flags
-state.waitingNext = false; // true while resting between waves
-state.nextWaveScheduled = false; // avoid double-scheduling next wave
-state.lastBroadcastTick = 0;
-state.lastRemainingCount = -1;
-
-// Admin names allowed to cancel the raid (add your in-game name here if needed)
 const ALLOWED_ADMINS = [];
+
+function weightedChoice(items, weights) {
+    const total = weights.reduce((a, b) => a + b, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < items.length; i++) {
+        r -= weights[i];
+        if (r <= 0) return items[i];
+    }
+    return items[items.length - 1];
+}
 
 function randomChoice(list) {
     return list[Math.floor(Math.random() * list.length)];
@@ -60,13 +101,11 @@ function findGround(dimension, x, startY, z) {
             y: Math.floor(y),
             z: Math.floor(z)
         });
-
         if (!block) continue;
         if (block.typeId !== "minecraft:air") {
             return y + 1;
         }
     }
-
     return startY;
 }
 
@@ -85,47 +124,46 @@ function announce(player, message) {
         const cleanMessage = message.replace(/§[0-9a-fk-or]/g, "");
         player?.runCommand(`title @s actionbar ${cleanMessage}`);
     } catch {}
-
     try {
         player?.sendMessage(message);
     } catch {}
 }
 
-function applyRaidSpawnEffects(entity) {
-    if (!isEntityValid(entity)) return;
+function broadcastMessage(source, message) {
+    const cleanMessage = message.replace(/§[0-9a-fk-or]/g, "");
+    try { source?.runCommand(`title @s actionbar ${cleanMessage}`); } catch {}
+    try { source?.sendMessage(message); } catch {}
+    for (const p of getNearbyPlayers(source)) {
+        try { if (p.id === source?.id) continue; p.sendMessage(message); } catch {}
+        try { p.runCommand(`title @s actionbar ${cleanMessage}`); } catch {}
+    }
+}
 
-    const applyEffects = () => {
+function applyRaidSpawnEffects(entity, deathModeResistance = false) {
+    if (!isEntityValid(entity)) return;
+    const apply = () => {
         try {
             if (!isEntityValid(entity)) return;
             entity.playAnimation(RAID_SPAWN_ANIMATION);
         } catch {}
-
         try {
             if (!isEntityValid(entity)) return;
-            entity.addEffect("minecraft:slowness", RAID_SPAWN_EFFECT_TICKS, {
-                amplifier: 255,
-                showParticles: false
-            });
-            entity.addEffect("minecraft:weakness", RAID_SPAWN_EFFECT_TICKS, {
-                amplifier: 255,
-                showParticles: false
-            });
-            entity.addEffect("minecraft:resistance", RAID_SPAWN_EFFECT_TICKS, {
-                amplifier: 255,
-                showParticles: false
-            });
+            entity.addEffect("minecraft:slowness", RAID_SPAWN_EFFECT_TICKS, { amplifier: 255, showParticles: false });
+            entity.addEffect("minecraft:weakness", RAID_SPAWN_EFFECT_TICKS, { amplifier: 255, showParticles: false });
+            entity.addEffect("minecraft:resistance", RAID_SPAWN_EFFECT_TICKS, { amplifier: 255, showParticles: false });
         } catch {}
     };
-
-    applyEffects();
-    system.runTimeout(applyEffects, 2);
-
+    apply();
+    system.runTimeout(apply, 2);
     system.runTimeout(() => {
         try {
             if (!isEntityValid(entity)) return;
             entity.removeEffect("minecraft:slowness");
             entity.removeEffect("minecraft:weakness");
             entity.removeEffect("minecraft:resistance");
+            if (deathModeResistance) {
+                entity.addEffect("minecraft:resistance", 999999, { amplifier: 1, showParticles: true });
+            }
         } catch {}
     }, RAID_SPAWN_EFFECT_TICKS + 2);
 }
@@ -133,20 +171,15 @@ function applyRaidSpawnEffects(entity) {
 function getNearbyPlayers(player) {
     const center = player.location;
     const result = [];
-
     for (const candidate of world.getPlayers()) {
         if (candidate.dimension?.id !== player.dimension?.id) continue;
-
         const dx = candidate.location.x - center.x;
         const dy = candidate.location.y - center.y;
         const dz = candidate.location.z - center.z;
-        const distanceSq = dx * dx + dy * dy + dz * dz;
-
-        if (distanceSq <= RAID_SCAN_RANGE * RAID_SCAN_RANGE) {
+        if (dx * dx + dy * dy + dz * dz <= RAID_SCAN_RANGE * RAID_SCAN_RANGE) {
             result.push(candidate);
         }
     }
-
     return result;
 }
 
@@ -158,65 +191,68 @@ function getScalingMultiplier(player) {
 
 function getWaveCounts(player) {
     const multiplier = getScalingMultiplier(player);
-
     return {
-        1: {
-            infantry: Math.max(12, Math.round(12 * multiplier))
-        },
-        2: {
-            infantry: Math.max(12, Math.round(12 * multiplier)),
-            specialists: Math.max(4, Math.round(4 * multiplier))
-        },
-        3: {
-            infantry: Math.max(12, Math.round(12 * multiplier)),
-            specialists: Math.max(6, Math.round(6 * multiplier)),
-            tnt: 1,
-            plZombie: 1
-        },
-        4: {
-            infantry: Math.max(12, Math.round(12 * multiplier)),
-            specialists: Math.max(6, Math.round(6 * multiplier)),
-            tnt: 1,
-            plZombie: 1,
-            elites: Math.max(5, Math.round(5 * multiplier))
-        },
-        5: {
-            infantry: Math.max(12, Math.round(12 * multiplier)),
-            specialists: Math.max(8, Math.round(8 * multiplier)),
-            tnt: 1,
-            plZombie: 1,
-            cuirassiers: Math.max(2, Math.round(2 * multiplier))
-        }
+        1: { infantry: Math.max(12, Math.round(12 * multiplier)) },
+        2: { infantry: Math.max(12, Math.round(12 * multiplier)), specialists: Math.max(4, Math.round(4 * multiplier)) },
+        3: { infantry: Math.max(12, Math.round(12 * multiplier)), specialists: Math.max(6, Math.round(6 * multiplier)), tnt: 1, plZombie: 1 },
+        4: { infantry: Math.max(12, Math.round(12 * multiplier)), specialists: Math.max(6, Math.round(6 * multiplier)), tnt: 1, plZombie: 1, elites: Math.max(5, Math.round(5 * multiplier)) },
+        5: { infantry: Math.max(12, Math.round(12 * multiplier)), specialists: Math.max(8, Math.round(8 * multiplier)), tnt: 1, plZombie: 1, cuirassiers: Math.max(2, Math.round(2 * multiplier)) }
     };
 }
 
-function spawnRaidEntity(dimension, base, entityId) {
-    const angle = Math.random() * Math.PI * 2;
-    const distance = randomBetween(12, 24);
-    const x = base.x + Math.cos(angle) * distance;
-    const z = base.z + Math.sin(angle) * distance;
-    const y = findGround(dimension, x, base.y + 40, z);
+function getDeathWaveCounts(player) {
+    const multiplier = getScalingMultiplier(player);
+    return {
+        1: { infantry: Math.max(14, Math.round(14 * multiplier)), specialists: Math.max(3, Math.round(3 * multiplier)) },
+        2: { infantry: Math.max(14, Math.round(14 * multiplier)), specialists: Math.max(5, Math.round(5 * multiplier)), elites: Math.max(3, Math.round(3 * multiplier)) },
+        3: { infantry: Math.max(14, Math.round(14 * multiplier)), specialists: Math.max(6, Math.round(6 * multiplier)), elites: Math.max(4, Math.round(4 * multiplier)), cuirassiers: 1 },
+        4: { infantry: Math.max(14, Math.round(14 * multiplier)), specialists: Math.max(8, Math.round(8 * multiplier)), elites: Math.max(6, Math.round(6 * multiplier)), cuirassiers: 3 },
+        5: { infantry: Math.max(14, Math.round(14 * multiplier)), specialists: Math.max(10, Math.round(10 * multiplier)), elites: Math.max(8, Math.round(8 * multiplier)), cuirassiers: 6 },
+        6: { deathElite: 26 }
+    };
+}
 
-    try {
-        const entity = dimension.spawnEntity(entityId, { x, y, z });
-        if (!isEntityValid(entity)) return null;
-
-        try {
-            entity.addTag("udaw_raid_zombie");
-        } catch {}
-
-        applyRaidSpawnEffects(entity);
-
-        return entity;
-    } catch {
-        return null;
+function getDirectionVector(dir) {
+    switch (dir) {
+        case "NORTE": return { x: 0, z: -1 };
+        case "SUR": return { x: 0, z: 1 };
+        case "ESTE": return { x: 1, z: 0 };
+        case "OESTE": return { x: -1, z: 0 };
+        default: return { x: 0, z: -1 };
     }
 }
 
+function makePersistent(entity) {
+    try {
+        const despawn = entity.getComponent("minecraft:despawn");
+        if (despawn) {
+            despawn.despawnFromDistance = { maxDistance: 999999 };
+            despawn.despawnFromInactivity = false;
+            despawn.despawnFromSimulationEdge = false;
+        }
+    } catch (e) {}
+    try { entity.triggerEvent("minecraft:spawn_for_raid"); } catch (e) {}
+}
+
+function spawnRaidEntity(dimension, base, entityId, directionVec) {
+    const distance = randomBetween(25, 30);
+    const spreadAngle = (Math.random() - 0.5) * 1.2;
+    const angle = Math.atan2(directionVec.z, directionVec.x) + spreadAngle;
+    const x = base.x + Math.cos(angle) * distance;
+    const z = base.z + Math.sin(angle) * distance;
+    const y = findGround(dimension, x, base.y + 40, z);
+    try {
+        const entity = dimension.spawnEntity(entityId, { x, y, z });
+        if (!isEntityValid(entity)) return null;
+        try { entity.addTag("udaw_raid_zombie"); } catch {}
+        makePersistent(entity);
+        applyRaidSpawnEffects(entity, state.deathMode);
+        return entity;
+    } catch { return null; }
+}
+
 function getAnnouncePlayer() {
-    // prefer state.player if valid
     if (isEntityValid(state.player)) return state.player;
-    // fallback: find any player near the raid origin
     if (state.origin) {
         for (const p of world.getPlayers()) {
             try {
@@ -228,40 +264,19 @@ function getAnnouncePlayer() {
             } catch {}
         }
     }
-    // last resort: any online player
     return world.getPlayers()[0] || null;
 }
 
-function broadcastWaveStatus(player, opts = {}) {
+function broadcastRemaining(player) {
     try {
-        const { suppressChat = false, force = false } = opts;
-        const tick = system.currentTick || 0;
         const remaining = state.livingInWave.size;
-
-        // throttle: only send if remaining changed or > 40 ticks passed unless forced
-        if (!force && remaining === state.lastRemainingCount && tick - state.lastBroadcastTick < 40) return;
-        state.lastRemainingCount = remaining;
-        state.lastBroadcastTick = tick;
-
-        const wave = state.waveIndex;
-        const text = `§eOleada ${wave}: quedan ${remaining} muertos.`;
-
-        if (suppressChat) {
-            // actionbar only for nearby players, avoid chat spam
-            try { player.runCommand(`title @s actionbar ${text.replace(/§[0-9a-fk-or]/g, "")}`); } catch {}
-            for (const p of getNearbyPlayers(player)) {
-                try { p.runCommand(`title @s actionbar ${text.replace(/§[0-9a-fk-or]/g, "")}`); } catch {}
-            }
-            return;
-        }
-
-        // normal behavior: actionbar + chat to player, chat to nearby others (avoid duplicating to the activating player)
-        announce(player, text);
+        if (remaining <= 0) return;
+        const text = state.deathMode
+            ? `§4§l§k¡§r §4§lQuedan ${remaining} almas condenadas... §k¡§r`
+            : `§4§lQuedan ${remaining} muertos vivientes...`;
+        player?.sendMessage(text);
         for (const p of getNearbyPlayers(player)) {
-            try {
-                if (p.id === player.id) continue;
-                p.sendMessage(text);
-            } catch {}
+            try { if (p.id === player?.id) continue; p.sendMessage(text); } catch {}
         }
     } catch {}
 }
@@ -278,35 +293,360 @@ function refreshLivingSet() {
             tags: ["udaw_raid_zombie"],
             excludeTypes: ["minecraft:item", "minecraft:xp_orb"]
         }) || [];
-
         const foundIds = new Set(found.map(e => e.id).filter(Boolean));
-
-        // Replace livingInWave with actual living ids near the player
+        for (const existingId of state.livingInWave) {
+            if (!foundIds.has(existingId) && state.trackedEntities.has(existingId)) {
+                state.zombiesDespawned = true;
+            }
+        }
         state.livingInWave = new Set(foundIds);
-
-        // Keep trackedEntities as union
-        for (const id of foundIds) state.trackedEntities.add(id);
-
-        // update spawned count to reflect live ones
+        for (const id of foundIds) {
+            state.trackedEntities.add(id);
+            try {
+                const e = dim.getEntity(id);
+                if (e) makePersistent(e);
+            } catch {}
+        }
         state.waveSpawned = state.livingInWave.size;
+    } catch {}
+}
 
-        // broadcast status silently from refresh
-        try { broadcastWaveStatus(state.player, { suppressChat: true }); } catch {}
+function refreshZombiePositions() {
+    try {
+        if (!state.active || !isEntityValid(state.player)) return;
+        if (state.waitingNext) return;
+        const player = state.player;
+        const dim = player.dimension;
+        const playerLoc = player.location;
+        const directionVec = getDirectionVector(state.currentDirection);
+        let teleported = 0;
 
-        // if none left, advance (but avoid double-scheduling)
-        if (state.livingInWave.size <= 0 && !state.nextWaveScheduled) {
-            completeWave(state.player);
+        for (const entityId of state.livingInWave) {
+            if (teleported >= MAX_TELEPORT_PER_CYCLE) break;
+            try {
+                const entity = dim.getEntity(entityId);
+                if (!isEntityValid(entity)) continue;
+                const dx = entity.location.x - playerLoc.x;
+                const dz = entity.location.z - playerLoc.z;
+                if (dx * dx + dz * dz > TELEPORT_THRESHOLD * TELEPORT_THRESHOLD) {
+                    const distance = randomBetween(20, 28);
+                    const spreadAngle = (Math.random() - 0.5) * 1.2;
+                    const angle = Math.atan2(directionVec.z, directionVec.x) + spreadAngle;
+                    const nx = playerLoc.x + Math.cos(angle) * distance;
+                    const nz = playerLoc.z + Math.sin(angle) * distance;
+                    const ny = findGround(dim, nx, playerLoc.y + 40, nz);
+                    entity.teleport({ x: nx, y: ny, z: nz }, { dimension: dim });
+                    teleported++;
+                }
+            } catch {}
         }
     } catch {}
 }
 
-// run periodic refresh to avoid stale counts (every 40 ticks ~2s)
-system.runInterval(() => {
+function giveBasicRewards(player) {
+    if (!isEntityValid(player)) return;
+    const isDeath = state.deathMode;
+    const ironCount = isDeath ? BASIC_IRON_COUNT * 2 : BASIC_IRON_COUNT;
+    const appleCount = isDeath ? 12 : GOLDEN_APPLE_COUNT;
+    const repairPct = isDeath ? 0.6 : 0.35;
+
+    player.runCommand(`give @s iron_ingot ${ironCount}`);
+    player.runCommand(`give @s golden_apple ${appleCount}`);
+
     try {
-        if (!state.active) return;
-        refreshLivingSet();
+        const equippable = player.getComponent("minecraft:equippable");
+        if (!equippable) return;
+        const slots = [EquipmentSlot.Head, EquipmentSlot.Chest, EquipmentSlot.Legs, EquipmentSlot.Feet, EquipmentSlot.Offhand, EquipmentSlot.Mainhand];
+        for (const slot of slots) {
+            const item = equippable.getEquipment(slot);
+            if (!item) continue;
+            const fixed = item.clone();
+            const durability = fixed.getComponent("minecraft:durability");
+            if (!durability) continue;
+            const repair = Math.floor(durability.maxDamage * repairPct);
+            durability.damage = Math.max(0, durability.damage - repair);
+            equippable.setEquipment(slot, fixed);
+        }
+    } catch (e) {
+        if (DEBUG) console.warn("Repair error: " + e);
+    }
+}
+
+function giveBonusRewards(player) {
+    if (!isEntityValid(player)) return;
+    const isDeath = state.deathMode;
+    const diamondCount = isDeath ? 20 : BONUS_DIAMOND_COUNT;
+    const xpCount = isDeath ? BONUS_XP_BOTTLE_COUNT * 2 : BONUS_XP_BOTTLE_COUNT;
+    const totemCount = isDeath ? 2 : 1;
+    try {
+        player.runCommand(`give @s diamond ${diamondCount}`);
+        player.runCommand(`give @s experience_bottle ${xpCount}`);
+        player.runCommand(`give @s totem_of_undying ${totemCount}`);
     } catch {}
-}, 40);
+}
+
+function giveDeathSurvivalBonus(player) {
+    if (!isEntityValid(player)) return;
+    try {
+        player.runCommand("give @s diamond 10");
+        player.runCommand("give @s totem_of_undying 1");
+    } catch {}
+}
+
+function finishRaid(player) {
+    const died = state.playerDied;
+    const wasDeathMode = state.deathMode;
+
+    try { player?.runCommand("gamerule doMobSpawning true"); } catch {}
+
+    if (player && isEntityValid(player)) {
+        giveBasicRewards(player);
+        if (wasDeathMode) {
+            player.sendMessage("§4§l☠ §6§lEL REY RECONOCE TU VALOR §4§l☠");
+            player.sendMessage("§cHas atravesado la tormenta. Toma tu recompensa, guerrero.");
+            player.sendMessage("§6—— §fRecompensa de combate entregada §6——");
+        } else {
+            player.sendMessage("§6§lEL REY HA VISTO TU VALENTÍA");
+            player.sendMessage("§eToma estas provisiones, héroe. La lucha continúa.");
+            player.sendMessage("§e—— §fRecompensa básica entregada §e——");
+        }
+
+        if (wasDeathMode || !died) {
+            giveBonusRewards(player);
+            if (wasDeathMode) {
+                player.sendMessage("§4§l✦ §6§lHONOR DE GUERRA §4§l✦");
+                player.sendMessage("§6El Rey premia tu esfuerzo en el campo de batalla.");
+                player.sendMessage("§6—— §fBotín de guerra entregado §6——");
+            } else {
+                player.sendMessage("§b§l✦ RECOMPENSA INMORTAL ✦");
+                player.sendMessage("§bHas resistido sin caer... el Rey te honra.");
+                player.sendMessage("§b—— §fBonus por supervivencia entregado §b——");
+            }
+        }
+
+        if (wasDeathMode && !died) {
+            giveDeathSurvivalBonus(player);
+            player.sendMessage("§4§l✦ §c§lALMA INDÓMITA §4§l✦");
+            player.sendMessage("§cNi el abismo pudo quebrarte. El Rey reconoce tu fuerza.");
+            player.sendMessage("§c—— §fBonificación suprema entregada §c——");
+        }
+    }
+
+    state.active = false;
+    state.player = null;
+    state.playerId = null;
+    state.waveIndex = 0;
+    state.livingInWave = new Set();
+    state.waveSpawned = 0;
+    state.trackedEntities = new Set();
+    state.killCounter = 0;
+    state.playerDied = false;
+    state.deathMode = false;
+    state.zombiesDespawned = false;
+}
+
+function cleanupRaid() {
+    state.active = false;
+    state.player = null;
+    state.playerId = null;
+    state.waveIndex = 0;
+    state.livingInWave = new Set();
+    state.waveSpawned = 0;
+    state.trackedEntities = new Set();
+    state.killCounter = 0;
+    state.playerDied = false;
+    state.deathMode = false;
+    state.zombiesDespawned = false;
+    try { world.getPlayers()[0]?.runCommand("gamerule doMobSpawning true"); } catch {}
+}
+
+function advanceRaid(player) {
+    if (!isEntityValid(player)) return;
+
+    if (state.active) {
+        announce(player, "§c§lLa noche aún no termina. ¡Sobrevive!");
+        return;
+    }
+
+    const badOmen = player.getEffect("minecraft:bad_omen");
+    state.deathMode = badOmen !== undefined && badOmen !== null;
+    if (state.deathMode) {
+        try { player.removeEffect("minecraft:bad_omen"); } catch {}
+    }
+    state.playerDied = false;
+
+    try { player.runCommand("gamerule doMobSpawning false"); } catch {}
+
+    if (state.deathMode) {
+        broadcastMessage(player, "§4§l☠ EL APOCALIPSIS HA COMENZADO ☠");
+        broadcastMessage(player, "§c¡Los mismísimos horrores del abismo emergen!");
+        broadcastMessage(player, "§4§k¡§r §4¡NO HAY ESCAPATORIA! §k¡§r");
+    } else {
+        broadcastMessage(player, "§4§l☠ LOS MUERTOS SE LEVANTAN ☠");
+        broadcastMessage(player, "§c¡El aire se vuelve putrefacto... algo se acerca!");
+    }
+
+    system.runTimeout(() => {
+        if (!isEntityValid(player)) return;
+        startWave(player, 1);
+    }, 20);
+}
+
+function completeWave(player) {
+    if (!state.active) return;
+
+    const announcer = getAnnouncePlayer();
+
+    if (DEBUG && announcer) {
+        try { announcer.sendMessage(`DEBUG: completeWave wave=${state.waveIndex} living=${state.livingInWave.size}`); } catch {}
+    }
+
+    const maxWave = state.deathMode ? 6 : 5;
+    const completeMsgs = state.deathMode ? DEATH_WAVE_COMPLETE_MESSAGES : WAVE_COMPLETE_MESSAGES;
+    if (announcer) broadcastMessage(announcer, randomChoice(completeMsgs));
+
+    if (state.waveIndex >= maxWave) {
+        finishRaid(announcer || player);
+        return;
+    }
+
+    if (state.nextWaveScheduled) return;
+    state.nextWaveScheduled = true;
+    state.waitingNext = true;
+
+    if (announcer) {
+        const text = state.deathMode
+            ? "§4§l¡Próxima oleada en 30s... REZA! §k¡§r"
+            : "§6§lPróxima oleada en 30s... ¡prepárate!";
+        broadcastMessage(announcer, text);
+    }
+
+    scheduleCountdown(announcer, 30);
+
+    system.runTimeout(() => {
+        if (!state.active) return;
+        const starter = getAnnouncePlayer() || announcer || player;
+        state.waitingNext = false;
+        state.nextWaveScheduled = false;
+        startWave(starter, state.waveIndex + 1);
+    }, WAVE_REST_TICKS + 20);
+}
+
+function startWave(player, waveNumber) {
+    if (!isEntityValid(player)) return;
+
+    const dimension = player.dimension;
+    const base = player.location;
+    const isDeath = state.deathMode;
+    const counts = isDeath ? getDeathWaveCounts(player)[waveNumber] : getWaveCounts(player)[waveNumber];
+
+    state.currentDirection = randomChoice(CARDINAL_DIRECTIONS);
+
+    state.active = true;
+    state.player = player;
+    state.playerId = player.id;
+    state.waveIndex = waveNumber;
+    state.livingInWave = new Set();
+    state.waveSpawned = 0;
+    state.trackedEntities = new Set();
+    state.origin = { dimension: dimension.id, x: base.x, y: base.y, z: base.z };
+    state.waitingNext = false;
+    state.nextWaveScheduled = false;
+    state.killCounter = 0;
+    state.lastKillTick = system.currentTick;
+    state.idleWarningShown = false;
+    state.zombiesDespawned = false;
+
+    const directionVec = getDirectionVector(state.currentDirection);
+
+    try { dimension.playSound("horde", base, { volume: 2, maxDistance: 120 }); } catch {}
+
+    if (isDeath) {
+        broadcastMessage(player, `§4§l§k¡§r §4§l★ OLEADA ${waveNumber} ★ §k¡§r`);
+        broadcastMessage(player, `§c§l¡LOS CONDENADOS ARRASAN DESDE EL ${state.currentDirection}!`);
+        broadcastMessage(player, "§4§l¡NO HAY PIEDAD! ¡NO HAY HUIDA!");
+    } else {
+        broadcastMessage(player, `§4§l★ OLEADA ${waveNumber} ★`);
+        broadcastMessage(player, `§c§lLOS MUERTOS VIENEN DEL ${state.currentDirection}`);
+        broadcastMessage(player, "§4¡Prepárate o sé devorado!");
+    }
+
+    const register = (entity) => {
+        if (!isEntityValid(entity)) return;
+        const entityId = entity.id;
+        if (!entityId) return;
+        state.livingInWave.add(entityId);
+        state.trackedEntities.add(entityId);
+        state.waveSpawned += 1;
+    };
+
+    if (isDeath) {
+        const deathInfantryPool = DEATH_INFANTRY_UNITS;
+        const deathInfantryWeights = DEATH_INFANTRY_WEIGHTS;
+        const deathSpecialistPool = DEATH_SPECIALIST_UNITS;
+        const deathSpecialistWeights = DEATH_SPECIALIST_WEIGHTS;
+
+        for (let i = 0; i < counts.infantry; i++) {
+            register(spawnRaidEntity(dimension, base, weightedChoice(deathInfantryPool, deathInfantryWeights), directionVec));
+        }
+
+        if (waveNumber >= 1) {
+            for (let i = 0; i < counts.specialists; i++) {
+                register(spawnRaidEntity(dimension, base, weightedChoice(deathSpecialistPool, deathSpecialistWeights), directionVec));
+            }
+        }
+
+        if (waveNumber >= 2 && counts.elites) {
+            for (let i = 0; i < counts.elites; i++) {
+                register(spawnRaidEntity(dimension, base, randomChoice(ELITE_UNITS), directionVec));
+            }
+        }
+
+        if (waveNumber >= 3 && counts.cuirassiers) {
+            for (let i = 0; i < counts.cuirassiers; i++) {
+                register(spawnRaidEntity(dimension, base, ZOMBIE_CUIRASSIER, directionVec));
+            }
+        }
+
+        if (waveNumber === 6 && counts.deathElite) {
+            for (let i = 0; i < counts.deathElite; i++) {
+                register(spawnRaidEntity(dimension, base, randomChoice(WAVE6_ELITE_POOL), directionVec));
+            }
+        }
+    } else {
+        for (let i = 0; i < counts.infantry; i++) {
+            register(spawnRaidEntity(dimension, base, weightedChoice(INFANTRY_UNITS, INFANTRY_WEIGHTS), directionVec));
+        }
+
+        if (waveNumber >= 2) {
+            for (let i = 0; i < counts.specialists; i++) {
+                register(spawnRaidEntity(dimension, base, weightedChoice(SPECIALIST_UNITS, SPECIALIST_WEIGHTS), directionVec));
+            }
+            for (let i = 0; i < counts.tnt; i++) {
+                register(spawnRaidEntity(dimension, base, ZOMBIE_IGNITER, directionVec));
+            }
+            for (let i = 0; i < counts.plZombie; i++) {
+                register(spawnRaidEntity(dimension, base, PL_ZOMBIE, directionVec));
+            }
+        }
+
+        if (waveNumber >= 4 && counts.elites) {
+            for (let i = 0; i < counts.elites; i++) {
+                register(spawnRaidEntity(dimension, base, randomChoice(ELITE_UNITS), directionVec));
+            }
+        }
+
+        if (waveNumber === 5 && counts.cuirassiers) {
+            for (let i = 0; i < counts.cuirassiers; i++) {
+                register(spawnRaidEntity(dimension, base, ZOMBIE_CUIRASSIER, directionVec));
+            }
+        }
+    }
+
+    if (state.waveSpawned <= 0) {
+        finishRaid(player);
+    }
+}
 
 function scheduleCountdown(player, totalSeconds) {
     try {
@@ -320,7 +660,9 @@ function scheduleCountdown(player, totalSeconds) {
                     try {
                         const announcer = getAnnouncePlayer();
                         if (!state.active || !announcer) return;
-                        const text = sec > 5 ? `§6La siguiente oleada en ${sec}s...` : `§6${sec}...`;
+                        const text = state.deathMode
+                            ? (sec > 5 ? `§4§l¡Se acerca el fin! ${sec}s...` : `§4§l§k¡§r §4§l${sec}! §k¡§r`)
+                            : (sec > 5 ? `§c§lEl terror regresa en ${sec}s...` : `§4§l${sec}...`);
                         announce(announcer, text);
                         for (const p of getNearbyPlayers(announcer)) {
                             try { if (p.id === announcer.id) continue; p.sendMessage(text); } catch {}
@@ -332,138 +674,64 @@ function scheduleCountdown(player, totalSeconds) {
     } catch {}
 }
 
-function startWave(player, waveNumber) {
-    if (!isEntityValid(player)) return;
+const BASIC_IRON_COUNT = 32;
+const GOLDEN_APPLE_COUNT = 4;
+const BONUS_DIAMOND_COUNT = 5;
+const BONUS_XP_BOTTLE_COUNT = 10;
 
-    const dimension = player.dimension;
-    const base = player.location;
-    const counts = getWaveCounts(player)[waveNumber];
-
-    // prepare wave state
-    state.active = true;
-    state.player = player;
-    state.waveIndex = waveNumber;
-    state.livingInWave = new Set();
-    state.waveSpawned = 0;
-    state.trackedEntities = new Set();
-    state.origin = { dimension: dimension.id, x: base.x, y: base.y, z: base.z };
-    state.waitingNext = false;
-    state.nextWaveScheduled = false;
-    state.waitingNext = false;
-    state.nextWaveScheduled = false;
-
-    announce(player, `§4La oleada ${waveNumber} ha empezado.`);
-
-    const register = (entity) => {
-        if (!isEntityValid(entity)) return;
-        const entityId = entity.id;
-        if (!entityId) return;
-        state.livingInWave.add(entityId);
-        state.trackedEntities.add(entityId);
-        state.waveSpawned += 1;
-    };
-
-    // announce initial status after spawns start
-    system.runTimeout(() => {
-        try { broadcastWaveStatus(player); } catch {}
-    }, 10);
-
-    for (let i = 0; i < counts.infantry; i++) {
-        register(spawnRaidEntity(dimension, base, randomChoice(INFANTRY_UNITS)));
-    }
-
-    if (waveNumber >= 2) {
-        for (let i = 0; i < counts.specialists; i++) {
-            register(spawnRaidEntity(dimension, base, randomChoice(SPECIALIST_UNITS)));
-        }
-
-        for (let i = 0; i < counts.tnt; i++) {
-            register(spawnRaidEntity(dimension, base, "udaw:zombie_igniter"));
-        }
-
-        for (let i = 0; i < counts.plZombie; i++) {
-            register(spawnRaidEntity(dimension, base, "udaw:plzombie"));
-        }
-    }
-
-    if (waveNumber >= 4) {
-        for (let i = 0; i < counts.elites; i++) {
-            register(spawnRaidEntity(dimension, base, randomChoice(ELITE_UNITS)));
-        }
-    }
-
-    if (waveNumber === 5) {
-        for (let i = 0; i < counts.cuirassiers; i++) {
-            register(spawnRaidEntity(dimension, base, "udaw:zombie_cuirassier"));
-        }
-    }
-
-    if (state.waveSpawned <= 0) {
-        finishRaid(player);
-    }
-}
-
-function finishRaid(player) {
-    state.active = false;
-    state.player = null;
-    state.waveIndex = 0;
-    state.livingInWave = new Set();
-    state.waveSpawned = 0;
-    state.trackedEntities = new Set();
-
+system.runInterval(() => {
     try {
-        player?.sendMessage("§aLa raid de muertos ha cedido.");
-    } catch {}
-}
-
-function advanceRaid(player) {
-    if (!isEntityValid(player)) return;
-
-    if (state.active) {
-        announce(player, "§cYa hay una raid activa. No hay tiempo para dudar.");
-        return;
-    }
-
-    announce(player, "§4Los Muertos Han Llegado.");
-
-    system.runTimeout(() => {
-        if (!isEntityValid(player)) return;
-        startWave(player, 1);
-    }, 20);
-}
-
-function completeWave(player) {
-    if (!state.active) return;
-
-    const announcer = getAnnouncePlayer();
-    if (DEBUG && announcer) {
-        try { announcer.sendMessage(`DEBUG: completeWave called. wave=${state.waveIndex}, living=${state.livingInWave.size}`); } catch {}
-    }
-
-    if (announcer) announce(announcer, `§aLa oleada ${state.waveIndex} ah cedido.`);
-
-    if (state.waveIndex >= 5) {
-        finishRaid(announcer || player);
-        return;
-    }
-
-    // schedule next wave once, set waiting flag to avoid reentrancy
-    if (state.nextWaveScheduled) return;
-    state.nextWaveScheduled = true;
-    state.waitingNext = true;
-
-    // schedule countdown messages and the start
-    scheduleCountdown(announcer, 30);
-
-    // actually start after rest
-    system.runTimeout(() => {
         if (!state.active) return;
-        const starter = getAnnouncePlayer() || announcer || player;
-        state.waitingNext = false;
-        state.nextWaveScheduled = false;
-        startWave(starter, state.waveIndex + 1);
-    }, WAVE_REST_TICKS + 20);
-}
+        refreshLivingSet();
+        refreshZombiePositions();
+
+        const now = system.currentTick;
+        if (state.waitingNext || state.nextWaveScheduled) return;
+
+        const idleTicks = now - state.lastKillTick;
+        const hasZombies = state.livingInWave.size > 0;
+
+        if (!hasZombies) {
+            if (idleTicks > 400 && !state.idleWarningShown) {
+                state.idleWarningShown = true;
+                const p = getAnnouncePlayer();
+                if (p) announce(p, "§4§lNo quedan muertos vivientes... cancelando raid.");
+            }
+            if (idleTicks > 600) {
+                const p = getAnnouncePlayer() || state.player;
+                if (state.zombiesDespawned) {
+                    if (p) announce(p, "§7§lLos muertos huyeron... la raid termina sin recompensa.");
+                    cleanupRaid();
+                } else {
+                    if (p) announce(p, "§4§lLa raid ha sido cancelada por inactividad.");
+                    finishRaid(p);
+                }
+                return;
+            }
+        } else {
+            const timeout = state.deathMode ? 2400 : 3600;
+            const warnTime = state.deathMode ? 1200 : 2400;
+            if (idleTicks > warnTime && !state.idleWarningShown) {
+                state.idleWarningShown = true;
+                const msg = state.deathMode
+                    ? "§4§l¡LOS CONDENADOS SE REAGRUPAN! Vuelve al campo de batalla."
+                    : "§4§lLos muertos se desvanecen... vuelve o perderás la raid.";
+                const p = getAnnouncePlayer();
+                if (p) announce(p, msg);
+            }
+            if (idleTicks > timeout) {
+                const p = getAnnouncePlayer() || state.player;
+                if (state.zombiesDespawned) {
+                    if (p) announce(p, "§7§lLos muertos huyeron... la raid termina sin recompensa.");
+                    cleanupRaid();
+                } else {
+                    if (p) announce(p, "§4§lLa raid ha sido cancelada por inactividad.");
+                    finishRaid(p);
+                }
+            }
+        }
+    } catch {}
+}, 100);
 
 world.afterEvents.itemUse.subscribe((event) => {
     const player = event.source;
@@ -472,15 +740,13 @@ world.afterEvents.itemUse.subscribe((event) => {
     if (!player || !item || item.typeId !== RAID_ITEM_ID) return;
 
     if (state.active) {
-        announce(player, "§cYa hay una raid activa. No hay tiempo para dudar.");
+        announce(player, "§c§lLa noche aún no termina. ¡Sobrevive!");
         return;
     }
 
     event.cancel = true;
 
-    try {
-        player.runCommand(`clear @s ${RAID_ITEM_ID} 0 1`);
-    } catch {}
+    try { player.runCommand(`clear @s ${RAID_ITEM_ID} 0 1`); } catch {}
 
     system.runTimeout(() => {
         if (!isEntityValid(player)) return;
@@ -488,8 +754,67 @@ world.afterEvents.itemUse.subscribe((event) => {
     }, 1);
 });
 
+world.afterEvents.entityDie.subscribe((event) => {
+    const entity = event.deadEntity;
+    if (!isEntityValid(entity)) return;
+
+    if (state.active && state.playerId && entity.id === state.playerId) {
+        state.playerDied = true;
+    }
+
+    const entityId = entity.id;
+    if (!entityId) return;
+    if (!state.active || !isEntityValid(state.player)) return;
+    if (!state.livingInWave.has(entityId) && !state.trackedEntities.has(entityId)) return;
+
+    state.livingInWave.delete(entityId);
+    state.trackedEntities.delete(entityId);
+    state.waveSpawned = Math.max(0, state.waveSpawned - 1);
+
+    state.killCounter++;
+    state.lastKillTick = system.currentTick;
+    state.idleWarningShown = false;
+    if (state.killCounter >= 5) {
+        state.killCounter = 0;
+        const p = getAnnouncePlayer();
+        if (p) broadcastRemaining(p);
+    }
+
+    if (state.livingInWave.size <= 0) {
+        if (state.zombiesDespawned) {
+            const p = getAnnouncePlayer() || state.player;
+            if (p) announce(p, "§7§lLos muertos huyeron... la raid termina sin recompensa.");
+            cleanupRaid();
+        } else {
+            completeWave(getAnnouncePlayer() || state.player);
+        }
+    }
+});
+
+world.afterEvents.scriptEventReceive.subscribe((event) => {
+    const player = event.sourceEntity;
+    if (!player || player.typeId !== "minecraft:player") return;
+    if (event.id !== "udaw:cancel_raid") return;
+    cancelRaid(player);
+});
+
+try {
+    world.beforeEvents.chatSend.subscribe((event) => {
+        try {
+            const sender = event.sender;
+            const msg = (event.message || "").trim();
+            if (!sender || sender.typeId !== "minecraft:player") return;
+            if (msg === "/cancelraid" || msg === "!cancelraid") {
+                event.cancel = true;
+                cancelRaid(sender);
+            }
+        } catch {}
+    });
+} catch {}
+
 function cancelRaid(player) {
     if (!isEntityValid(player)) return;
+
     const name = player.name || player.getName?.() || "";
     const isAdminName = ALLOWED_ADMINS.includes(name);
     const isCreative = (typeof player.getGameMode === "function" && player.getGameMode() === GameMode.Creative);
@@ -505,56 +830,7 @@ function cancelRaid(player) {
         return;
     }
 
-    announce(player, "§4La raid ha sido cancelada por un administrador.");
+    announce(player, "§4§lLa maldición ha sido disipada por un superior.");
+    try { player.runCommand("gamerule doMobSpawning true"); } catch {}
     finishRaid(player);
 }
-
-world.afterEvents.entityDie.subscribe((event) => {
-    const entity = event.deadEntity;
-    if (!isEntityValid(entity)) return;
-
-    const entityId = entity.id;
-    if (!entityId) return;
-    if (!state.active || !isEntityValid(state.player)) return;
-    if (!state.livingInWave.has(entityId) && !state.trackedEntities.has(entityId)) return;
-
-    state.livingInWave.delete(entityId);
-    state.trackedEntities.delete(entityId);
-    state.waveSpawned = Math.max(0, state.waveSpawned - 1);
-
-    if (DEBUG) {
-        const dbg = getAnnouncePlayer();
-        try { dbg?.sendMessage(`DEBUG: entityDie id=${entityId} remaining=${state.livingInWave.size}`); } catch {}
-    }
-
-    // announce remaining (silent from death to avoid double chat flood)
-    try { broadcastWaveStatus(getAnnouncePlayer(), { suppressChat: false, force: true }); } catch {}
-
-    // use livingInWave.size to determine completion
-    if (state.livingInWave.size <= 0) {
-        completeWave(getAnnouncePlayer() || state.player);
-    }
-});
-
-world.afterEvents.scriptEventReceive.subscribe((event) => {
-    const player = event.sourceEntity;
-    if (!player || player.typeId !== "minecraft:player") return;
-    if (event.id !== "udaw:cancel_raid") return;
-
-    cancelRaid(player);
-});
-
-// Chat-based admin cancel command: /cancelraid or !cancelraid
-try {
-    world.beforeEvents.chatSend.subscribe((event) => {
-        try {
-            const sender = event.sender;
-            const msg = (event.message || "").trim();
-            if (!sender || sender.typeId !== "minecraft:player") return;
-            if (msg === "/cancelraid" || msg === "!cancelraid") {
-                event.cancel = true;
-                cancelRaid(sender);
-            }
-        } catch {}
-    });
-} catch {}

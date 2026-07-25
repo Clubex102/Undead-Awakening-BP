@@ -1,0 +1,53 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:item": {
+        "description": {
+            "identifier": "udaw:diamond_sable",
+            "menu_category": {
+                "category": "equipment"
+            }
+        },
+        "components": {
+            "minecraft:display_name": {
+                "value": "%item.udaw:diamond_sable"
+            },
+            "minecraft:swing_duration": {
+                "value": 0.3
+            },
+            "minecraft:glint": {
+                "value": false
+            },
+            "minecraft:piercing_weapon": {
+                "hitbox_margin": 2,
+                "reach": {
+                    "max": 3,
+                    "min": 0
+                }
+            },
+            "minecraft:icon": "diamondsable_icon",
+            "minecraft:hand_equipped": false,
+            "minecraft:max_stack_size": 1,
+            "minecraft:can_destroy_in_creative": false,
+            "minecraft:durability": {
+                "damage_chance": { "min": 10, "max": 20 },
+                "max_durability": 1561
+            },
+            "minecraft:repairable": {
+                "repair_items": [{ "items": ["minecraft:diamond"], "repair_amount": "query.max_durability * 0.25" }]
+            },
+            "minecraft:enchantable": { "slot": "sword", "value": 10 },
+            "minecraft:damage": 8,
+            "minecraft:swing_sounds": {},
+            "minecraft:use_animation": "brush",
+            "minecraft:use_modifiers": {
+                "use_duration": 0.1,
+                "movement_modifier": 0.85
+            },
+            "minecraft:cooldown": {
+                "category": "sable",
+                "duration": 5.0
+            },
+            "minecraft:custom_components": ["udaw:sable"]
+        }
+    }
+}

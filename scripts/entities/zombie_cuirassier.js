@@ -24,7 +24,7 @@ const ANIM_DASH  = "animation.zombiecui.jump";
 
 const BLOCK_CHANCE   = 0.50;
 const DASH_THRESHOLD = 0.80;
-const ATK2_THRESHOLD = 0.90;
+const ATK2_THRESHOLD = 1.0;
 
 const BLOCK_DURATION = 50;    // ticks del bloqueo con timing
 const DASH_DURATION  = 10;    // ticks durante el dash hacia atrás
@@ -185,6 +185,7 @@ function _cleanBlock(id) {
 function _activateDash(entity, id, attacker) {
     attackingZombies.add(id);
     entity.playAnimation(ANIM_DASH);
+    try { entity.dimension.playSound("cuirassier_charge", entity.location, { volume: 1.5, maxDistance: 80 }); } catch (_) {}
 
     const fwd = entity.getViewDirection();
     const impulse = {

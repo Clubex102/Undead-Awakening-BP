@@ -37,27 +37,7 @@
                                 "min": 20
                             }
                             
-                        }
-                    ]
-                },
-                {
-                    "type": "item",
-                    "name": "minecraft:iron_chestplate",
-                    "weight": 3,
-                    "functions": [
-                        {
-                            "function": "set_count",
-                            "count": {
-                                "min": 1,
-                                "max": 1
-                            }
-                        },
-                        {
-                            "function": "set_damage",
-                            "damage": {
-                                "max": 100,
-                                "min": 50
-                            }
+                        
                         }
                     ]
                 },
@@ -105,7 +85,7 @@
                             "function": "set_count",
                             "count": {
                                 "min": 1,
-                                "max": 3
+                                "max": 2
                             }
                             
                         }

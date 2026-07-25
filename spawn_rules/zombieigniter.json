@@ -14,10 +14,10 @@
           "adjust_for_weather": true
         },
         "minecraft:weight": {
-          "default": 10
+          "default": 5
         },
         "minecraft:density_limit": {
-          "surface": 4
+          "surface": 1
         },
         "minecraft:difficulty_filter": {
           "min": "easy",

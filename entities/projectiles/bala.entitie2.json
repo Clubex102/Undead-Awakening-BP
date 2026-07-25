@@ -27,20 +27,14 @@
             },
             "minecraft:projectile": {
                 "anchor": 1,
-                "on_fire_time": 0,
-        
-                
                 "angle_offset": 0,
-                "catch_fire": false,
                 "gravity": 0.05,
                 "inertia": 1.5,
                 "knockback": true,
                 "on_hit": {
-                    "catch_fire": false,
-                    
                     "impact_damage": {
                         "damage": 30,
-                        
+                        "catch_fire": false,
                         "knockback": true,
                         "destroy_on_hit": false,
                         "max_critical_damage": 40,

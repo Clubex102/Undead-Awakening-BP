@@ -173,7 +173,8 @@ function fireCannon(player, cannon) {
         // Particulas optimizadas
         try {
             dim.spawnParticle("minecraft:huge_explosion_emitter", muzzle);
-            dim.spawnParticle("minecraft:campfire_smoke_particle", muzzle);
+            dim.spawnParticle("udaw:gun_smoke", muzzle);
+            dim.spawnParticle("udaw:gun_smoke", muzzle);
         } catch {}
 
         // Shake

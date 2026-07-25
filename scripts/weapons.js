@@ -106,7 +106,7 @@ function startReloadSound(player, soundId, watchItemId) {
             const held = player.getComponent(EntityEquippableComponent.componentId)
                                ?.getEquipmentSlot(EquipmentSlot.Mainhand)?.getItem();
             if (!held || held.typeId !== watchItemId) {
-                player.runCommand(`stopsound @s ${soundId}`);
+                player.runCommand(`stopsound @a ${soundId}`);
                 reloadingNow.delete(pid);
                 system.clearRun(reloadWatchers.get(pid));
                 reloadWatchers.delete(pid);
@@ -121,7 +121,7 @@ function startReloadSound(player, soundId, watchItemId) {
 
 function stopReloadSound(player, soundId) {
     const pid = player.id;
-    try { player.runCommand(`stopsound @s ${soundId}`); } catch (_) {}
+    try { player.runCommand(`stopsound @a ${soundId}`); } catch (_) {}
     reloadingNow.delete(pid);
     if (reloadWatchers.has(pid)) {
         system.clearRun(reloadWatchers.get(pid));
@@ -144,16 +144,8 @@ function spawnMuzzleEffects(player, shootSound) {
         dim.playSound(shootSound, player.location, { volume: 5, maxDistance: 1000 });
     }
     dim.spawnParticle("minecraft:large_explosion", muzzle);
-    dim.spawnParticle("minecraft:large_explosion", muzzle);
-    dim.spawnParticle("minecraft:large_explosion", muzzle);
-    dim.spawnParticle("minecraft:campfire_smoke_particle", muzzle);
-    dim.spawnParticle("minecraft:campfire_smoke_particle", muzzle);
-    dim.spawnParticle("minecraft:campfire_smoke_particle", muzzle);
-    dim.spawnParticle("minecraft:campfire_smoke_particle", muzzle);
-    dim.spawnParticle("minecraft:campfire_smoke_particle", muzzle);
-    dim.spawnParticle("minecraft:basic_flame_particle", muzzle);
-    dim.spawnParticle("minecraft:basic_flame_particle", muzzle);
-    dim.spawnParticle("minecraft:basic_flame_particle", muzzle);
+    dim.spawnParticle("udaw:gun_smoke", muzzle);
+    dim.spawnParticle("udaw:gun_smoke", muzzle);
     dim.spawnParticle("minecraft:basic_flame_particle", muzzle);
     dim.spawnParticle("minecraft:basic_flame_particle", muzzle);
     dim.spawnParticle("minecraft:evaporation_manual", muzzle);
@@ -315,6 +307,53 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
             if (hasItem(source, AMMO_ITEM)) {
                 mainhand.setItem(convertItem(item, "udaw:flintlockgun"));
             }
+        }
+    });
+
+    /* ---------- SABLES ---------- */
+    startupEvent.itemComponentRegistry.registerCustomComponent("udaw:sable", {
+        onUse(event) {
+            const { source, itemStack } = event;
+            if (source.typeId !== "minecraft:player" || !itemStack) return;
+
+            source.playAnimation("animation.humanoid.sable_tpp");
+            source.dimension.playSound("item.trident.riptide_1", source.location);
+
+            const damage = itemStack.typeId === "udaw:diamond_sable" ? 8
+                         : itemStack.typeId === "udaw:iron_sable" ? 7
+                         : 6;
+
+            const pos = source.location;
+            const rot = source.getRotation();
+            const yaw = (rot.y * Math.PI) / 180;
+            const dirX = -Math.sin(yaw);
+            const dirZ = Math.cos(yaw);
+
+            system.runTimeout(() => {
+                const entities = source.dimension.getEntities({
+                    location: pos,
+                    maxDistance: 4,
+                    excludeFamilies: ["player"],
+                });
+
+                for (const entity of entities) {
+                    if (entity === source) continue;
+
+                    const dx = entity.location.x - pos.x;
+                    const dz = entity.location.z - pos.z;
+
+                    const dot = dx * dirX + dz * dirZ;
+                    if (dot <= 0 || dot > 3) continue;
+
+                    const perp = Math.abs(dx * (-dirZ) + dz * dirX);
+                    if (perp > 1.5) continue;
+
+                    const dy = entity.location.y - pos.y;
+                    if (Math.abs(dy) > 1.5) continue;
+
+                    entity.applyDamage(damage);
+                }
+            }, 7);
         }
     });
 });

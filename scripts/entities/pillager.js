@@ -55,19 +55,10 @@ world.afterEvents.entitySpawn.subscribe((event) => {
 
                 // Particulas — mismas que la pistola del jugador
                 dim.spawnParticle("minecraft:large_explosion", muzzlePos);
-                dim.spawnParticle("minecraft:large_explosion", muzzlePos);
-                dim.spawnParticle("minecraft:large_explosion", muzzlePos);
-                dim.spawnParticle("minecraft:campfire_smoke_particle", muzzlePos);
-                dim.spawnParticle("minecraft:campfire_smoke_particle", muzzlePos);
-                dim.spawnParticle("minecraft:campfire_smoke_particle", muzzlePos);
-                dim.spawnParticle("minecraft:campfire_smoke_particle", muzzlePos);
-                dim.spawnParticle("minecraft:campfire_smoke_particle", muzzlePos);
+                dim.spawnParticle("udaw:gun_smoke", muzzlePos);
+                dim.spawnParticle("udaw:gun_smoke", muzzlePos);
                 dim.spawnParticle("minecraft:basic_flame_particle", muzzlePos);
                 dim.spawnParticle("minecraft:basic_flame_particle", muzzlePos);
-                dim.spawnParticle("minecraft:basic_flame_particle", muzzlePos);
-                dim.spawnParticle("minecraft:basic_flame_particle", muzzlePos);
-                dim.spawnParticle("minecraft:basic_flame_particle", muzzlePos);
-                dim.spawnParticle("minecraft:evaporation_manual", muzzlePos);
             } catch (_) {}
         });
     }
