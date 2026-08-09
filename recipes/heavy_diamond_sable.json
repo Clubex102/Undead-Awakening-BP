@@ -1,0 +1,33 @@
+{
+    "format_version": "1.21.10",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "udaw:diamond_sable"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern": [
+            "  M",
+            " MM",
+            "SM "
+        ],
+        "unlock": [
+            {
+                "item": "minecraft:diamond_sword"
+            }
+        ],
+        "key": {
+            "S": {
+                "item": "minecraft:diamond_sword"
+            },
+            "M": {
+                "item": "minecraft:diamond"
+            }
+        },
+        "result": {
+            "item": "udaw:diamond_sable",
+            "count": 1
+        }
+    }
+}
