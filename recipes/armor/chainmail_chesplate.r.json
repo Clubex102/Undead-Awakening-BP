@@ -1,0 +1,30 @@
+{
+    "format_version": "1.20.10",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "udaw:chainmail_chestplate"
+        },
+        "unlock": [
+            {
+                "item": "minecraft:iron_nugget"
+            }
+        ],
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern": [
+            "S S",
+            "SSS",
+            "SSS"
+        ],
+        "key": {
+            "S": {
+                "item": "minecraft:iron_nugget"
+            }
+        },
+        "result": {
+            "item": "minecraft:chainmail_chestplate",
+            "count": 1
+        }
+    }
+}
