@@ -38,7 +38,7 @@
           "attack_radius": 20
         },
         "minecraft:shooter": {
-          "def": "udaw:bullet",
+          "def": "udaw:pillagerbullet",
           "sound": "flintlockshoot"
         },
         "minecraft:environment_sensor": {
@@ -154,6 +154,30 @@
       "minecraft:equip_item": {},
       "minecraft:collision_box": { "width": 0.6, "height": 1.9 },
       "minecraft:type_family": { "family": [ "pillager", "monster", "illager", "mob" ] },
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "deals_damage": "no",
+            "on_damage": {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "value": "pillager_bullet"
+              }
+            }
+          },
+          {
+            "deals_damage": "no",
+            "on_damage": {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "value": "pillager_cannon_bullet"
+              }
+            }
+          }
+        ]
+      },
       "minecraft:variant": { "value": 0 },
       "minecraft:breathable": { "total_supply": 15, "suffocate_time": 0 },
       "minecraft:health": { "value": 24, "max": 24 },

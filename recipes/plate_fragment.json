@@ -1,0 +1,32 @@
+{
+    "format_version": "1.21.10",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "udaw:plate_fragment"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern": [
+            " C ",
+            "CIC",
+            " C "
+        ],
+        "unlock":  {
+            "context": "minecraft:iron_ingot",
+                "item": "minecraft:iron_ingot"
+        },
+        "key": {
+            "C": {
+                "item": "minecraft:copper_ingot"
+            },
+            "I": {
+                "item": "minecraft:iron_ingot"
+            }
+        },
+        "result": {
+            "item": "udaw:plate_fragment",
+            "count": 1
+        }
+    }
+}

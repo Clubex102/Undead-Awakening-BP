@@ -1,0 +1,18 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:item": {
+        "description": {
+            "identifier": "udaw:plate_fragment",
+            "menu_category": {
+                "category": "items"
+            }
+        },
+        "components": {
+            "minecraft:display_name": {
+                "value": "%item.udaw.plate_fragment"
+            },
+            "minecraft:icon": "plate_fragment",
+            "minecraft:max_stack_size": 64
+        }
+    }
+}

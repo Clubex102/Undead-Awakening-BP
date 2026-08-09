@@ -9,8 +9,9 @@
         },
         "components": {
             "minecraft:display_name": {
-                "value": "%item.udaw:copper_sable"
+                "value": "%item.udaw.copper_sable"
             },
+            
             "minecraft:swing_duration": {
                 "value": 0.3
             },
@@ -25,7 +26,7 @@
                 }
             },
             "minecraft:icon": "coppersable_icon",
-            "minecraft:hand_equipped": false,
+            "minecraft:hand_equipped": true,
             "minecraft:max_stack_size": 1,
             "minecraft:can_destroy_in_creative": false,
             "minecraft:durability": {

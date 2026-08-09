@@ -1,5 +1,28 @@
-import { system } from "@minecraft/server";
+import { EntityEquippableComponent, EquipmentSlot, system } from "@minecraft/server";
 import { VECTOR } from "./mathUtils";
+
+const HEAVY_CHESTPLATES = [
+    "udaw:heavy_iron_chestplate",
+    "udaw:heavy_diamond_chestplate",
+    "udaw:heavy_copper_chestplate"
+];
+
+/**
+ * Comprueba si la entidad es un jugador que lleva puesta una pechera pesada.
+ * @param {Entity} entity - Entidad a comprobar.
+ * @returns {boolean} true si lleva una pechera pesada equipada.
+ */
+export function hasHeavyChestplate(entity) {
+    try {
+        if (!entity || entity.typeId !== "minecraft:player") return false;
+        const equippable = entity.getComponent(EntityEquippableComponent.componentId);
+        if (!equippable) return false;
+        const item = equippable.getEquipmentSlot(EquipmentSlot.Chest).getItem();
+        return !!item && HEAVY_CHESTPLATES.includes(item.typeId);
+    } catch (_) {
+        return false;
+    }
+}
 
 /**
  * Dispara múltiples proyectiles al mismo tiempo en un patrón de abanico.

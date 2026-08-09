@@ -1,0 +1,34 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:item": {
+        "description": {
+            "identifier": "udaw:heavy_copper_helmet",
+            "menu_category": {
+                "category": "equipment"
+            }
+        },
+        "components": {
+            "minecraft:display_name": {
+                "value": "%item.udaw.heavy_copper_helmet\n§e%item.udaw.heavy_copper_helmet.description"
+            },
+            "minecraft:icon": "copperheavyhelmet_icon",
+            "minecraft:max_stack_size": 1,
+            "minecraft:can_destroy_in_creative": false,
+            "minecraft:durability": {
+                "damage_chance": { "min": 1, "max": 1 },
+                "max_durability": 220
+            },
+            "minecraft:damage_absorption": {
+                "absorbable_causes": ["entity_explosion", "block_explosion"]
+            },
+            "minecraft:repairable": {
+                "repair_items": [{ "items": ["minecraft:copper_ingot"], "repair_amount": "query.max_durability * 0.25" }]
+            },
+            "minecraft:enchantable": { "slot": "armor_head", "value": 10 },
+            "minecraft:wearable": {
+                "protection": 3,
+                "slot": "slot.armor.head"
+            }
+        }
+    }
+}

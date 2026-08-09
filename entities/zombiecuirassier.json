@@ -183,8 +183,9 @@
             "table": "loot_tables/entities/zombie_cuirassier.json"
         },
         "minecraft:experience_reward": {
-            "on_death": "query.last_hit_by_player ? Math.Random(3,5) : 0"
-        }
+            "on_death": "query.last_hit_by_player ? 5 : 0"
+        },
+        "minecraft:can_join_raid": {}
         },
         "events": {
                     

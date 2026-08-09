@@ -1,4 +1,5 @@
 import { world, system, GameMode, EquipmentSlot } from "@minecraft/server";
+import * as MC from "@minecraft/server";
 
 const RAID_ITEM_ID = "udaw:raid_bottle";
 const RAID_SCAN_RANGE = 120;
@@ -22,36 +23,79 @@ const ZOMBIE_CUIRASSIER = "udaw:zombie_cuirassier";
 const INFANTRY_UNITS = [ZOMBIE_COMUN, ZOMBIE_RANGE, ZOMBIE_LANCE];
 const INFANTRY_WEIGHTS = [7, 1, 2];
 const SPECIALIST_UNITS = [ZOMBIE_MINER, ZOMBIE_WC, ZOMBIE_IGNITER, PL_ZOMBIE, ZOMBIE_SHOVEL];
-const SPECIALIST_WEIGHTS = [8, 8, 2, 8, 8];
+const SPECIALIST_WEIGHTS = [12, 12, 2, 8, 8];
 const ELITE_UNITS = [PILLAGER_ZOMBIE, VINDICATOR_ZOMBIE];
 const CARDINAL_DIRECTIONS = ["NORTE", "SUR", "ESTE", "OESTE"];
 
 const DEATH_INFANTRY_UNITS = [ZOMBIE_COMUN, ZOMBIE_RANGE, ZOMBIE_LANCE, PILLAGER_ZOMBIE, VINDICATOR_ZOMBIE];
 const DEATH_INFANTRY_WEIGHTS = [5, 1, 2, 3, 3];
 const DEATH_SPECIALIST_UNITS = [ZOMBIE_MINER, ZOMBIE_WC, ZOMBIE_IGNITER, PL_ZOMBIE, ZOMBIE_SHOVEL, PILLAGER_ZOMBIE, VINDICATOR_ZOMBIE];
-const DEATH_SPECIALIST_WEIGHTS = [6, 6, 2, 6, 6, 4, 4];
+const DEATH_SPECIALIST_WEIGHTS = [10, 10, 2, 6, 6, 4, 4];
 const WAVE6_ELITE_POOL = [PILLAGER_ZOMBIE, VINDICATOR_ZOMBIE, EVOCATOR_ZOMBIE, ZOMBIE_CUIRASSIER];
 
+const CAVALRY_ZOMBIE = "minecraft:zombie";
+const CAVALRY_HORSE = "minecraft:zombie_horse";
+const CAVALRY_HORSE_HEALTH = 120;
+const CAVALRY_WEAPONS = ["minecraft:iron_spear", "udaw:iron_sable"];
+const FIRE_RESISTANCE_TICKS = 200;
+
+let cavalrySeq = 0;
+
 const WAVE_COMPLETE_MESSAGES = [
-    "§a§lLa oscuridad se retira... pero no por mucho tiempo.",
-    "§a§lHas sobrevivido... esto no ha hecho más que empezar.",
-    "§a§lLos muertos caen... más vendrán.",
-    "§a§lUn respiro en el infierno.",
-    "§a§lEl ejército de la muerte se reagrupa..."
+    "§a§lThe darkness recedes... but not for long.",
+    "§a§lYou survived... this is only the beginning.",
+    "§a§lThe dead fall... more will come.",
+    "§a§lA brief breath in hell.",
+    "§a§lThe army of the dead regroups..."
 ];
 
 const DEATH_WAVE_COMPLETE_MESSAGES = [
-    "§4§l¡Sigues con vida? ¡IMPOSIBLE!",
-    "§4§lEl abismo brama... ¡esto no termina!",
-    "§4§l¡Los condenados no descansan! ¡Prepárate!",
-    "§4§l¡Has visto el infierno y sobrevives!",
-    "§4§l¡La pesadilla se intensifica!"
+    "§4§lStill alive? IMPOSSIBLE!",
+    "§4§lThe abyss roars... this is not over!",
+    "§4§lThe damned never rest! Get ready!",
+    "§4§lYou saw hell and are still standing!",
+    "§4§lThe nightmare grows stronger!"
 ];
 
 const TELEPORT_THRESHOLD = 45;
 const MAX_TELEPORT_PER_CYCLE = 15;
+const DESPAWN_GRACE_SCANS = 3;
 
 const DEBUG = false;
+
+try {
+    if (system.beforeEvents?.startup) {
+        system.beforeEvents.startup.subscribe(({ customCommandRegistry }) => {
+            try {
+                if (!customCommandRegistry || typeof customCommandRegistry.registerCommand !== "function") return;
+                customCommandRegistry.registerCommand(
+                    {
+                        name: "udaw:cavalry",
+                        description: "Invoca caballeros de la muerte (cantidad opcional).",
+                        permissionLevel: MC.CommandPermissionLevel.Any,
+                        cheatsRequired: false,
+                        optionalParameters: [
+                            { name: "count", type: MC.CustomCommandParamType.Integer }
+                        ]
+                    },
+                    (origin, count) => {
+                        try {
+                            const source = origin?.initiator ?? origin?.sourceEntity;
+                            if (!source || source.typeId !== "minecraft:player") {
+                                return { status: MC.CustomCommandStatus.Failure, message: "Solo lo puede usar un jugador." };
+                            }
+                            const amount = Math.max(1, Math.min(Number(count) || 1, 20));
+                            system.run(() => spawnCavalryTest(source, amount));
+                            return { status: MC.CustomCommandStatus.Success, message: `Invocando ${amount} caballero(s).` };
+                        } catch {
+                            return { status: MC.CustomCommandStatus.Failure };
+                        }
+                    }
+                );
+            } catch {}
+        });
+    }
+} catch {}
 
 const state = {
     active: false,
@@ -71,7 +115,8 @@ const state = {
     deathMode: false,
     lastKillTick: 0,
     idleWarningShown: false,
-    zombiesDespawned: false
+    zombiesDespawned: false,
+    missingSince: {}
 };
 
 const ALLOWED_ADMINS = [];
@@ -251,6 +296,145 @@ function spawnRaidEntity(dimension, base, entityId, directionVec) {
     } catch { return null; }
 }
 
+function spawnCavalryZombie(dimension, base, directionVec) {
+    const distance = randomBetween(25, 30);
+    const spreadAngle = (Math.random() - 0.5) * 1.2;
+    const angle = Math.atan2(directionVec.z, directionVec.x) + spreadAngle;
+    const x = base.x + Math.cos(angle) * distance;
+    const z = base.z + Math.sin(angle) * distance;
+    const y = findGround(dimension, x, base.y + 40, z);
+
+    let horse = null;
+    try {
+        horse = dimension.spawnEntity(CAVALRY_HORSE, { x, y, z });
+    } catch { return null; }
+    if (!isEntityValid(horse)) return null;
+
+    try { horse.addTag("udaw_raid_zombie"); } catch {}
+    makePersistent(horse);
+
+    const cavSeq = ++cavalrySeq;
+    const riderTag = "udaw_cav_rider_" + cavSeq;
+    const mountTag = "udaw_cav_mount_" + cavSeq;
+    try { horse.addTag(mountTag); } catch {}
+
+    try {
+        const health = horse.getComponent("minecraft:health");
+        if (health) {
+            health.setMaxHealth(CAVALRY_HORSE_HEALTH);
+            health.setCurrentValue(CAVALRY_HORSE_HEALTH);
+        }
+    } catch {}
+
+    applyRaidSpawnEffects(horse, false);
+    try {
+        horse.addEffect("minecraft:fire_resistance", FIRE_RESISTANCE_TICKS, { amplifier: 0, showParticles: false });
+    } catch {}
+
+    system.runTimeout(() => {
+        try {
+            if (!isEntityValid(horse)) return;
+            horse.triggerEvent("minecraft:spawn_adult_with_rider");
+        } catch {}
+    }, 4);
+
+    system.runTimeout(() => {
+        try {
+            if (!isEntityValid(horse)) return;
+            horse.runCommand("replaceitem entity @s slot.armor.body 0 horsearmordiamond 1");
+        } catch {}
+        try {
+            if (!isEntityValid(horse)) return;
+            const equippable = horse.getComponent("minecraft:equippable");
+            if (equippable && typeof equippable.setEquipment === "function") {
+                equippable.setEquipment(EquipmentSlot.Body, new MC.ItemStack("horsearmordiamond", 1));
+            }
+        } catch {}
+    }, 10);
+
+    system.runTimeout(() => {
+        try {
+            if (!isEntityValid(horse)) return;
+            horse.addEffect("minecraft:resistance", 999999, { amplifier: 1, showParticles: true });
+            horse.addEffect("minecraft:speed", 999999, { amplifier: 1, showParticles: true });
+        } catch {}
+    }, RAID_SPAWN_EFFECT_TICKS + 4);
+
+    const setupRider = (rider) => {
+        if (!isEntityValid(rider)) return;
+        try { rider.addTag("udaw_raid_zombie"); } catch {}
+        try { rider.addTag(riderTag); } catch {}
+        makePersistent(rider);
+        applyRaidSpawnEffects(rider, state.deathMode);
+        try {
+            rider.addEffect("minecraft:fire_resistance", FIRE_RESISTANCE_TICKS, { amplifier: 0, showParticles: false });
+        } catch {}
+        const cavalryWeapon = randomChoice(CAVALRY_WEAPONS);
+        system.runTimeout(() => {
+            try {
+                if (!isEntityValid(rider)) return;
+                rider.runCommand("replaceitem entity @s slot.armor.head 0 udaw:heavy_diamond_helmet 1");
+                rider.runCommand("replaceitem entity @s slot.armor.chest 0 udaw:heavy_diamond_chestplate 1");
+                rider.runCommand("replaceitem entity @s slot.armor.legs 0 minecraft:diamond_leggings 1");
+                rider.runCommand("replaceitem entity @s slot.armor.feet 0 minecraft:diamond_boots 1");
+                rider.runCommand(`replaceitem entity @s slot.weapon.mainhand 0 ${cavalryWeapon} 1`);
+            } catch {}
+        }, 6);
+    };
+
+    let findAttempts = 0;
+    const findRider = () => {
+        if (!isEntityValid(horse)) return;
+        findAttempts++;
+        let riders = [];
+        try {
+            const rideable = horse.getComponent("minecraft:rideable");
+            if (rideable && typeof rideable.getRiders === "function") riders = rideable.getRiders() || [];
+        } catch {}
+        if (riders.length > 0 && isEntityValid(riders[0])) {
+            setupRider(riders[0]);
+            return;
+        }
+        if (findAttempts < 4) {
+            system.runTimeout(findRider, 12);
+        } else {
+            let zombie = null;
+            try { zombie = dimension.spawnEntity(CAVALRY_ZOMBIE, { x, y, z }); } catch {}
+            if (isEntityValid(zombie)) {
+                try { zombie.triggerEvent("minecraft:spawn_as_rider"); } catch {}
+                setupRider(zombie);
+                system.runTimeout(() => {
+                    try {
+                        const rideable = horse.getComponent("minecraft:rideable");
+                        if (rideable && typeof rideable.addRider === "function") rideable.addRider(zombie);
+                    } catch {}
+                }, 6);
+            }
+        }
+    };
+    system.runTimeout(findRider, 12);
+
+    return horse;
+}
+
+function spawnCavalryTest(player, count) {
+    if (!isEntityValid(player)) return;
+    const dimension = player.dimension;
+    const base = player.location;
+    const amount = Math.max(1, Math.min(count || 1, 20));
+    let spawned = 0;
+    for (let i = 0; i < amount; i++) {
+        const dirVec = getDirectionVector(CARDINAL_DIRECTIONS[i % CARDINAL_DIRECTIONS.length]);
+        const horse = spawnCavalryZombie(dimension, base, dirVec);
+        if (horse) spawned++;
+    }
+    const text = spawned > 0
+        ? `§6§l[CAVALIER] §aSe invocaron ${spawned} caballeros de la muerte.`
+        : "§6§l[CAVALIER] §cNo se pudieron invocar.";
+    try { player.sendMessage(text); } catch {}
+    try { player.runCommand(`title @s actionbar ${text.replace(/§[0-9a-fk-or]/g, "")}`); } catch {}
+}
+
 function getAnnouncePlayer() {
     if (isEntityValid(state.player)) return state.player;
     if (state.origin) {
@@ -294,20 +478,47 @@ function refreshLivingSet() {
             excludeTypes: ["minecraft:item", "minecraft:xp_orb"]
         }) || [];
         const foundIds = new Set(found.map(e => e.id).filter(Boolean));
-        for (const existingId of state.livingInWave) {
-            if (!foundIds.has(existingId) && state.trackedEntities.has(existingId)) {
-                state.zombiesDespawned = true;
-            }
-        }
-        state.livingInWave = new Set(foundIds);
+
         for (const id of foundIds) {
-            state.trackedEntities.add(id);
+            if (!state.trackedEntities.has(id)) {
+                state.trackedEntities.add(id);
+                state.livingInWave.add(id);
+            }
             try {
                 const e = dim.getEntity(id);
                 if (e) makePersistent(e);
             } catch {}
         }
-        state.waveSpawned = state.livingInWave.size;
+
+        const now = system.currentTick;
+        if (!state.missingSince) state.missingSince = {};
+        for (const existingId of [...state.livingInWave]) {
+            if (foundIds.has(existingId)) {
+                delete state.missingSince[existingId];
+                continue;
+            }
+            let stillExists = false;
+            try { stillExists = isEntityValid(dim.getEntity(existingId)); } catch {}
+            if (stillExists) {
+                delete state.missingSince[existingId];
+                continue;
+            }
+            if (!state.missingSince[existingId]) state.missingSince[existingId] = now;
+            if (now - state.missingSince[existingId] >= DESPAWN_GRACE_SCANS * 100) {
+                const maybeLast = state.livingInWave.size <= 1;
+                state.livingInWave.delete(existingId);
+                state.trackedEntities.delete(existingId);
+                delete state.missingSince[existingId];
+                state.waveSpawned = Math.max(0, state.waveSpawned - 1);
+                if (maybeLast) {
+                    const p = getAnnouncePlayer();
+                    if (p) announce(p, "§7§lUn muerto se ha desvanecido... la oleada continúa.");
+                }
+            }
+        }
+        if (state.livingInWave.size === 0 && !state.nextWaveScheduled) {
+            completeWave(getAnnouncePlayer() || state.player);
+        }
     } catch {}
 }
 
@@ -402,33 +613,33 @@ function finishRaid(player) {
     if (player && isEntityValid(player)) {
         giveBasicRewards(player);
         if (wasDeathMode) {
-            player.sendMessage("§4§l☠ §6§lEL REY RECONOCE TU VALOR §4§l☠");
-            player.sendMessage("§cHas atravesado la tormenta. Toma tu recompensa, guerrero.");
-            player.sendMessage("§6—— §fRecompensa de combate entregada §6——");
+            player.sendMessage("§4§l☠ §6§lTHE KING RECOGNIZES YOUR COURAGE §4§l☠");
+            player.sendMessage("§cYou endured the storm. Take your reward, warrior.");
+            player.sendMessage("§6—— §fCombat reward delivered §6——");
         } else {
-            player.sendMessage("§6§lEL REY HA VISTO TU VALENTÍA");
-            player.sendMessage("§eToma estas provisiones, héroe. La lucha continúa.");
-            player.sendMessage("§e—— §fRecompensa básica entregada §e——");
+            player.sendMessage("§6§lTHE KING HAS SEEN YOUR BRAVERY");
+            player.sendMessage("§eTake these supplies, hero. The fight continues.");
+            player.sendMessage("§e—— §fBasic reward delivered §e——");
         }
 
         if (wasDeathMode || !died) {
             giveBonusRewards(player);
             if (wasDeathMode) {
-                player.sendMessage("§4§l✦ §6§lHONOR DE GUERRA §4§l✦");
-                player.sendMessage("§6El Rey premia tu esfuerzo en el campo de batalla.");
-                player.sendMessage("§6—— §fBotín de guerra entregado §6——");
+                player.sendMessage("§4§l✦ §6§lHONOR OF WAR §4§l✦");
+                player.sendMessage("§6The King rewards your effort on the battlefield.");
+                player.sendMessage("§6—— §fWar booty delivered §6——");
             } else {
-                player.sendMessage("§b§l✦ RECOMPENSA INMORTAL ✦");
-                player.sendMessage("§bHas resistido sin caer... el Rey te honra.");
-                player.sendMessage("§b—— §fBonus por supervivencia entregado §b——");
+                player.sendMessage("§b§l✦ IMMORTAL REWARD ✦");
+                player.sendMessage("§bYou resisted without falling... the King honors you.");
+                player.sendMessage("§b—— §fSurvival bonus delivered §b——");
             }
         }
 
         if (wasDeathMode && !died) {
             giveDeathSurvivalBonus(player);
-            player.sendMessage("§4§l✦ §c§lALMA INDÓMITA §4§l✦");
-            player.sendMessage("§cNi el abismo pudo quebrarte. El Rey reconoce tu fuerza.");
-            player.sendMessage("§c—— §fBonificación suprema entregada §c——");
+            player.sendMessage("§4§l✦ §c§lUNYIELDING SOUL §4§l✦");
+            player.sendMessage("§cNot even the abyss could break you. The King recognizes your strength.");
+            player.sendMessage("§c—— §fSupreme bonus delivered §c——");
         }
     }
 
@@ -443,6 +654,7 @@ function finishRaid(player) {
     state.playerDied = false;
     state.deathMode = false;
     state.zombiesDespawned = false;
+    state.missingSince = {};
 }
 
 function cleanupRaid() {
@@ -457,6 +669,7 @@ function cleanupRaid() {
     state.playerDied = false;
     state.deathMode = false;
     state.zombiesDespawned = false;
+    state.missingSince = {};
     try { world.getPlayers()[0]?.runCommand("gamerule doMobSpawning true"); } catch {}
 }
 
@@ -464,7 +677,7 @@ function advanceRaid(player) {
     if (!isEntityValid(player)) return;
 
     if (state.active) {
-        announce(player, "§c§lLa noche aún no termina. ¡Sobrevive!");
+        announce(player, "§c§lThe night is not over yet. Survive!");
         return;
     }
 
@@ -478,12 +691,12 @@ function advanceRaid(player) {
     try { player.runCommand("gamerule doMobSpawning false"); } catch {}
 
     if (state.deathMode) {
-        broadcastMessage(player, "§4§l☠ EL APOCALIPSIS HA COMENZADO ☠");
-        broadcastMessage(player, "§c¡Los mismísimos horrores del abismo emergen!");
-        broadcastMessage(player, "§4§k¡§r §4¡NO HAY ESCAPATORIA! §k¡§r");
+        broadcastMessage(player, "§4§l☠ THE APOCALYPSE HAS BEGUN ☠");
+        broadcastMessage(player, "§cThe very horrors of the abyss emerge!");
+        broadcastMessage(player, "§4§k¡§r §4NO ESCAPE! §k¡§r");
     } else {
-        broadcastMessage(player, "§4§l☠ LOS MUERTOS SE LEVANTAN ☠");
-        broadcastMessage(player, "§c¡El aire se vuelve putrefacto... algo se acerca!");
+        broadcastMessage(player, "§4§l☠ THE DEAD RISE ☠");
+        broadcastMessage(player, "§cThe air grows putrid... something approaches!");
     }
 
     system.runTimeout(() => {
@@ -516,8 +729,8 @@ function completeWave(player) {
 
     if (announcer) {
         const text = state.deathMode
-            ? "§4§l¡Próxima oleada en 30s... REZA! §k¡§r"
-            : "§6§lPróxima oleada en 30s... ¡prepárate!";
+            ? "§4§lNext wave in 30s... PRAY! §k¡§r"
+            : "§6§lNext wave in 30s... get ready!";
         broadcastMessage(announcer, text);
     }
 
@@ -556,19 +769,20 @@ function startWave(player, waveNumber) {
     state.lastKillTick = system.currentTick;
     state.idleWarningShown = false;
     state.zombiesDespawned = false;
+    state.missingSince = {};
 
     const directionVec = getDirectionVector(state.currentDirection);
 
     try { dimension.playSound("horde", base, { volume: 2, maxDistance: 120 }); } catch {}
 
     if (isDeath) {
-        broadcastMessage(player, `§4§l§k¡§r §4§l★ OLEADA ${waveNumber} ★ §k¡§r`);
-        broadcastMessage(player, `§c§l¡LOS CONDENADOS ARRASAN DESDE EL ${state.currentDirection}!`);
-        broadcastMessage(player, "§4§l¡NO HAY PIEDAD! ¡NO HAY HUIDA!");
+        broadcastMessage(player, `§4§l§k¡§r §4§l★ WAVE ${waveNumber} ★ §k¡§r`);
+        broadcastMessage(player, `§c§lTHE DAMNED RUSH FROM THE ${state.currentDirection}!`);
+        broadcastMessage(player, "§4§lNO MERCY! NO ESCAPE!");
     } else {
-        broadcastMessage(player, `§4§l★ OLEADA ${waveNumber} ★`);
-        broadcastMessage(player, `§c§lLOS MUERTOS VIENEN DEL ${state.currentDirection}`);
-        broadcastMessage(player, "§4¡Prepárate o sé devorado!");
+        broadcastMessage(player, `§4§l★ WAVE ${waveNumber} ★`);
+        broadcastMessage(player, `§c§lTHE DEAD COME FROM THE ${state.currentDirection}`);
+        broadcastMessage(player, "§4Get ready or be devoured!");
     }
 
     const register = (entity) => {
@@ -578,6 +792,14 @@ function startWave(player, waveNumber) {
         state.livingInWave.add(entityId);
         state.trackedEntities.add(entityId);
         state.waveSpawned += 1;
+    };
+
+    const spawnCavalry = (count) => {
+        for (let i = 0; i < count; i++) {
+            const horse = spawnCavalryZombie(dimension, base, directionVec);
+            if (!horse) continue;
+            register(horse);
+        }
     };
 
     if (isDeath) {
@@ -613,6 +835,9 @@ function startWave(player, waveNumber) {
                 register(spawnRaidEntity(dimension, base, randomChoice(WAVE6_ELITE_POOL), directionVec));
             }
         }
+
+        if (waveNumber === 5) spawnCavalry(1);
+        if (waveNumber === 6) spawnCavalry(2);
     } else {
         for (let i = 0; i < counts.infantry; i++) {
             register(spawnRaidEntity(dimension, base, weightedChoice(INFANTRY_UNITS, INFANTRY_WEIGHTS), directionVec));
@@ -641,6 +866,8 @@ function startWave(player, waveNumber) {
                 register(spawnRaidEntity(dimension, base, ZOMBIE_CUIRASSIER, directionVec));
             }
         }
+
+        if (waveNumber === 5) spawnCavalry(1);
     }
 
     if (state.waveSpawned <= 0) {
@@ -661,8 +888,8 @@ function scheduleCountdown(player, totalSeconds) {
                         const announcer = getAnnouncePlayer();
                         if (!state.active || !announcer) return;
                         const text = state.deathMode
-                            ? (sec > 5 ? `§4§l¡Se acerca el fin! ${sec}s...` : `§4§l§k¡§r §4§l${sec}! §k¡§r`)
-                            : (sec > 5 ? `§c§lEl terror regresa en ${sec}s...` : `§4§l${sec}...`);
+                            ? (sec > 5 ? `§4§lThe end approaches! ${sec}s...` : `§4§l§k¡§r §4§l${sec}! §k¡§r`)
+                            : (sec > 5 ? `§c§lThe terror returns in ${sec}s...` : `§4§l${sec}...`);
                         announce(announcer, text);
                         for (const p of getNearbyPlayers(announcer)) {
                             try { if (p.id === announcer.id) continue; p.sendMessage(text); } catch {}
@@ -695,15 +922,15 @@ system.runInterval(() => {
             if (idleTicks > 400 && !state.idleWarningShown) {
                 state.idleWarningShown = true;
                 const p = getAnnouncePlayer();
-                if (p) announce(p, "§4§lNo quedan muertos vivientes... cancelando raid.");
+                if (p) announce(p, "§4§lNo undead remain... canceling the raid.");
             }
             if (idleTicks > 600) {
                 const p = getAnnouncePlayer() || state.player;
                 if (state.zombiesDespawned) {
-                    if (p) announce(p, "§7§lLos muertos huyeron... la raid termina sin recompensa.");
+                    if (p) announce(p, "§7§lThe dead fled... the raid ends without rewards.");
                     cleanupRaid();
                 } else {
-                    if (p) announce(p, "§4§lLa raid ha sido cancelada por inactividad.");
+                    if (p) announce(p, "§4§lThe raid has been canceled due to inactivity.");
                     finishRaid(p);
                 }
                 return;
@@ -714,18 +941,18 @@ system.runInterval(() => {
             if (idleTicks > warnTime && !state.idleWarningShown) {
                 state.idleWarningShown = true;
                 const msg = state.deathMode
-                    ? "§4§l¡LOS CONDENADOS SE REAGRUPAN! Vuelve al campo de batalla."
-                    : "§4§lLos muertos se desvanecen... vuelve o perderás la raid.";
+                    ? "§4§lTHE DAMNED ARE REGROUPING! Return to the battlefield."
+                    : "§4§lThe dead are fading... return or you will lose the raid.";
                 const p = getAnnouncePlayer();
                 if (p) announce(p, msg);
             }
             if (idleTicks > timeout) {
                 const p = getAnnouncePlayer() || state.player;
                 if (state.zombiesDespawned) {
-                    if (p) announce(p, "§7§lLos muertos huyeron... la raid termina sin recompensa.");
+                    if (p) announce(p, "§7§lThe dead fled... the raid ends without rewards.");
                     cleanupRaid();
                 } else {
-                    if (p) announce(p, "§4§lLa raid ha sido cancelada por inactividad.");
+                    if (p) announce(p, "§4§lThe raid has been canceled due to inactivity.");
                     finishRaid(p);
                 }
             }
@@ -740,7 +967,7 @@ world.afterEvents.itemUse.subscribe((event) => {
     if (!player || !item || item.typeId !== RAID_ITEM_ID) return;
 
     if (state.active) {
-        announce(player, "§c§lLa noche aún no termina. ¡Sobrevive!");
+        announce(player, "§c§lThe night is not over yet. Survive!");
         return;
     }
 
@@ -783,7 +1010,7 @@ world.afterEvents.entityDie.subscribe((event) => {
     if (state.livingInWave.size <= 0) {
         if (state.zombiesDespawned) {
             const p = getAnnouncePlayer() || state.player;
-            if (p) announce(p, "§7§lLos muertos huyeron... la raid termina sin recompensa.");
+            if (p) announce(p, "§7§lThe dead fled... the raid ends without rewards.");
             cleanupRaid();
         } else {
             completeWave(getAnnouncePlayer() || state.player);
@@ -794,8 +1021,18 @@ world.afterEvents.entityDie.subscribe((event) => {
 world.afterEvents.scriptEventReceive.subscribe((event) => {
     const player = event.sourceEntity;
     if (!player || player.typeId !== "minecraft:player") return;
-    if (event.id !== "udaw:cancel_raid") return;
-    cancelRaid(player);
+    if (event.id === "udaw:cancel_raid") {
+        cancelRaid(player);
+        return;
+    }
+    if (event.id === "udaw:cavalry") {
+        let count = 1;
+        try {
+            const parsed = parseInt((event.message || "").trim(), 10);
+            if (!isNaN(parsed) && parsed > 0) count = parsed;
+        } catch {}
+        spawnCavalryTest(player, count);
+    }
 });
 
 try {
@@ -807,6 +1044,13 @@ try {
             if (msg === "/cancelraid" || msg === "!cancelraid") {
                 event.cancel = true;
                 cancelRaid(sender);
+                return;
+            }
+            const cavMatch = msg.match(/^[!/]cavalry(?:\s+(\d+))?$/);
+            if (cavMatch) {
+                event.cancel = true;
+                spawnCavalryTest(sender, cavMatch[1] ? parseInt(cavMatch[1], 10) : 1);
+                return;
             }
         } catch {}
     });
@@ -821,16 +1065,16 @@ function cancelRaid(player) {
     const hasAdminTag = player.hasTag?.("admin") || player.hasTag?.("op") || player.hasTag?.("udaw_admin");
 
     if (!isAdminName && !isCreative && !hasAdminTag) {
-        announce(player, "§cSolo los administradores pueden cancelar la raid.");
+        announce(player, "§cOnly admins can cancel the raid.");
         return;
     }
 
     if (!state.active) {
-        announce(player, "§cNo hay ninguna raid activa.");
+        announce(player, "§cThere is no active raid.");
         return;
     }
 
-    announce(player, "§4§lLa maldición ha sido disipada por un superior.");
+    announce(player, "§4§lThe curse has been dispelled by a superior.");
     try { player.runCommand("gamerule doMobSpawning true"); } catch {}
     finishRaid(player);
 }

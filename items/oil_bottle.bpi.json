@@ -8,6 +8,9 @@
             }
         },
         "components": {
+            "minecraft:display_name": {
+                "value": "%item.udaw.oil_bottle"
+            },
             "minecraft:icon": "oilbottle",
             "minecraft_render_offsets": "main_hand",
             "minecraft:projectile": {

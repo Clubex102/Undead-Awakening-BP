@@ -219,6 +219,30 @@
       "minecraft:type_family": {
         "family": [ "vindicator", "monster", "illager", "mob" ]
       },
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "deals_damage": "no",
+            "on_damage": {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "value": "pillager_bullet"
+              }
+            }
+          },
+          {
+            "deals_damage": "no",
+            "on_damage": {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "value": "pillager_cannon_bullet"
+              }
+            }
+          }
+        ]
+      },
       "minecraft:variant": {
         "value": 0
       },

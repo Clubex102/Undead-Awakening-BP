@@ -10,7 +10,7 @@
         },
         "components": {
             "minecraft:display_name": {
-                "value": "ZOMBIE RAID CURSE"
+                "value": "%item.udaw.raid_bottle"
             },
             "minecraft:fire_resistant": {
                 "value": true

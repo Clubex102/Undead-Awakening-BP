@@ -1,0 +1,35 @@
+{
+    "format_version": "1.21.10",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "udaw:heavy_iron_chestplate"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern": [
+            "CCC",
+            "CHC",
+            "CPC"
+        ],
+        "unlock":  {
+            "context": "udaw:heavy_plate",
+                "item": "udaw:heavy_plate"
+        },
+        "key": {
+            "C": {
+                "item": "minecraft:iron_ingot"
+            },
+            "P": {
+                "item": "udaw:heavy_plate"
+            },
+            "H": {
+                "item": "minecraft:iron_chestplate"
+            }
+        },
+        "result": {
+            "item": "udaw:heavy_iron_chestplate",
+            "count": 1
+        }
+    }
+}

@@ -1,9 +1,26 @@
-import { EntityEquippableComponent, EntityInventoryComponent, EquipmentSlot, GameMode, ItemDurabilityComponent, ItemEnchantableComponent, ItemStack, system, world } from "@minecraft/server";
-import { shootCommon } from "./globalVar/u.js";
+import { EntityEquippableComponent, EntityHealthComponent, EntityInventoryComponent, EquipmentSlot, GameMode, ItemDurabilityComponent, ItemEnchantableComponent, ItemStack, system, world } from "@minecraft/server";
+import { shootCommon, hasHeavyChestplate } from "./globalVar/u.js";
 
 const AMMO_ITEM      = "minecraft:iron_nugget";
 const reloadingNow   = new Set();
 const reloadWatchers = new Map(); // playerId -> loopId
+
+/* ================= REDUCCIÓN DE DAÑO DE PROYECTILES ================= */
+
+const PROJECTILE_DAMAGE_MULTIPLIER = 0.5;
+
+world.afterEvents.entityHurt.subscribe((event) => {
+    try {
+        if (event.damageSource.cause !== "projectile") return;
+        if (!hasHeavyChestplate(event.hurtEntity)) return;
+
+        const health = event.hurtEntity.getComponent(EntityHealthComponent.componentId);
+        if (!health) return;
+
+        const healed = Math.round(event.damage * (1 - PROJECTILE_DAMAGE_MULTIPLIER));
+        health.setCurrentValue(health.currentValue + healed);
+    } catch (_) {}
+});
 
 /* ================= UTILIDADES ================= */
 

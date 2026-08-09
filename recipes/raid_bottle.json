@@ -1,0 +1,39 @@
+{
+    "format_version": "1.21.10",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "udaw:raid_bottle"
+        },
+        "unlock": [
+            {
+                "item": "minecraft:gold_ingot"
+            }
+        ],
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern": [
+            " B ",
+            "GPG",
+            " F "
+        ],
+        "key": {
+            "B": {
+                "item": "minecraft:bone"
+            },
+            "P": {
+                "item": "minecraft:ominous_bottle"
+            },
+            "G": {
+                "item": "minecraft:gold_ingot"
+            },
+            "F": {
+                "item": "minecraft:rotten_flesh"
+            }
+        },
+        "result": {
+            "item": "udaw:raid_bottle",
+            "count": 1
+        }
+    }
+}

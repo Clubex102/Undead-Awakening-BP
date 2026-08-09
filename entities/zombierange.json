@@ -29,38 +29,6 @@
                     
                 }
             }
-            ,
-            "udaw:retaliation_melee": {
-                "minecraft:attack": {
-                    "damage": 2
-                },
-                "minecraft:despawn": {
-                    "despawn_from_chance": true,
-                    "despawn_from_distance": {
-                        "max_distance": 128,
-                        "min_distance": 52
-                    },
-                    "despawn_from_inactivity": true,
-                    "despawn_from_simulation_edge": true,
-                    "min_range_inactivity_timer": 30,
-                    "min_range_random_chance": 800,
-                    "remove_child_entities": false
-                },
-                "minecraft:behavior.melee_box_attack": {
-                    "priority": 1,
-                    "track_target": true
-                }
-            },
-            "udaw:start_retaliation_timer": {
-                "minecraft:timer": {
-                    "looping": false,
-                    "randomInterval": false,
-                    "time": [0.1, 0.1],
-                    "time_down_event": {
-                        "event": "udaw:stop_retaliation"
-                    }
-                }
-            }
         },
 
         "components": {
@@ -183,11 +151,6 @@
             "minecraft:experience_reward": {
                 "on_death": "query.last_hit_by_player ? Math.Random(3,5) : 0"
             }
-            ,
-            "minecraft:on_hurt": {
-                "event": "udaw:retaliate",
-                "target": "self"
-            }
         },
         
 
@@ -196,22 +159,6 @@
                 "add": {
                     "component_groups": [
                         "minecraft:ranged_attack"
-                    ]
-                }
-            },
-            "udaw:retaliate": {
-                "add": {
-                    "component_groups": [
-                        "udaw:retaliation_melee",
-                        "udaw:start_retaliation_timer"
-                    ]
-                }
-            },
-            "udaw:stop_retaliation": {
-                "remove": {
-                    "component_groups": [
-                        "udaw:retaliation_melee",
-                        "udaw:start_retaliation_timer"
                     ]
                 }
             }

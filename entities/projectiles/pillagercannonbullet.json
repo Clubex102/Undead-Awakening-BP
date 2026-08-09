@@ -1,0 +1,56 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "udaw:pillagercannonbullet",
+            "runtime_identifier": "snowball",
+            "is_summonable": true
+        },
+        "components": {
+            "minecraft:type_family": {
+                "family": [ "pillager_cannon_bullet" ]
+            },
+            "minecraft:physics": {
+                "has_collision": true,
+                "has_gravity": true
+            },
+            "minecraft:despawn": {
+                "despawn_from_chance": true,
+                "despawn_from_distance": {
+                    "max_distance": 60
+                },
+                "despawn_from_inactivity": true,
+                "despawn_from_simulation_edge": true,
+                "min_range_inactivity_timer": 30,
+                "min_range_random_chance": 800,
+                "remove_child_entities": false
+            },
+            "minecraft:collision_box": {
+                "height": 0.5,
+                "width": 1
+            },
+            "minecraft:projectile": {
+                "anchor": 0,
+                "angle_offset": 0,
+                "gravity": 0.05,
+                "inertia": 1.5,
+                "knockback": true,
+                "on_hit": {
+                    "impact_damage": {
+                        "damage": 12,
+                        "catch_fire": false,
+                        "knockback": true,
+                        "destroy_on_hit": false,
+                        "max_critical_damage": 12,
+                        "apply_knockback_to_blocking_targets": true
+                    }
+                },
+                "is_dangerous": true,
+                "multiple_targets": true,
+                "power": 3,
+                "shoot_target": true,
+                "should_bounce": false
+            }
+        }
+    }
+}

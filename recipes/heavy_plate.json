@@ -1,0 +1,29 @@
+{
+    "format_version": "1.21.10",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "udaw:heavy_plate"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "unlock":  {
+            "context": "udaw:plate_fragment",
+                "item": "udaw:plate_fragment"
+        },
+        "pattern": [
+            "FFF",
+            "FFF",
+            "FFF"
+        ],
+        "key": {
+            "F": {
+                "item": "udaw:plate_fragment"
+            }
+        },
+        "result": {
+            "item": "udaw:heavy_plate",
+            "count": 1
+        }
+    }
+}

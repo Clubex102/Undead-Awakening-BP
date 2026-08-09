@@ -1,0 +1,18 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:item": {
+        "description": {
+            "identifier": "udaw:heavy_plate",
+            "menu_category": {
+                "category": "items"
+            }
+        },
+        "components": {
+            "minecraft:display_name": {
+                "value": "%item.udaw.heavy_plate"
+            },
+            "minecraft:icon": "heavy_plate",
+            "minecraft:max_stack_size": 64
+        }
+    }
+}

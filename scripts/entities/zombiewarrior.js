@@ -19,6 +19,13 @@ const MELEE_STUNNERS = new Set([
     "minecraft:vindicator"
 ]);
 
+const STUN_PROJECTILES = new Set([
+    "udaw:bullet",
+    "udaw:bullet2",
+    "udaw:cannonbullet",
+    "udaw:pillagerbullet"
+]);
+
 const stunnedEntities = new Set();
 const stunnCooldowns  = new Map();
 const stunLoops       = new Map();
@@ -197,6 +204,14 @@ world.beforeEvents.entityHurt.subscribe((event) => {
 
         if (
             MELEE_STUNNERS.has(
+                attacker.typeId
+            )
+        ) {
+
+            canStun = true;
+
+        } else if (
+            STUN_PROJECTILES.has(
                 attacker.typeId
             )
         ) {

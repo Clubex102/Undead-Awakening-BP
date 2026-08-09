@@ -13,6 +13,7 @@
  */
 
 import { world, system } from "@minecraft/server";
+import { hasHeavyChestplate } from "../globalVar/u.js";
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -101,16 +102,10 @@ world.beforeEvents.entityHurt.subscribe((ev) => {
     if (!BLOCKABLE.has(ev.damageSource.cause)) return;
 
     const id = ev.hurtEntity.id;
-    const projectile = ev.damageSource?.damagingEntity;
 
     if (
         blockingZombies.has(id) ||
-        attackingZombies.has(id) ||
-        (
-            ev.damageSource.cause === "projectile" &&
-            projectile?.typeId &&
-            STUN_PROJECTILES.has(projectile.typeId)
-        )
+        attackingZombies.has(id)
     ) {
         ev.cancel = true;
     }
@@ -372,6 +367,8 @@ function _applyDashFloorEffect(entity) {
 
 function _applyDashVictimHitEffect(victim) {
     if (!alive(victim)) return;
+
+    if (hasHeavyChestplate(victim)) return;
 
     try {
         if (victim.typeId === "minecraft:player") {

@@ -1,6 +1,6 @@
 import { world, system } from "@minecraft/server";
 
-const BULLET_IDS = new Set(["udaw:bullet", "udaw:bullet2", "udaw:cannonbullet"]);
+const BULLET_IDS = new Set(["udaw:bullet", "udaw:bullet2", "udaw:cannonbullet", "udaw:pillagerbullet", "udaw:pillagercannonbullet"]);
 const TRAIL_INTERVAL = 10;
 const SMOKE_PARTICLE = "udaw:gun_smoke";
 

@@ -1,4 +1,5 @@
 import { world, system } from "@minecraft/server";
+import { hasHeavyChestplate } from "../globalVar/u.js";
 
 /* ================= CONFIG PILLAGERZOMBIE ================= */
 
@@ -195,6 +196,8 @@ function removeSlowness(entity) {
 
 /* ================= KNOCKDOWN ================= */
 function applyKnockdown(victim) {
+
+    if (hasHeavyChestplate(victim)) return;
 
     const id   = victim.id;
     const tick = system.currentTick;

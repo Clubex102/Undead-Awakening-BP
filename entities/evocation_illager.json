@@ -79,6 +79,30 @@
       "minecraft:type_family": {
         "family": [ "evocation_illager", "monster", "illager", "mob" ]
       },
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "deals_damage": "no",
+            "on_damage": {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "value": "pillager_bullet"
+              }
+            }
+          },
+          {
+            "deals_damage": "no",
+            "on_damage": {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "value": "pillager_cannon_bullet"
+              }
+            }
+          }
+        ]
+      },
       "minecraft:breathable": {
         "total_supply": 15,
         "suffocate_time": 0

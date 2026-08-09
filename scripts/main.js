@@ -12,6 +12,7 @@ import {
 } from "@minecraft/server";
 import { shootCommon, shootRepeat } from "./globalVar/u.js";
 import "./entities/zombie_miner.js";
+import "./entities/pillagercannon.js";
 import "./arm_pose.js";
 import "./entities/zombiewarrior.js";
 import "./entities/zombie_cuirassier.js";

@@ -2,36 +2,47 @@ import { world, system } from "@minecraft/server";
 
 const VANILLA_PILLAGER   = "minecraft:pillager";
 const CUSTOM_PILLAGER    = "udaw:pillager";
+const CANNON_ID          = "udaw:pillager_cannon";
 const VANILLA_VINDICATOR = "minecraft:vindicator";
 const PILLAGERZOMBIE_ID  = "udaw:pillagerzombie";
 const BULLET_ID          = "udaw:bullet";
+const PILLAGER_BULLET_ID = "udaw:pillagerbullet";
 const SPAWN_CHANCE       = 0.10; // 10%
+const CANNON_SPAWN_CHANCE = 0.05; // 5%
 
 /* ================= REEMPLAZO ALEATORIO ================= */
+
+function replacePillager(entity, newTypeId) {
+    const loc = entity.location;
+    const dim = entity.dimension;
+
+    system.run(() => {
+        try {
+            const rot = entity.getRotation();
+            entity.remove();
+            const mob = dim.spawnEntity(newTypeId, loc);
+            mob.setRotation(rot);
+        } catch (_) {}
+    });
+}
 
 world.afterEvents.entitySpawn.subscribe((event) => {
     const entity = event.entity;
 
     /* --- Reemplazar pillager vanilla --- */
     if (entity.typeId === VANILLA_PILLAGER) {
-        if (Math.random() > SPAWN_CHANCE) return;
-
-        const loc = entity.location;
-        const dim = entity.dimension;
-
-        system.run(() => {
-            try {
-                const rot = entity.getRotation();
-                entity.remove();
-                const custom = dim.spawnEntity(CUSTOM_PILLAGER, loc);
-                custom.setRotation(rot);
-            } catch (_) {}
-        });
+        const roll = Math.random();
+        if (roll < CANNON_SPAWN_CHANCE) {
+            replacePillager(entity, CANNON_ID);
+            return;
+        }
+        if (roll > CANNON_SPAWN_CHANCE + SPAWN_CHANCE) return;
+        replacePillager(entity, CUSTOM_PILLAGER);
         return;
     }
 
     /* --- Bala disparada por pillager custom --- */
-    if (entity.typeId === BULLET_ID) {
+    if (entity.typeId === BULLET_ID || entity.typeId === PILLAGER_BULLET_ID) {
         system.run(() => {
             try {
                 const projectile = entity.getComponent("minecraft:projectile");
