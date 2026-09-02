@@ -43,7 +43,7 @@
             "minecraft:pushable_by_entity": {},
 
             "minecraft:movement": {
-                "value": 0.35
+                "value": 0.22
             },
 
             "minecraft:jump.static": {

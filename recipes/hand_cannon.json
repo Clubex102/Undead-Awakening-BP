@@ -1,0 +1,41 @@
+{
+    "format_version": "1.21.10",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "udaw:hand_cannon"
+        },
+        "unlock": [
+            {
+                "item": "minecraft:iron_ingot"
+            },
+            {
+                "item": "minecraft:gunpowder"
+            }
+        ],
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern": [
+            "HHG",
+            "TTS"
+        ],
+        "key": {
+            "H": {
+                "item": "minecraft:iron_ingot"
+            },
+            "G": {
+                "item": "minecraft:gunpowder"
+            },
+            "T": {
+                "item": "minecraft:planks"
+            },
+            "S": {
+                "item": "minecraft:lever"
+            }
+        },
+        "result": {
+            "item": "udaw:hand_cannon",
+            "count": 1
+        }
+    }
+}

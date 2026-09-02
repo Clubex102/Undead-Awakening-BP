@@ -11,6 +11,7 @@ import {
     ItemComponentUseOnEvent,
 } from "@minecraft/server";
 import { shootCommon, shootRepeat } from "./globalVar/u.js";
+import "./infection.js";
 import "./entities/zombie_miner.js";
 import "./entities/pillagercannon.js";
 import "./arm_pose.js";
@@ -26,6 +27,7 @@ import "./entities/pillager.js";
 import "./entities/bullet_trail.js";
 import "./oil_bottle.js";
 import "./raid_zombies.js";
+
 
 
 

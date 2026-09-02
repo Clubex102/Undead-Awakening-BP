@@ -1,0 +1,16 @@
+## Pack
+pack.name=Blend Materials Resources
+pack.description=Resources for demonstrating the blend modes available to materials
+pack.modules.behaviors.description=Resources for "Blend Materials"
+
+## Text
+### Blended particle demo
+text.notices.blend_materials_demo.order=From left to right:
+text.notices.blend_materials_demo.normal=1. §bNormal§r
+text.notices.blend_materials_demo.exclusion=2. §bExclusion§r (Inverts based on lightness)
+text.notices.blend_materials_demo.multiply=3. §bMultiply§r (Overlays bright colors over white; darkens most colors)
+text.notices.blend_materials_demo.double_multiply=4. §bDouble Multiply§r (Brightens or highlights backgrounds when used with brighter colors; darkens most colors)
+text.notices.blend_materials_demo.additive=5. §bAdditive§r (Merges toward white)
+text.notices.blend_materials_demo.additive_blend=6. §bAdditive Blend§r (Merges toward white based on alpha value)
+text.notices.blend_materials_demo.premultiplied_alpha=7. §bPremultiplied Alpha§r (Inversely blends to §bAdditive§r based on alpha value)
+text.notices.blend_materials_demo.opaque=8. §bOpaque§r (Makes all pixels opaque)

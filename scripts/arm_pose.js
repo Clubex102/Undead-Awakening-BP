@@ -1,13 +1,17 @@
 import { world, system, EntityEquippableComponent, EquipmentSlot } from "@minecraft/server";
 
-const UNLOADED = ["udaw:arcabuz", "udaw:flintlockgun"];
+const UNLOADED = ["udaw:arcabuz", "udaw:flintlockgun", "udaw:hand_cannon", "udaw:hand_cannon_oil"];
 
 function isGun(id) {
-    return id && (id.startsWith("udaw:arcabuz") || id.startsWith("udaw:flintlockgun"));
+    return id && (id.startsWith("udaw:arcabuz") || id.startsWith("udaw:flintlockgun") || id.startsWith("udaw:hand_cannon"));
 }
 
 function getAnim(id, reloading) {
     if (id === "udaw:diamond_sable") return "animation.udaw.arquebus.arm_hold";
+    if (id.startsWith("udaw:hand_cannon")) {
+        // Hand cannon usa anim genérica de arcabuz por ahora; se puede crear arm_reload específico luego
+        return reloading ? "animation.udaw.arquebus.arm_reload" : "animation.udaw.arquebus.arm_hold";
+    }
     if (reloading) {
         return id.startsWith("udaw:arcabuz")
             ? "animation.udaw.arquebus.arm_reload"

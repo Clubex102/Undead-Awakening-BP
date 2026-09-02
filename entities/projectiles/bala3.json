@@ -2,7 +2,7 @@
     "format_version": "1.21.60",
     "minecraft:entity": {
         "description": {
-            "identifier": "udaw:bullet",
+            "identifier": "udaw:bullet3",
             "runtime_identifier": "snowball",
             "is_summonable": true
         },
@@ -26,20 +26,19 @@
                 "height": 1,
                 "width": 1
             },
-            
             "minecraft:projectile": {
-                "anchor": 0,
+                "anchor": 1,
                 "angle_offset": 0,
                 "gravity": 0.05,
                 "inertia": 1.5,
                 "knockback": true,
                 "on_hit": {
                     "impact_damage": {
-                        "damage": 12,
-                        "catch_fire": false,
+                        "damage": 15,
+                        "catch_fire": true,
                         "knockback": true,
                         "destroy_on_hit": false,
-                        "max_critical_damage": 12,
+                        "max_critical_damage": 40,
                         "apply_knockback_to_blocking_targets": true
                     }
                 },

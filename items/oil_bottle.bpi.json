@@ -11,6 +11,9 @@
             "minecraft:display_name": {
                 "value": "%item.udaw.oil_bottle"
             },
+            "minecraft:allow_off_hand": {
+                "value": true
+            },
             "minecraft:icon": "oilbottle",
             "minecraft_render_offsets": "main_hand",
             "minecraft:projectile": {

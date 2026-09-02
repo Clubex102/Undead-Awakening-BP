@@ -1,8 +1,9 @@
 import { world, system } from "@minecraft/server";
 
-const BULLET_IDS = new Set(["udaw:bullet", "udaw:bullet2", "udaw:cannonbullet", "udaw:pillagerbullet", "udaw:pillagercannonbullet"]);
+const BULLET_IDS = new Set(["udaw:bullet", "udaw:bullet2", "udaw:bullet3", "udaw:cannonbullet", "udaw:pillagerbullet", "udaw:pillagercannonbullet"]);
 const TRAIL_INTERVAL = 10;
 const SMOKE_PARTICLE = "udaw:gun_smoke";
+const FIRE_PARTICLE = "udaw:fire";
 
 const bullets = new Map();
 
@@ -18,7 +19,8 @@ system.runInterval(() => {
             continue;
         }
         try {
-            entity.dimension.spawnParticle(SMOKE_PARTICLE, entity.location);
+            const particle = entity.typeId === "udaw:bullet3" ? FIRE_PARTICLE : SMOKE_PARTICLE;
+            entity.dimension.spawnParticle(particle, entity.location);
         } catch (_) {}
     }
 }, TRAIL_INTERVAL);

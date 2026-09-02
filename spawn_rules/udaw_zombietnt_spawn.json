@@ -11,7 +11,7 @@
         "minecraft:spawns_underground": {},
         "minecraft:brightness_filter": {
           "min": 0,
-          "max": 7,
+          "max": 4,
           "adjust_for_weather": true
         },
         "minecraft:density_limit": {

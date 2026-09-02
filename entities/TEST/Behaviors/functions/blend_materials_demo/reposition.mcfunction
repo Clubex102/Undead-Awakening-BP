@@ -1,0 +1,1 @@
+execute positioned ^ ^ ^16 run function blend_materials_demo/show_particles

@@ -1,0 +1,16 @@
+{
+	"version": 1,
+	
+	"content": [
+		{"path": "manifest.json"},
+		{"path": "contents.json"},
+		{"path": "pack_icon.png"},
+		
+		{"path": "texts/languages.json"},
+		{"path": "texts/en_US.lang"},
+		
+		{"path": "functions/blend_materials_demo/main.mcfunction"},
+		{"path": "functions/blend_materials_demo/reposition.mcfunction"},
+		{"path": "functions/blend_materials_demo/show_particles.mcfunction"}
+	]
+}

@@ -3,6 +3,7 @@
     "minecraft:entity": {
         "description": {
             "identifier": "udaw:bullet2",
+            "runtime_identifier": "snowball",
             "is_summonable": true
         },
         "components": {
@@ -23,7 +24,7 @@
             },
             "minecraft:collision_box": {
                 "height": 1,
-                "width": 2
+                "width": 1
             },
             "minecraft:projectile": {
                 "anchor": 1,

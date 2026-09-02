@@ -1,0 +1,34 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:item": {
+        "description": {
+            "identifier": "udaw:hand_cannon_oil_unusable",
+            "menu_category": {
+                "category": "none"
+            }
+        },
+        "components": {
+            "minecraft:display_name": {
+                "value": "%item.udaw.hand_cannon\n§e%item.udaw.hand_cannon.description"
+            },
+            "minecraft:icon": "hand_cannon",
+            "minecraft:hand_equipped": true,
+            "minecraft:max_stack_size": 1,
+            "minecraft:can_destroy_in_creative": false,
+            "minecraft:custom_components": ["udaw:hand_cannon_oil_unusable"],
+            "minecraft:durability": {
+                "damage_chance": { "min": 10, "max": 20 },
+                "max_durability": 350
+            },
+            "minecraft:use_modifiers": {
+                "use_duration": 9999,
+                "movement_modifier": 1
+            },
+            "minecraft:repairable": {
+                "repair_items": [{ "items": ["minecraft:iron_ingot"], "repair_amount": "query.max_durability * 0.25" }]
+            },
+            "minecraft:enchantable": { "slot": "sword", "value": 1 },
+            "minecraft:use_animation": "crossbow"
+        }
+    }
+}
