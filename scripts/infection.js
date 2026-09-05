@@ -4,11 +4,73 @@ console.warn("[infection] entityHurt+Hit actionbar");
 const PLUS1 = new Set(["udaw:zombiecomun","udaw:zombierange"]);
 const PLUS3 = new Set(["udaw:zombie_shovel","udaw:zombieminer","udaw:zombiewc","udaw:plzombie"]);
 const map = new Map();
-function getInf(p){ return map.get(p.id) ?? 0; }
+const hudMap = new Map();
+function getInf(p){
+    if(map.has(p.id)) return map.get(p.id);
+    let value=0;
+    try{ value=Math.max(0,Math.min(100,Number(p.getDynamicProperty("udaw:infection"))||0)); }catch(_){ }
+    map.set(p.id,value);
+    return value;
+}
+function hudState(value){
+    if(value<=0) return "INF_OFF";
+    return `INF_${Math.min(5,Math.ceil(value/20))}`;
+}
+function updateHud(player, value=getInf(player)){
+    const state=hudState(value);
+    if(hudMap.get(player.id)===state) return;
+    try{
+        player.onScreenDisplay.setActionBar(state);
+        hudMap.set(player.id,state);
+    }catch(_){ }
+}
 function setInf(p,v){
     const c=Math.max(0,Math.min(100,v|0));
     map.set(p.id,c);
+    try{ p.setDynamicProperty("udaw:infection", c); }catch(_){}
+    updateDebuffs(p,c);
+    updateHud(p,c);
     return c;
+}
+
+world.afterEvents.playerSpawn.subscribe(ev=>{
+    system.run(()=>updateHud(ev.player));
+});
+
+world.afterEvents.entityDie.subscribe(ev=>{
+    const player=ev.deadEntity;
+    if(!player || player.typeId!=="minecraft:player") return;
+    setInf(player,0);
+});
+
+function updateDebuffs(player, lvl){
+    try{
+        try{ player.removeEffect("slowness"); }catch(_){}
+        try{ player.removeEffect("weakness"); }catch(_){}
+        try{ player.removeEffect("nausea"); }catch(_){}
+        try{ player.removeEffect("wither"); }catch(_){}
+        try{ player.removeEffect("mining_fatigue"); }catch(_){}
+        const DUR = 1000000;
+        if(lvl>=91){
+            try{ player.addEffect("wither", DUR, {amplifier:0, showParticles:false}); }catch(_){}
+            try{ player.addEffect("slowness", DUR, {amplifier:1, showParticles:false}); }catch(_){}
+            try{ player.addEffect("weakness", DUR, {amplifier:1, showParticles:false}); }catch(_){}
+            try{ player.addEffect("mining_fatigue", DUR, {amplifier:0, showParticles:false}); }catch(_){}
+        }else if(lvl>=81){
+            try{ player.addEffect("slowness", DUR, {amplifier:1, showParticles:false}); }catch(_){}
+            try{ player.addEffect("weakness", DUR, {amplifier:1, showParticles:false}); }catch(_){}
+            try{ player.addEffect("nausea", 100, {amplifier:0, showParticles:false}); }catch(_){}
+        }else if(lvl>=61){
+            try{ player.addEffect("slowness", DUR, {amplifier:1, showParticles:false}); }catch(_){}
+            try{ player.addEffect("weakness", DUR, {amplifier:0, showParticles:false}); }catch(_){}
+        }else if(lvl>=41){
+            try{ player.addEffect("slowness", DUR, {amplifier:0, showParticles:false}); }catch(_){}
+            try{ player.addEffect("weakness", DUR, {amplifier:0, showParticles:false}); }catch(_){}
+        }else if(lvl>=21){
+            try{ player.addEffect("slowness", DUR, {amplifier:0, showParticles:false}); }catch(_){}
+        }
+        // HUD overlay gris via hud_screen.json alpha = q.get_dynamic_property('udaw:infection')/200 (0-0.5)
+    }catch(e){ console.warn("[infection] debuff fail "+e); }
 }
 function bar(v){
     const f=Math.round(v/10);
@@ -20,7 +82,6 @@ function addInf(player, zid){
     else if(PLUS3.has(zid)) pts=3;
     const nxt=setInf(player, getInf(player)+pts);
     console.warn("[infection] "+player.name+" "+zid+" -> "+nxt);
-    try{ player.onScreenDisplay.setActionBar(bar(nxt)); }catch(e){ console.warn("[infection] bar fail "+e); }
     return nxt;
 }
 
@@ -67,19 +128,29 @@ function handleFood(p,id){
     else if(id==="minecraft:rotten_flesh") d=5;
     else d=-3;
     const nxt=setInf(p,getInf(p)+d);
-    try{ p.onScreenDisplay.setActionBar(bar(nxt)); }catch(_){}
     console.warn("[infection] food "+id+" "+d+" -> "+nxt);
 }
 try{
     world.afterEvents.itemCompleteUse.subscribe(ev=>{
-        const p=ev.source;
-        if(!p || p.typeId!=="minecraft:player") return;
-        const id=ev.itemStack?.typeId;
-        if(!id) return;
-        let isFood=false;
-        try{ if(ev.itemStack.getComponent("minecraft:food")!==undefined) isFood=true; }catch(_){}
-        if(!isFood) return;
-        handleFood(p,id);
+        try{
+            console.warn("[infection] itemCompleteUse "+ev.itemStack?.typeId+" by "+ev.source?.name);
+            const p=ev.source;
+            if(!p || p.typeId!=="minecraft:player") return;
+            const id=ev.itemStack?.typeId;
+            if(!id) return;
+            // específicos primero
+            if(id==="minecraft:golden_apple"||id==="minecraft:enchanted_golden_apple"){ handleFood(p,id); return; }
+            if(id==="minecraft:golden_carrot"){ handleFood(p,id); return; }
+            if(id==="minecraft:rotten_flesh"){ handleFood(p,id); return; }
+            // genérico: lista + componente
+            const foods=new Set(["minecraft:apple","minecraft:bread","minecraft:cooked_beef","minecraft:cooked_chicken","minecraft:cooked_porkchop","minecraft:cooked_mutton","minecraft:cooked_rabbit","minecraft:baked_potato","minecraft:cookie","minecraft:melon_slice","minecraft:beetroot","minecraft:beetroot_soup","minecraft:mushroom_stew","minecraft:rabbit_stew","minecraft:pumpkin_pie","minecraft:potato","minecraft:carrot","minecraft:sweet_berries","minecraft:glow_berries","minecraft:dried_kelp","minecraft:chorus_fruit","minecraft:honey_bottle","minecraft:carrot","minecraft:potato","minecraft:beetroot"]);
+            let isFood=foods.has(id);
+            if(!isFood){
+                try{ if(ev.itemStack.getComponent("minecraft:food")!==undefined) isFood=true; }catch(_){}
+            }
+            if(isFood) handleFood(p,id);
+            else console.warn("[infection] not food "+id);
+        }catch(e){ console.warn("[infection] food handler err "+e); }
     });
     console.warn("[infection] food ok");
 }catch(e){ console.warn("[infection] food fail "+e); }
@@ -90,7 +161,6 @@ try{
         if(!p) return;
         if(Math.random()<0.5){
             const nxt=setInf(p,getInf(p)-1);
-            try{ p.onScreenDisplay.setActionBar(bar(nxt)); }catch(_){}
             console.warn("[infection] place -1 -> "+nxt);
         }
     });

@@ -1,0 +1,74 @@
+{
+  "format_version": "1.10.0",
+  "particle_effect": {
+    "description": {
+      "identifier": "bloodfx:pool_dead",
+      "basic_render_parameters": {
+        "material": "particles_alpha",
+        "texture": "textures/particle/blood_pool_dead"
+      }
+    },
+    "components": {
+      "minecraft:emitter_rate_instant": {
+        "num_particles": 1
+      },
+      "minecraft:emitter_lifetime_once": {
+        "active_time": 0.02
+      },
+      "minecraft:emitter_shape_point": {
+        "direction": [
+          0,
+          0,
+          0
+        ]
+      },
+      "minecraft:particle_lifetime_expression": {
+        "max_lifetime": 28
+      },
+      "minecraft:particle_appearance_tinting": {
+        "color": {
+          "gradient": {
+            "0.0": [
+              0.88,
+              0.045,
+              0.03,
+              0.98
+            ],
+            "0.7": [
+              0.58,
+              0.016,
+              0.012,
+              0.93
+            ],
+            "1.0": [
+              0.24,
+              0.006,
+              0.004,
+              0.0
+            ]
+          },
+          "interpolant": "variable.particle_age / variable.particle_lifetime"
+        }
+      },
+      "minecraft:particle_appearance_billboard": {
+        "size": [
+          "(0.82 + variable.particle_random_1 * 0.18) * (math.min(variable.particle_age / 5.0, 1.0) * math.min(variable.particle_age / 5.0, 1.0) * (3.0 - 2.0 * math.min(variable.particle_age / 5.0, 1.0)))",
+          "(0.62 + variable.particle_random_2 * 0.16) * (math.min(variable.particle_age / 5.0, 1.0) * math.min(variable.particle_age / 5.0, 1.0) * (3.0 - 2.0 * math.min(variable.particle_age / 5.0, 1.0)))"
+        ],
+        "facing_camera_mode": "emitter_transform_xz",
+        "uv": {
+          "texture_width": 64,
+          "texture_height": 64,
+          "uv": [
+            0,
+            0
+          ],
+          "uv_size": [
+            64,
+            64
+          ]
+        }
+      }
+    }
+  }
+}

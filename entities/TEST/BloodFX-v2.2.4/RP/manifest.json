@@ -1,0 +1,39 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "BloodFX v2.2.4",
+    "description": "Copyright © 2026 Lightscribe. All rights reserved.",
+    "uuid": "b4784df4-e14c-4efd-92d7-bfc2a35e71bf",
+    "version": [
+      2,
+      2,
+      4
+    ],
+    "min_engine_version": [
+      1,
+      26,
+      40
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "0344d813-f05a-4372-99d0-cc19d35915a1",
+      "version": [
+        2,
+        2,
+        4
+      ]
+    }
+  ],
+  "capabilities": [
+    "pbr"
+  ],
+  "metadata": {
+    "product_type": "addon",
+    "authors": [
+      "Lightscribe"
+    ],
+    "license": "Copyright © 2026 Lightscribe. All rights reserved."
+  }
+}
