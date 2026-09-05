@@ -1,10 +1,7 @@
-import { world, system } from "@minecraft/server";
+import { world, system, InputButton, ButtonState } from "@minecraft/server";
 console.warn("[infection] entityHurt+Hit actionbar");
 
-const PLUS1 = new Set(["udaw:zombiecomun","udaw:zombierange"]);
-const PLUS3 = new Set(["udaw:zombie_shovel","udaw:zombieminer","udaw:zombiewc","udaw:plzombie"]);
 const map = new Map();
-const hudMap = new Map();
 function getInf(p){
     if(map.has(p.id)) return map.get(p.id);
     let value=0;
@@ -13,28 +10,26 @@ function getInf(p){
     return value;
 }
 function hudState(value){
-    if(value<=0) return "INF_OFF";
-    return `INF_${Math.min(5,Math.ceil(value/20))}`;
-}
-function updateHud(player, value=getInf(player)){
-    const state=hudState(value);
-    if(hudMap.get(player.id)===state) return;
-    try{
-        player.onScreenDisplay.setActionBar(state);
-        hudMap.set(player.id,state);
-    }catch(_){ }
+    if(value<=0) return "INFECTION_OFF";
+    if(value<=25) return "INFECTION_LVL1";
+    if(value<=50) return "INFECTION_LVL2";
+    if(value<=75) return "INFECTION_LVL3";
+    return "INFECTION_LVL4";
 }
 function setInf(p,v){
     const c=Math.max(0,Math.min(100,v|0));
     map.set(p.id,c);
     try{ p.setDynamicProperty("udaw:infection", c); }catch(_){}
     updateDebuffs(p,c);
-    updateHud(p,c);
+    try{ p.onScreenDisplay.setActionBar(hudState(c)); }catch(_){ }
     return c;
 }
 
 world.afterEvents.playerSpawn.subscribe(ev=>{
-    system.run(()=>updateHud(ev.player));
+    system.run(()=>{
+        const player=ev.player;
+        setInf(player,getInf(player));
+    });
 });
 
 world.afterEvents.entityDie.subscribe(ev=>{
@@ -77,9 +72,7 @@ function bar(v){
     return "Infeccion ["+"I".repeat(f)+"-".repeat(10-f)+"] "+v+"/100";
 }
 function addInf(player, zid){
-    let pts=5;
-    if(PLUS1.has(zid)) pts=1;
-    else if(PLUS3.has(zid)) pts=3;
+    const pts=2;
     const nxt=setInf(player, getInf(player)+pts);
     console.warn("[infection] "+player.name+" "+zid+" -> "+nxt);
     return nxt;
@@ -155,6 +148,27 @@ try{
     console.warn("[infection] food ok");
 }catch(e){ console.warn("[infection] food fail "+e); }
 
+    try{
+        world.afterEvents.playerBreakBlock.subscribe(ev=>{
+            const p=ev.player;
+            if(!p || Math.random()>=0.2) return;
+            const nxt=setInf(p,getInf(p)-4);
+            console.warn("[infection] break -4 -> "+nxt);
+        });
+        console.warn("[infection] break ok");
+    }catch(e){ console.warn("[infection] break fail "+e); }
+
+    try{
+        world.afterEvents.playerButtonInput.subscribe(ev=>{
+            if(ev.button!==InputButton.Sneak || ev.newButtonState!==ButtonState.Pressed) return;
+            const p=ev.player;
+            if(!p || Math.random()>=0.2) return;
+            const nxt=setInf(p,getInf(p)-2);
+            console.warn("[infection] sneak -2 -> "+nxt);
+        });
+        console.warn("[infection] sneak ok");
+    }catch(e){ console.warn("[infection] sneak fail "+e); }
+
 try{
     world.afterEvents.playerPlaceBlock.subscribe(ev=>{
         const p=ev.player;
@@ -171,7 +185,7 @@ try{
     system.afterEvents.scriptEventReceive.subscribe(ev=>{
         if(ev.id==="udaw:get_infection"){
             const p=ev.sourceEntity;
-            if(p) try{ p.onScreenDisplay.setActionBar(bar(getInf(p))); }catch(_){}
+            if(p) try{ p.sendMessage(bar(getInf(p))); }catch(_){}
         }
     });
     console.warn("[infection] scriptEvent ok");

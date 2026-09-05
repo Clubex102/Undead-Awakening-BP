@@ -166,21 +166,14 @@ function isEntityValid(entity) {
 
 function announce(player, message) {
     try {
-        const cleanMessage = message.replace(/§[0-9a-fk-or]/g, "");
-        player?.runCommand(`title @s actionbar ${cleanMessage}`);
-    } catch {}
-    try {
         player?.sendMessage(message);
     } catch {}
 }
 
 function broadcastMessage(source, message) {
-    const cleanMessage = message.replace(/§[0-9a-fk-or]/g, "");
-    try { source?.runCommand(`title @s actionbar ${cleanMessage}`); } catch {}
     try { source?.sendMessage(message); } catch {}
     for (const p of getNearbyPlayers(source)) {
         try { if (p.id === source?.id) continue; p.sendMessage(message); } catch {}
-        try { p.runCommand(`title @s actionbar ${cleanMessage}`); } catch {}
     }
 }
 
@@ -432,7 +425,6 @@ function spawnCavalryTest(player, count) {
         ? `§6§l[CAVALIER] §aSe invocaron ${spawned} caballeros de la muerte.`
         : "§6§l[CAVALIER] §cNo se pudieron invocar.";
     try { player.sendMessage(text); } catch {}
-    try { player.runCommand(`title @s actionbar ${text.replace(/§[0-9a-fk-or]/g, "")}`); } catch {}
 }
 
 function getAnnouncePlayer() {

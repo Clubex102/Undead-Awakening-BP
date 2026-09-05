@@ -103,19 +103,19 @@ function updateActionBar(player, cannon) {
     if (remaining > 0) {
         const seconds = (remaining / 20).toFixed(1);
 
-        player.onScreenDisplay.setActionBar(
+        player.sendMessage(
             `§e${AMMO_COST}/${ammo} §7| §cCooldown: ${seconds}s`
         );
 
     } else if (ammo < AMMO_COST) {
 
-        player.onScreenDisplay.setActionBar(
+        player.sendMessage(
             `§c${AMMO_COST}/${ammo} §cMunicion insuficiente`
         );
 
     } else {
 
-        player.onScreenDisplay.setActionBar(
+        player.sendMessage(
             `§a${AMMO_COST}/${ammo} §7| §eUSE FLINT AND STEEL`
         );
     }
@@ -249,7 +249,7 @@ function cleanupDismount(player) {
     mountedPlayers.delete(player.id);
 
     try {
-        player.onScreenDisplay.setActionBar("");
+        player.sendMessage("");
     } catch {}
 }
 
