@@ -1,17 +1,13 @@
 import { world, system } from "@minecraft/server";
+import { siegeMineStep, siegeBuildStep } from "../siege.js";
 
 /* ================= CONFIG ================= */
 
 const BREAK_TIME        = 40;
-const MAX_DISTANCE      = 4.0;
+const MAX_DISTANCE      = 1.6;
 const MAX_MINE_DISTANCE = 1.4;
-const STEP              = 0.15;
+const STEP              = 0.3;
 const DIMENSIONS        = ["overworld", "nether", "the_end"];
-
-// Evita spam extremo de comandos
-const MAX_BLOCK_BREAKS_PER_TICK = 12;
-
-let breaksThisTick = 0;
 
 /* ================= FILTRO DE BLOQUES ================= */
 
@@ -86,29 +82,7 @@ function isMineable(block) {
     );
 }
 
-/* ================= SONIDO ================= */
-
-const DIRT_IDS = new Set([
-    "minecraft:dirt",
-    "minecraft:grass_block",
-    "minecraft:sand",
-    "minecraft:gravel"
-]);
-
-function playBreakSound(dimension, blockTypeId, pos) {
-
-    const sound = DIRT_IDS.has(blockTypeId)
-        ? "dig.gravel"
-        : "dig.stone";
-
-    try {
-        dimension.runCommand(
-            `playsound ${sound} @a ${pos.x} ${pos.y} ${pos.z} 1.0 1.0`
-        );
-    } catch (_) {}
-}
-
-/* ================= RAYCAST ================= */
+/* ================= RAYCAST (detector: fija objetivo, ROMPE el asedio) ================= */
 
 function getLookBlock(entity) {
 
@@ -158,67 +132,9 @@ function getLookBlock(entity) {
     return null;
 }
 
-/* ================= OFFSETS 2x2 ================= */
-
-function get2x2Offsets(entity) {
-
-    const dir = entity.getViewDirection();
-
-    if (Math.abs(dir.x) > Math.abs(dir.z)) {
-
-        return [
-            { x: 0, y: 0, z: 0 },
-            { x: 0, y: 1, z: 0 },
-            { x: 0, y: 0, z: 1 },
-            { x: 0, y: 1, z: 1 }
-        ];
-
-    } else {
-
-        return [
-            { x: 0, y: 0, z: 0 },
-            { x: 1, y: 0, z: 0 },
-            { x: 0, y: 1, z: 0 },
-            { x: 1, y: 1, z: 0 }
-        ];
-    }
-}
-
-/* ================= 2x2 MINEABLE ================= */
-
-function getMineable2x2(dimension, basePos, offsets) {
-
-    const blocks = [];
-
-    for (const o of offsets) {
-
-        const pos = {
-            x: basePos.x + o.x,
-            y: basePos.y + o.y,
-            z: basePos.z + o.z
-        };
-
-        const block = dimension.getBlock(pos);
-
-        if (block && isMineable(block)) {
-
-            blocks.push({
-                pos,
-                typeId: block.typeId
-            });
-        }
-    }
-
-    return blocks.length > 0
-        ? blocks
-        : null;
-}
-
 /* ================= MAIN LOOP ================= */
 
 system.runInterval(() => {
-
-    breaksThisTick = 0;
 
     for (const dimId of DIMENSIONS) {
 
@@ -259,42 +175,16 @@ system.runInterval(() => {
                 continue;
             }
 
-            const offsets = get2x2Offsets(zombie);
+            // Puerta del asedio: si hay cooldown (jobs llenos/reintento),
+            // espera SIN resetear el stare para no perder el turno
+            let siegeReady = true;
+            try { siegeReady = tick >= (Number(zombie.getDynamicProperty("udaw:siege_next")) || 0); } catch (_) {}
+            if (!siegeReady) continue;
 
-            const blocks = getMineable2x2(
-                dimension,
-                target.pos,
-                offsets
-            );
-
-            if (!blocks) {
-
-                zombie.setDynamicProperty("mineStart", null);
-                zombie.setDynamicProperty("minePos", null);
-
-                continue;
-            }
-
-            for (const { pos, typeId } of blocks) {
-
-                // Protección anti-lag
-                if (breaksThisTick >= MAX_BLOCK_BREAKS_PER_TICK) {
-                    break;
-                }
-
-                playBreakSound(dimension, typeId, pos);
-
-                try {
-
-                    // Destruye naturalmente y dropea loot
-                    dimension.runCommand(
-                        `setblock ${pos.x} ${pos.y} ${pos.z} air destroy`
-                    );
-
-                    breaksThisTick++;
-
-                } catch (_) {}
-            }
+            // El raycast FIJA el objetivo; ROMPE el asedio (A* con perfil de pico)
+            let launched = false;
+            try { launched = siegeMineStep(zombie, "miner", true); } catch (_) {}
+            if (!launched) continue;
 
             zombie.setDynamicProperty("mineStart", null);
             zombie.setDynamicProperty("minePos", null);
@@ -303,318 +193,12 @@ system.runInterval(() => {
 
 }, 2);
 
-/* ================= ZOMBIE SHOVEL — ESCALERA ================= */
+/* ================= ZOMBIE SHOVEL — PUENTEO (asedio TEST, sin desatasco) ================= */
 
-const SHOVEL_ID         = "udaw:zombie_shovel";
-const STAIR_COOLDOWN    = 60;
-const STAIR_Y_THRESHOLD = 1;
-const STAIR_ANIM_TICKS  = 40;
-const DIRT_BLOCK        = "minecraft:dirt";
+const SHOVEL_ID   = "udaw:zombie_shovel";
+const SHOVEL_ANIM = "animation.zombieshovel.construct";
 
-const shovelCooldowns = new Map();
-const shovelTracked   = new Set();
-const shovelBuildMemory = new Map();
-
-/* ================= HELPERS ================= */
-
-function dist3D(a, b) {
-
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const dz = b.z - a.z;
-
-    return Math.sqrt(dx * dx + dy * dy + dz * dz);
-}
-
-function getHorizDir(from, to) {
-
-    const dx = to.x - from.x;
-    const dz = to.z - from.z;
-
-    const len = Math.sqrt(dx * dx + dz * dz) || 1;
-
-    return {
-        x: Math.round(dx / len),
-        z: Math.round(dz / len)
-    };
-}
-
-function getPerp(dir) {
-
-    return {
-        x: dir.z,
-        z: -dir.x
-    };
-}
-function directionChanged(entity, target) {
-
-    const memory =
-        shovelBuildMemory.get(entity.id);
-
-    if (!memory)
-        return false;
-
-    const newDir = getHorizDir(
-        entity.location,
-        target.location
-    );
-
-    return (
-        newDir.x !== memory.dirX ||
-        newDir.z !== memory.dirZ
-    );
-}
-function isSkybaseTarget(entity, target) {
-
-    const dim = entity.dimension;
-
-    const targetPos = {
-        x: Math.floor(target.location.x),
-        y: Math.floor(target.location.y),
-        z: Math.floor(target.location.z)
-    };
-
-    let airCount = 0;
-
-    for (let i = 1; i <= 8; i++) {
-
-        try {
-
-            const block = dim.getBlock({
-                x: targetPos.x,
-                y: targetPos.y - i,
-                z: targetPos.z
-            });
-
-            if (
-                block &&
-                block.typeId === "minecraft:air"
-            ) {
-                airCount++;
-            }
-
-        } catch (_) {}
-    }
-
-    return airCount >= 6;
-}
-/* ================= ESCALERA ================= */
-
-function placeStairStep(entity, target) {
-
-const dim = entity.dimension;
-
-let memory =
-    shovelBuildMemory.get(entity.id);
-
-let pos;
-let dir;
-
-if (memory) {
-
-    pos = {
-        x: memory.x,
-        y: memory.y,
-        z: memory.z
-    };
-
-} else {
-
-    pos = entity.location;
-}
-
-dir = getHorizDir(
-    pos,
-    target.location
-);
-
-const perp = getPerp(dir);
-
-    const baseY = Math.floor(pos.y);
-    const baseX = Math.floor(pos.x);
-    const baseZ = Math.floor(pos.z);
-
-const positions = [
-
-    {
-        x: baseX + dir.x,
-        y: baseY,
-        z: baseZ + dir.z
-    },
-
-    {
-        x: baseX + dir.x + perp.x,
-        y: baseY,
-        z: baseZ + dir.z + perp.z
-    }
-];
-
-    let placed = 0;
-let highestPlaced = null;
-
-    for (const p of positions) {
-
-        try {
-
-            const block = dim.getBlock(p);
-
-            if (block && block.typeId === "minecraft:air") {
-
-dim.setBlockType(p, DIRT_BLOCK);
-
-highestPlaced = p;
-
-placed++;
-            }
-
-        } catch (_) {}
-    }
-        
-if (highestPlaced) {
-
-    shovelBuildMemory.set(
-        entity.id,
-        {
-            x: highestPlaced.x,
-            y: highestPlaced.y,
-            z: highestPlaced.z
-        }
-    );
-}
-    if (placed > 0) {
-
-        try {
-
-            dim.runCommand(
-                `playsound dig.gravel @a ${pos.x} ${pos.y} ${pos.z} 1.0 1.0`
-            );
-
-        } catch (_) {}
-    }
-}
-
-/* ================= TARGET ================= */
-function findShovelTarget(entity) {
-
-    const candidates = entity.dimension.getEntities({
-        location: entity.location,
-        maxDistance: 30
-    });
-
-    let best = null;
-    let bestScore = -9999;
-
-    for (const e of candidates) {
-
-        if (e === entity) continue;
-
-        if (
-            ![
-                "minecraft:player",
-                "minecraft:villager",
-                "minecraft:villager_v2",
-                "minecraft:iron_golem",
-                "minecraft:wandering_trader"
-            ].includes(e.typeId)
-        ) continue;
-
-        const dx =
-            e.location.x - entity.location.x;
-
-        const dz =
-            e.location.z - entity.location.z;
-
-        const horizontalDist =
-            Math.sqrt(dx * dx + dz * dz);
-
-        const heightDiff =
-            e.location.y - entity.location.y;
-
-        let score = 0;
-
-        score += heightDiff * 8;
-
-        score -= horizontalDist;
-
-        if (score > bestScore) {
-
-            bestScore = score;
-            best = e;
-        }
-    }
-
-    return best;
-}
-/* ================= CONSTRUCT ================= */
-
-function executeShovelConstruct(entity) {
-
-    const id = entity.id;
-
-    try {
-        const _ = entity.location;
-    } catch {
-        shovelTracked.delete(entity);
-        return;
-    }
-
-    try {
-
-        entity.addEffect(
-            "slowness",
-            STAIR_ANIM_TICKS,
-            {
-                amplifier: 255,
-                showParticles: false
-            }
-        );
-
-    } catch (_) {}
-
-    try {
-        entity.playAnimation(
-            "animation.zombieshovel.construct"
-        );
-    } catch (_) {}
-
-    const startPos = {
-        x: entity.location.x,
-        y: entity.location.y,
-        z: entity.location.z
-    };
-
-    const target = findShovelTarget(entity);
-
-    if (!target) return;
-
-    system.runTimeout(() => {
-
-        try {
-
-            if (!shovelTracked.has(entity)) {
-                return;
-            }
-
-            const currentPos = entity.location;
-
-            const dx = currentPos.x - startPos.x;
-            const dy = currentPos.y - startPos.y;
-            const dz = currentPos.z - startPos.z;
-
-            const moved = Math.sqrt(
-                dx * dx +
-                dy * dy +
-                dz * dz
-            );
-
-            if (moved > 2) return;
-
-            placeStairStep(entity, target);
-
-        } catch (_) {}
-
-    }, STAIR_ANIM_TICKS);
-}
+const shovelTracked = new Set();
 
 /* ================= SPAWN ================= */
 
@@ -636,17 +220,13 @@ world.afterEvents.entityDie.subscribe((event) => {
     if (entity.typeId !== SHOVEL_ID) return;
 
     shovelTracked.delete(entity);
-    shovelCooldowns.delete(entity.id);
-    shovelBuildMemory.delete(entity.id);
 });
 
-/* ================= SHOVEL LOOP ================= */
+/* ================= SHOVEL LOOP (puenteo TEST + TP al poner, sin desatasco) ================= */
 
 system.runInterval(() => {
 
     if (shovelTracked.size === 0) return;
-
-    const tick = system.currentTick;
 
     for (const entity of shovelTracked) {
 
@@ -657,72 +237,11 @@ system.runInterval(() => {
             } catch {
 
                 shovelTracked.delete(entity);
-                shovelCooldowns.delete(entity.id);
 
                 continue;
             }
 
-            const id = entity.id;
-
-            const readyAt =
-                shovelCooldowns.get(id) ?? 0;
-
-            if (tick < readyAt) continue;
-
-const target = findShovelTarget(entity);
-
-if (!target) continue;
-
-const memory =
-    shovelBuildMemory.get(id);
-
-if (memory) {
-
-    const movedTarget =
-
-        Math.abs(
-            Math.floor(target.location.x)
-            - memory.targetX
-        ) > 3 ||
-
-        Math.abs(
-            Math.floor(target.location.z)
-            - memory.targetZ
-        ) > 3;
-
-    if (movedTarget) {
-
-        shovelBuildMemory.delete(id);
-    }
-}
-            if (
-    shovelBuildMemory.has(id) &&
-    directionChanged(entity, target)
-) {
-
-    shovelBuildMemory.delete(id);
-}
-
-            const dyDiff =
-    target.location.y -
-    entity.location.y;
-
-if (dyDiff <= STAIR_Y_THRESHOLD) {
-
-    shovelBuildMemory.delete(id);
-
-    continue;
-}
-
-            if (
-                target.typeId === "minecraft:player" &&
-                !isSkybaseTarget(entity, target)
-            ) {
-                continue;
-            }
-
-            executeShovelConstruct(entity);
-            shovelCooldowns.set(id, tick + STAIR_COOLDOWN);
+            try { siegeBuildStep(entity, SHOVEL_ANIM); } catch (_) {}
 
         } catch (_) {}
 

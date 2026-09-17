@@ -9,19 +9,23 @@ function getInf(p){
     map.set(p.id,value);
     return value;
 }
-function hudState(value){
-    if(value<=0) return "INFECTION_OFF";
-    if(value<=25) return "INFECTION_LVL1";
-    if(value<=50) return "INFECTION_LVL2";
-    if(value<=75) return "INFECTION_LVL3";
-    return "INFECTION_LVL4";
+// Protocolo UI: canal title oculto "UDAW_INF_<0-100>". Event-driven, sin loops.
+// La RP lo captura en hud_screen.json y oculta el title vanilla solo si coincide.
+function infProtocol(value){
+    return "UDAW_INF_"+value;
+}
+function pushInfUI(p,v){
+    // stay largo: el binding #hud_title_text_string conserva el valor sin reenvios ni loops.
+    // Se reenvia en cada cambio de infeccion y al aparecer (playerSpawn).
+    try{ p.onScreenDisplay.setTitle(infProtocol(v), {fadeInDuration:5, stayDuration:72000, fadeOutDuration:5, subtitle:""}); }
+    catch(e){ console.warn("[infection] pushInfUI FAIL "+v+" :: "+e); }
 }
 function setInf(p,v){
     const c=Math.max(0,Math.min(100,v|0));
     map.set(p.id,c);
     try{ p.setDynamicProperty("udaw:infection", c); }catch(_){}
     updateDebuffs(p,c);
-    try{ p.onScreenDisplay.setActionBar(hudState(c)); }catch(_){ }
+    pushInfUI(p,c);
     return c;
 }
 
@@ -64,7 +68,7 @@ function updateDebuffs(player, lvl){
         }else if(lvl>=21){
             try{ player.addEffect("slowness", DUR, {amplifier:0, showParticles:false}); }catch(_){}
         }
-        // HUD overlay gris via hud_screen.json alpha = q.get_dynamic_property('udaw:infection')/200 (0-0.5)
+        // Overlay JSON UI en RP: captura el protocolo UDAW_INF_<n> del title (sin actionbar, sin loops)
     }catch(e){ console.warn("[infection] debuff fail "+e); }
 }
 function bar(v){
@@ -72,8 +76,9 @@ function bar(v){
     return "Infeccion ["+"I".repeat(f)+"-".repeat(10-f)+"] "+v+"/100";
 }
 function addInf(player, zid){
-    const pts=2;
-    const nxt=setInf(player, getInf(player)+pts);
+    // 50/50: la mitad de los golpes no contagian. Si contagia, sube 1 (antes 2).
+    if(Math.random()<0.5) return getInf(player);
+    const nxt=setInf(player, getInf(player)+1);
     console.warn("[infection] "+player.name+" "+zid+" -> "+nxt);
     return nxt;
 }
@@ -185,7 +190,12 @@ try{
     system.afterEvents.scriptEventReceive.subscribe(ev=>{
         if(ev.id==="udaw:get_infection"){
             const p=ev.sourceEntity;
-            if(p) try{ p.sendMessage(bar(getInf(p))); }catch(_){}
+            if(p) try{
+                p.sendMessage(bar(getInf(p)));
+                // DEBUG biseccion: title VISIBLE (sin prefijo protocolo). Si aparece,
+                // el canal BP->title funciona y el problema esta en la captura UI.
+                p.onScreenDisplay.setTitle("INF-TEST "+getInf(p), {fadeInDuration:10, stayDuration:40, fadeOutDuration:10});
+            }catch(_){}
         }
     });
     console.warn("[infection] scriptEvent ok");

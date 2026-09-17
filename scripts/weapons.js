@@ -231,6 +231,10 @@ function removeOilModeAmmo(player) {
     return true;
 }
 
+function handCannonBar(player, text) {
+    // Feedback transient del hand cannon: actionbar (hotbar), no chat. Infeccion usa title, sin conflicto.
+    try { player.onScreenDisplay.setActionBar(text); } catch (_) {}
+}
 function updateHandCannonOilTag(player) {
     try {
         const main = player.getComponent(EntityEquippableComponent.componentId)
@@ -341,7 +345,7 @@ try {
                 if (main.typeId === "udaw:hand_cannon_loaded_oil") target = "udaw:hand_cannon_loaded"; // revert loaded también si mueves antes de disparar
                 const swapped = convertItem(main, target);
                 eq.getEquipmentSlot(EquipmentSlot.Mainhand).setItem(swapped);
-                try { p.sendMessage("§aModo: Perdigones §7| Sin botella en secundaria -> revert"); } catch (_) {}
+                handCannonBar(p, "§aModo: Perdigones §7| Sin botella en secundaria -> revert");
             }
         } catch (_) {}
     });
@@ -534,19 +538,19 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
                 if (hasOilInOffhand(source)) {
                     const swapped = convertItem(item, "udaw:hand_cannon_oil");
                     mainhand.setItem(swapped);
-                    try { source.sendMessage("§6Modo: Oil Bottle §7| 1 Oil + 1 Polvora -> 5x bullet3 fuego"); } catch (_) {}
+                    handCannonBar(source, "§6Modo: Oil Bottle §7| 1 Oil + 1 Polvora -> 5x bullet3 fuego");
                     try { source.playSound("random.orb"); } catch (_) {}
                     return;
                 } else {
-                    try { source.sendMessage("§aModo: Perdigones §7| 9 Pepitas + 1 Polvora -> 5x bullet"); } catch (_) {}
+                    handCannonBar(source, "§aModo: Perdigones §7| 9 Pepitas + 1 Polvora -> 5x bullet");
                 }
             }
             if (!hasHandCannonAmmo(source)) {
                 mainhand.setItem(convertItem(item, "udaw:hand_cannon_unusable"));
-                try { source.sendMessage("§cSin municion §7| 9 Pepitas + 1 Polvora"); } catch (_) {}
+                handCannonBar(source, "§cSin municion §7| 9 Pepitas + 1 Polvora");
                 return;
             }
-            try { source.sendMessage("§aModo: Perdigones §7| Recargando..."); } catch (_) {}
+            handCannonBar(source, "§aModo: Perdigones §7| Recargando...");
             startReloadSound(source, "reload1", "udaw:hand_cannon");
             try { source.playAnimation("animation.humanoid.crossbow_hold", { blendOutTime: 0.2, stopExpression: "1" }); } catch (_) {}
         }
@@ -583,16 +587,16 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
             if (source.isSneaking) {
                 const swapped = convertItem(item, "udaw:hand_cannon");
                 mainhand.setItem(swapped);
-                try { source.sendMessage("§aModo: Perdigones §7| 9 Pepitas + 1 Polvora"); } catch (_) {}
+                handCannonBar(source, "§aModo: Perdigones §7| 9 Pepitas + 1 Polvora");
                 try { source.playSound("random.orb"); } catch (_) {}
                 return;
             }
             if (!hasOilModeAmmo(source)) {
                 mainhand.setItem(convertItem(item, "udaw:hand_cannon_oil_unusable"));
-                try { source.sendMessage("§cSin aceite/polvo §7| 1 Oil + 1 Polvora"); } catch (_) {}
+                handCannonBar(source, "§cSin aceite/polvo §7| 1 Oil + 1 Polvora");
                 return;
             }
-            try { source.sendMessage("§6Modo: Oil Bottle §7| Recargando..."); } catch (_) {}
+            handCannonBar(source, "§6Modo: Oil Bottle §7| Recargando...");
             startReloadSound(source, "reload1", "udaw:hand_cannon_oil");
             try { source.playAnimation("animation.humanoid.crossbow_hold", { blendOutTime: 0.2, stopExpression: "1" }); } catch (_) {}
         }
@@ -660,15 +664,15 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
             if (source.isSneaking && hasOilInOffhand(source) && hasOilModeAmmo(source)) {
                 const swapped = convertItem(item, "udaw:hand_cannon_oil_unusable");
                 mainhand.setItem(swapped);
-                try { source.sendMessage("§6Modo: Oil Bottle"); } catch (_) {}
+                handCannonBar(source, "§6Modo: Oil Bottle");
                 return;
             }
             if (hasHandCannonAmmo(source)) {
                 mainhand.setItem(convertItem(item, "udaw:hand_cannon"));
-                try { source.sendMessage("§aModo: Perdigones"); } catch (_) {}
+                handCannonBar(source, "§aModo: Perdigones");
             } else if (hasOilModeAmmo(source) && hasOilInOffhand(source)) {
                 mainhand.setItem(convertItem(item, "udaw:hand_cannon_oil"));
-                try { source.sendMessage("§6Modo: Oil Bottle"); } catch (_) {}
+                handCannonBar(source, "§6Modo: Oil Bottle");
             }
         }
     });
@@ -685,15 +689,15 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
             if (source.isSneaking) {
                 const swapped = convertItem(item, "udaw:hand_cannon_unusable");
                 mainhand.setItem(swapped);
-                try { source.sendMessage("§aModo: Perdigones"); } catch (_) {}
+                handCannonBar(source, "§aModo: Perdigones");
                 return;
             }
             if (hasOilModeAmmo(source)) {
                 mainhand.setItem(convertItem(item, "udaw:hand_cannon_oil"));
-                try { source.sendMessage("§6Modo: Oil Bottle"); } catch (_) {}
+                handCannonBar(source, "§6Modo: Oil Bottle");
             } else if (hasHandCannonAmmo(source)) {
                 mainhand.setItem(convertItem(item, "udaw:hand_cannon"));
-                try { source.sendMessage("§aModo: Perdigones"); } catch (_) {}
+                handCannonBar(source, "§aModo: Perdigones");
             }
         }
     });

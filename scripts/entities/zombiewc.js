@@ -1,17 +1,13 @@
 import { world, system } from "@minecraft/server";
+import { siegeMineStep } from "../siege.js";
 
 /* ================= CONFIG ================= */
 
 const BREAK_TIME             = 40;
-const MAX_DISTANCE           = 4.0;
+const MAX_DISTANCE           = 1.6;
 const MAX_MINE_DISTANCE      = 1.4;
-const STEP                   = 0.15;
+const STEP                   = 0.3;
 const DIMENSIONS             = ["overworld", "nether", "the_end"];
-
-// Evita spam extremo de comandos
-const MAX_BLOCK_BREAKS_PER_TICK = 12;
-
-let breaksThisTick = 0;
 
 /* ================= FILTRO DE BLOQUES ================= */
 
@@ -180,24 +176,7 @@ function isMineable(block) {
     );
 }
 
-/* ================= SONIDO ================= */
-
-const LEAF_IDS = EXTRA_MINEABLE;
-
-function playBreakSound(dimension, blockTypeId, pos) {
-
-    const sound = LEAF_IDS.has(blockTypeId)
-        ? "dig.grass"
-        : "dig.wood";
-
-    try {
-        dimension.runCommand(
-            `playsound ${sound} @a ${pos.x} ${pos.y} ${pos.z} 1.0 1.0`
-        );
-    } catch (_) {}
-}
-
-/* ================= RAYCAST ================= */
+/* ================= RAYCAST (detector: fija objetivo, ROMPE el asedio) ================= */
 
 function getLookBlock(entity) {
 
@@ -247,67 +226,9 @@ function getLookBlock(entity) {
     return null;
 }
 
-/* ================= OFFSETS 2x2 ================= */
-
-function get2x2Offsets(entity) {
-
-    const dir = entity.getViewDirection();
-
-    if (Math.abs(dir.x) > Math.abs(dir.z)) {
-
-        return [
-            { x: 0, y: 0, z: 0 },
-            { x: 0, y: 1, z: 0 },
-            { x: 0, y: 0, z: 1 },
-            { x: 0, y: 1, z: 1 }
-        ];
-
-    } else {
-
-        return [
-            { x: 0, y: 0, z: 0 },
-            { x: 1, y: 0, z: 0 },
-            { x: 0, y: 1, z: 0 },
-            { x: 1, y: 1, z: 0 }
-        ];
-    }
-}
-
-/* ================= 2x2 MINEABLE ================= */
-
-function getMineable2x2(dimension, basePos, offsets) {
-
-    const blocks = [];
-
-    for (const o of offsets) {
-
-        const pos = {
-            x: basePos.x + o.x,
-            y: basePos.y + o.y,
-            z: basePos.z + o.z
-        };
-
-        const block = dimension.getBlock(pos);
-
-        if (block && isMineable(block)) {
-
-            blocks.push({
-                pos,
-                typeId: block.typeId
-            });
-        }
-    }
-
-    return blocks.length > 0
-        ? blocks
-        : null;
-}
-
 /* ================= MAIN LOOP ================= */
 
 system.runInterval(() => {
-
-    breaksThisTick = 0;
 
     for (const dimId of DIMENSIONS) {
 
@@ -357,42 +278,17 @@ system.runInterval(() => {
                 continue;
             }
 
-            const offsets = get2x2Offsets(zombie);
+            // Puerta del asedio: si hay cooldown (jobs llenos/reintento),
+            // espera SIN resetear el stare para no perder el turno
+            let siegeReady = true;
+            try { siegeReady = tick >= (Number(zombie.getDynamicProperty("udaw:siege_next")) || 0); } catch (_) {}
+            if (!siegeReady) continue;
 
-            const blocks = getMineable2x2(
-                dimension,
-                target.pos,
-                offsets
-            );
-
-            if (!blocks) {
-
-                zombie.setDynamicProperty("mineStart", null);
-                zombie.setDynamicProperty("minePos", null);
-
-                continue;
-            }
-
-            for (const { pos, typeId } of blocks) {
-
-                // Protección anti-lag
-                if (breaksThisTick >= MAX_BLOCK_BREAKS_PER_TICK) {
-                    break;
-                }
-
-                playBreakSound(dimension, typeId, pos);
-
-                try {
-
-                    // Destruye naturalmente y dropea loot
-                    dimension.runCommand(
-                        `setblock ${pos.x} ${pos.y} ${pos.z} air destroy`
-                    );
-
-                    breaksThisTick++;
-
-                } catch (_) {}
-            }
+            // El raycast FIJA el objetivo; ROMPE el asedio (A* con perfil de hacha).
+            // Vale para zombiewc y vindicatorzombie (comparten filtro de madera).
+            let launched = false;
+            try { launched = siegeMineStep(zombie, "wc", true); } catch (_) {}
+            if (!launched) continue;
 
             zombie.setDynamicProperty("mineStart", null);
             zombie.setDynamicProperty("minePos", null);
