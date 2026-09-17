@@ -2,10 +2,7 @@
     "format_version": "1.21.60",
     "minecraft:item": {
         "description": {
-            "identifier": "udaw:heavy_iron_helmet",
-            "menu_category": {
-                "category": "equipment"
-            }
+            "identifier": "udaw:heavy_iron_helmet"
         },
         "components": {
             "minecraft:display_name": {

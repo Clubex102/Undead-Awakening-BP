@@ -191,7 +191,8 @@ system.runInterval(() => {
         }
     }
 
-}, 2);
+// Raycast cada 10 ticks (el stare es de 40t; no pierde nada y gasta 5x menos)
+}, 10);
 
 /* ================= ZOMBIE SHOVEL — PUENTEO (asedio TEST, sin desatasco) ================= */
 

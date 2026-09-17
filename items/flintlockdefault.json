@@ -2,10 +2,7 @@
     "format_version": "1.21.60",
     "minecraft:item": {
         "description": {
-            "identifier": "udaw:flintlockgun",
-            "menu_category": {
-                "category": "equipment"
-            }
+            "identifier": "udaw:flintlockgun"
         },
         "components": {
             "minecraft:display_name": {

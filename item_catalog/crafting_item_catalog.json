@@ -1,0 +1,66 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:crafting_items_catalog": {
+        "categories": [
+            {
+                "category_name": "equipment",
+                "groups": [
+                    {
+                        "group_identifier": {
+                            "icon": "udaw:iron_sable",
+                            "name": "udaw:udaw_sables"
+                        },
+                        "items": [
+                            "udaw:copper_sable",
+                            "udaw:iron_sable",
+                            "udaw:diamond_sable"
+                        ]
+                    },
+                    {
+                        "group_identifier": {
+                            "icon": "udaw:heavy_iron_chestplate",
+                            "name": "udaw:udaw_heavy_armor"
+                        },
+                        "items": [
+                            "udaw:heavy_copper_helmet",
+                            "udaw:heavy_copper_chestplate",
+                            "udaw:heavy_iron_helmet",
+                            "udaw:heavy_iron_chestplate",
+                            "udaw:heavy_diamond_helmet",
+                            "udaw:heavy_diamond_chestplate"
+                        ]
+                    },
+                    {
+                        "group_identifier": {
+                            "icon": "udaw:hand_cannon",
+                            "name": "udaw:udaw_gunpowder"
+                        },
+                        "items": [
+                            "udaw:arcabuz",
+                            "udaw:flintlockgun",
+                            "udaw:hand_cannon",
+                            "udaw:cannon_spawn_egg"
+                        ]
+                    }
+                ]
+            },
+            {
+                "category_name": "items",
+                "groups": [
+                    {
+                        "group_identifier": {
+                            "icon": "udaw:raid_bottle",
+                            "name": "udaw:udaw_special"
+                        },
+                        "items": [
+                            "udaw:raid_bottle",
+                            "udaw:oil_bottle",
+                            "udaw:heavy_plate",
+                            "udaw:plate_fragment"
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

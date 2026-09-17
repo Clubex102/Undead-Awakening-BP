@@ -238,16 +238,7 @@ system.runInterval(() => {
             type: "udaw:zombiewc"
         });
 
-        const vindicators = dimension.getEntities({
-            type: "udaw:vindicatorzombie"
-        });
-
-        const allWorkers = [
-            ...zombies,
-            ...vindicators
-        ];
-
-        for (const zombie of allWorkers) {
+        for (const zombie of zombies) {
 
             const target = getLookBlock(zombie);
             const tick   = system.currentTick;
@@ -285,7 +276,6 @@ system.runInterval(() => {
             if (!siegeReady) continue;
 
             // El raycast FIJA el objetivo; ROMPE el asedio (A* con perfil de hacha).
-            // Vale para zombiewc y vindicatorzombie (comparten filtro de madera).
             let launched = false;
             try { launched = siegeMineStep(zombie, "wc", true); } catch (_) {}
             if (!launched) continue;
@@ -295,4 +285,5 @@ system.runInterval(() => {
         }
     }
 
-}, 2);
+// Raycast cada 10 ticks (el stare es de 40t; no pierde nada y gasta 5x menos)
+}, 10);

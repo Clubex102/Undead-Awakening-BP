@@ -2,10 +2,7 @@
     "format_version": "1.21.60",
     "minecraft:item": {
         "description": {
-            "identifier": "udaw:plate_fragment",
-            "menu_category": {
-                "category": "items"
-            }
+            "identifier": "udaw:plate_fragment"
         },
         "components": {
             "minecraft:display_name": {

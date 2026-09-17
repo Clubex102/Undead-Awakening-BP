@@ -3,10 +3,7 @@
     "minecraft:item": {
         "description": {
             "identifier": "udaw:raid_bottle",
-            "is_experimental": false,
-            "menu_category": {
-                "category": "equipment"
-            }
+            "is_experimental": false
         },
         "components": {
             "minecraft:display_name": {

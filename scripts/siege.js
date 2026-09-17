@@ -15,7 +15,8 @@ const SIEGE_RANGE = 30;
 const SIEGE_COOLDOWN = 200; // ticks entre pasos de asedio por entidad (10s)
 const SIEGE_COOLDOWN_BUILD = 20; // el pala puentea agresivo (1s)
 const SIEGE_RETRY_NO_TARGET = 60;
-const MAX_NODES = 250; // asedio local y barato; si no llega, usa ruta parcial
+const MAX_NODES = 250; // minero: asedio local y barato; si no llega, usa ruta parcial
+const MAX_NODES_BUILD = 400; // pala: necesita ver mas lejos para rodear hasta entradas
 const MAX_CONCURRENT_JOBS = 3; // jobs baratos ya; el resto espera su turno
 const SIEGE_JOB_TIMEOUT = 200; // ticks: si un job no termina, se considera colgado y se libera
 const SIEGE_DEBUG = true; // TODO quitar cuando se confirme en juego
@@ -273,8 +274,19 @@ function clearJob(zombie) {
 }
 
 function swing(zombie, anim) {
-    try { zombie.runCommand("playanimation @s " + (anim || "animation.zombie.swing") + " a 0.333"); } catch (_) {}
+    // Gesto real del RP (verificado en entity/*.entity.json). Sin comandos.
+    try { zombie.playAnimation(anim || "animation.zombieminer.atack"); } catch (_) {}
 }
+
+const PROFILE_ANIM = {
+    miner: "animation.zombieminer.atack",
+    wc: "animation.zombiewoodcutter.atack"
+};
+
+const PROFILE_DIG_SOUND = {
+    miner: "dig.stone",
+    wc: "dig.wood"
+};
 
 function teleportSlowness(entity) {
     try { entity.addEffect("slowness", 19, { amplifier: 255, showParticles: false }); } catch (_) {}
@@ -328,11 +340,11 @@ const ASTAR_DIRECTIONS = [
     { dx: 0, dy: -1, dz: 1 }, { dx: 0, dy: -1, dz: -1 }
 ];
 
-function astarBounds(start, goal) {
-    // Radio LOCAL alrededor del zombie (barato). Si el objetivo esta lejos,
-    // el fallback de ruta parcial igual avanza hacia el.
-    const R = 8;
-    const UP = 6;
+function astarBounds(start, goal, radius) {
+    // Radio LOCAL alrededor del zombie. El minero usa 8 (barato) y el pala
+    // 16 para poder rodear muros hasta encontrar entradas.
+    const R = radius || 8;
+    const UP = 8;
     const DOWN = 6;
     return {
         minX: start.x - R,
@@ -385,8 +397,8 @@ export function siegeMineStep(zombie, profile, force) {
 
     const target = findSiegeTarget(zombie);
     if (!target || !target.isValid) { writeCooldown(zombie, SIEGE_RETRY_NO_TARGET); return false; }
-    // Forzado (raycast): el stare ya es el ritmo, cooldown corto
-    writeCooldown(zombie, force ? 30 : SIEGE_COOLDOWN);
+    // Forzado (raycast): el stare ya es el ritmo + jitter para no picar todos a la vez
+    writeCooldown(zombie, force ? 30 + Math.floor(Math.random() * 40) : SIEGE_COOLDOWN);
     slog("mine " + zombie.typeId + " -> " + target.typeId + (stuckNow ? " (atascado)" : "") + (force ? " (raycast)" : ""));
 
     const loc = zombie.location;
@@ -525,7 +537,8 @@ export function siegeMineStep(zombie, profile, force) {
         if (successfullyMined) {
             if (forcing) forceUnstick.set(zombie.id, false);
             positionHistory.set(zombie.id, []);
-            swing(zombie);
+            swing(zombie, PROFILE_ANIM[profile]);
+            try { dimension.playSound(PROFILE_DIG_SOUND[profile] || "dig.stone", { x: next.x, y: next.y, z: next.z }); } catch (_) {}
             // TP tras romper: es lo que los hace ver decididos (avanza al hueco abierto)
             slog("mine " + zombie.typeId + " ROMPE->avanza");
             system.runTimeout(() => {
@@ -638,6 +651,16 @@ export function siegeBuildStep(zombie, buildAnim) {
             id === "minecraft:lava" || id === "minecraft:flowing_lava";
     };
     const isOpen = (block) => !block || isReplaceable(block) || isAirWaterOrLava(block);
+    // Ojos de lava: jamas pararse DENTRO de lava (puentear por encima si vale,
+    // el soporte se pone igual sobre el lago).
+    const isLava = (block) => !!block && typeof block.typeId === "string" && block.typeId.includes("lava");
+    const hasSafeClearance = (x, y, z, height) => {
+        for (let i = 0; i < height; i++) {
+            const b = cachedBlockB(x, y + i, z);
+            if (!isOpen(b) || isLava(b)) return false;
+        }
+        return true;
+    };
     const hasClearance = (x, y, z, height) => {
         for (let i = 0; i < height; i++) {
             if (!isOpen(cachedBlockB(x, y + i, z))) return false;
@@ -648,7 +671,7 @@ export function siegeBuildStep(zombie, buildAnim) {
     function* calculateBuildingPath() {
         const start = { x: locX, y: locY, z: locZ };
         const goal = { x: Math.floor(tLoc.x), y: Math.floor(tLoc.y), z: Math.floor(tLoc.z) };
-        const B = astarBounds(start, goal);
+        const B = astarBounds(start, goal, 16);
         const inBounds = (x, y, z) => x >= B.minX && x <= B.maxX && y >= B.minY && y <= B.maxY && z >= B.minZ && z <= B.maxZ;
         const isGoal = (n) => n.x === goal.x && n.y === goal.y && n.z === goal.z;
         const heuristic = (n) => {
@@ -664,9 +687,9 @@ export function siegeBuildStep(zombie, buildAnim) {
                 if (!inBounds(nx, ny, nz)) continue;
                 const isStairUp = dy === 1 && (dx !== 0 || dz !== 0);
                 const isStairDown = dy === -1 && (dx !== 0 || dz !== 0);
-                if (isStairUp && !hasClearance(node.x, node.y, node.z, 3)) continue;
+                if (isStairUp && !hasSafeClearance(node.x, node.y, node.z, 3)) continue;
                 const requiredHeight = isStairDown ? 3 : 2;
-                if (!hasClearance(nx, ny, nz, requiredHeight)) continue;
+                if (!hasSafeClearance(nx, ny, nz, requiredHeight)) continue;
                 const isStaircase = isStairUp || isStairDown;
                 const cost = isStaircase ? 1.3 : dy !== 0 ? 1.5 : 1;
                 neighbors.push({ x: nx, y: ny, z: nz, cost });
@@ -682,7 +705,7 @@ export function siegeBuildStep(zombie, buildAnim) {
         let closestNode = start;
         let minH = heuristic(start);
         let expanded = 0;
-        while (open.length > 0 && expanded < MAX_NODES) {
+        while (open.length > 0 && expanded < MAX_NODES_BUILD) {
             let bestIdx = 0;
             for (let i = 1; i < open.length; i++) {
                 if (open[i].f < open[bestIdx].f) bestIdx = i;

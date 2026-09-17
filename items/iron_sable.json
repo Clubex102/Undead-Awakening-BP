@@ -2,10 +2,7 @@
     "format_version": "1.21.60",
     "minecraft:item": {
         "description": {
-            "identifier": "udaw:iron_sable",
-            "menu_category": {
-                "category": "equipment"
-            }
+            "identifier": "udaw:iron_sable"
         },
         "components": {
             "minecraft:display_name": {
