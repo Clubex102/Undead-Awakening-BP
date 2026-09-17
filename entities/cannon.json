@@ -4,7 +4,14 @@
         "description": {
             "identifier": "udaw:cannon",
             "is_spawnable": true,
-            "is_summonable": true
+            "is_summonable": true,
+            "properties": {
+                "udaw:elev": {
+                    "type": "float",
+                    "range": [-45.0, 15.0],
+                    "default": 0.0
+                }
+            }
         },
         "component_groups": {},
         "components": {
