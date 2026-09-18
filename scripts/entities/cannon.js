@@ -285,6 +285,7 @@ function fireCannon(player, cannon) {
                 const bullet = dim.spawnEntity(BULLET_ID, muzzle);
 
                 bullet.applyImpulse({ x: ox * speed, y: oy * speed, z: oz * speed });
+                if (isIncendiary) { try { bullet.addTag("udaw:inc"); } catch (_) {} }
 
             } catch {}
         }
@@ -340,7 +341,6 @@ function previewTrajectory(player, cannon, load) {
             try {
                 dim.spawnParticle("udaw:aim_dot", at);
                 dim.spawnParticle("udaw:aim_dot", at);
-                if (load === "incendiary") dim.spawnParticle("udaw:fire", at);
             } catch (_) {}
             break;
         }
@@ -373,20 +373,24 @@ function startCannonLoops(player, cannon) {
 
             // Punteria visual: la pieza gira al yaw del jinete (suave) y la
             // boca se eleva a su vista via propiedad udaw:elev
+            // DEBUG temporal: canta errores y valores al log
             try {
                 const pr = player.getRotation();
                 const cr = cannon.getRotation();
                 const diff = ((pr.y - cr.y + 540) % 360) - 180;
                 const step = Math.max(-30, Math.min(30, diff * 0.5));
-                try { cannon.setRotation({ x: 0, y: cr.y + step }); } catch (_) {}
+                try { cannon.setRotation({ x: 0, y: cr.y + step }); } catch (e) { console.warn("[Cannon] setRotation FAIL " + e); }
                 let elev = 0;
                 try {
                     const vd = player.getViewDirection();
                     const p = Math.asin(Math.max(-1, Math.min(1, vd.y))) * 180 / Math.PI;
                     elev = Math.max(-45, Math.min(15, -p));
-                } catch (_) {}
-                try { cannon.setProperty("udaw:elev", elev); } catch (_) {}
-            } catch {}
+                } catch (e) { console.warn("[Cannon] view FAIL " + e); }
+                try { cannon.setProperty("udaw:elev", elev); } catch (e) { console.warn("[Cannon] setProperty FAIL " + e); }
+                if (system.currentTick % 100 === 0) {
+                    console.warn("[Cannon] aim yaw=" + cr.y.toFixed(1) + " step=" + step.toFixed(1) + " elev=" + elev.toFixed(1));
+                }
+            } catch (e) { console.warn("[Cannon] aim FAIL " + e); }
 
             try {
                 const load = cannonLoads.get(cannon.id);

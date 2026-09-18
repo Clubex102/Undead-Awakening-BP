@@ -44,6 +44,12 @@
                         "destroy_on_hit": false,
                         "max_critical_damage": 40,
                         "apply_knockback_to_blocking_targets": true
+                    },
+                    "particle_on_hit": {
+                        "num_particles": 8,
+                        "on_entity_hit": true,
+                        "on_other_hit": true,
+                        "particle_type": "minecraft:basic_smoke_particle"
                     }
                 },
                 "is_dangerous": true,
