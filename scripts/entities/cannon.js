@@ -286,6 +286,10 @@ function fireCannon(player, cannon) {
 
                 bullet.applyImpulse({ x: ox * speed, y: oy * speed, z: oz * speed });
                 if (isIncendiary) { try { bullet.addTag("udaw:inc"); } catch (_) {} }
+                if (isSolid) {
+                    try { bullet.addTag("udaw:slug"); } catch (_) {}
+                    try { bullet.setDynamicProperty("udaw:shooter", player.id); } catch (_) {}
+                }
 
             } catch {}
         }
@@ -313,12 +317,44 @@ function previewTrajectory(player, cannon, load) {
     let px = cannon.location.x + dirX * 2.0;
     let py = cannon.location.y + 0.7;
     let pz = cannon.location.z + dirZ * 2.0;
+
+    const isFlatShot = load !== "incendiary";
+
+    // Tiro tenso (bala/metalla): linea recta a la mira, sin parabola.
+    if (isFlatShot) {
+        const step = 2;
+        for (let i = 0; i < 30; i++) {
+            px += aim.x * step;
+            py += aim.y * step;
+            pz += aim.z * step;
+
+            const at = { x: px, y: py, z: pz };
+            let blk = null;
+            try {
+                blk = dim.getBlock({ x: Math.floor(px), y: Math.floor(py), z: Math.floor(pz) });
+            } catch (_) {}
+
+            try { dim.spawnParticle("udaw:aim_dot", at); } catch (_) {}
+
+            const id = blk ? blk.typeId : "minecraft:air";
+            if (id !== "minecraft:air" && id !== "minecraft:water" && id !== "minecraft:flowing_water") {
+                try {
+                    dim.spawnParticle("udaw:aim_dot", at);
+                    dim.spawnParticle("udaw:aim_dot", at);
+                } catch (_) {}
+                break;
+            }
+        }
+        return;
+    }
+
+    // Incendiaria: parabola completa con gravedad 0.05.
     let vx = aim.x * speed;
     let vy = aim.y * speed;
     let vz = aim.z * speed;
 
-    for (let t = 0; t < 60; t += 4) {
-        for (let k = 0; k < 4; k++) {
+    for (let t = 0; t < 60; t += 2) {
+        for (let k = 0; k < 2; k++) {
             px += vx;
             py += vy;
             pz += vz;
@@ -353,6 +389,8 @@ function startCannonLoops(player, cannon) {
 
     if (mountedPlayers.has(player.id)) return;
 
+    try { cannon.setProperty("udaw:aim_on", true); } catch (_) {}
+
     const barLoopId = system.runInterval(() => {
 
         try {
@@ -370,27 +408,6 @@ function startCannonLoops(player, cannon) {
             }
 
             updateActionBar(player, cannon);
-
-            // Punteria visual: la pieza gira al yaw del jinete (suave) y la
-            // boca se eleva a su vista via propiedad udaw:elev
-            // DEBUG temporal: canta errores y valores al log
-            try {
-                const pr = player.getRotation();
-                const cr = cannon.getRotation();
-                const diff = ((pr.y - cr.y + 540) % 360) - 180;
-                const step = Math.max(-30, Math.min(30, diff * 0.5));
-                try { cannon.setRotation({ x: 0, y: cr.y + step }); } catch (e) { console.warn("[Cannon] setRotation FAIL " + e); }
-                let elev = 0;
-                try {
-                    const vd = player.getViewDirection();
-                    const p = Math.asin(Math.max(-1, Math.min(1, vd.y))) * 180 / Math.PI;
-                    elev = Math.max(-45, Math.min(15, -p));
-                } catch (e) { console.warn("[Cannon] view FAIL " + e); }
-                try { cannon.setProperty("udaw:elev", elev); } catch (e) { console.warn("[Cannon] setProperty FAIL " + e); }
-                if (system.currentTick % 100 === 0) {
-                    console.warn("[Cannon] aim yaw=" + cr.y.toFixed(1) + " step=" + step.toFixed(1) + " elev=" + elev.toFixed(1));
-                }
-            } catch (e) { console.warn("[Cannon] aim FAIL " + e); }
 
             try {
                 const load = cannonLoads.get(cannon.id);
@@ -418,6 +435,8 @@ function cleanupDismount(player) {
     system.clearRun(data.barLoopId);
 
     mountedPlayers.delete(player.id);
+
+    try { data.cannon.setProperty("udaw:aim_on", false); } catch (_) {}
 
     try {
         player.onScreenDisplay.setActionBar("");

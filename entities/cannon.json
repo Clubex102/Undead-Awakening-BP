@@ -6,10 +6,9 @@
             "is_spawnable": true,
             "is_summonable": true,
             "properties": {
-                "udaw:elev": {
-                    "type": "float",
-                    "range": [-45.0, 15.0],
-                    "default": 0.0
+                "udaw:aim_on": {
+                    "type": "bool",
+                    "default": false
                 }
             }
         },
