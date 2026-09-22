@@ -2,7 +2,7 @@
     "format_version": "1.21.60",
     "minecraft:entity": {
         "description": {
-            "identifier": "udaw:cannonbullet",
+            "identifier": "udaw:grapple_hook",
             "runtime_identifier": "snowball",
             "is_summonable": true
         },
@@ -14,48 +14,36 @@
             "minecraft:despawn": {
                 "despawn_from_chance": true,
                 "despawn_from_distance": {
-                    "max_distance": 60
+                    "max_distance": 40
                 },
                 "despawn_from_inactivity": true,
                 "despawn_from_simulation_edge": true,
-                "min_range_inactivity_timer": 30,
-                "min_range_random_chance": 800,
+                "min_range_inactivity_timer": 10,
+                "min_range_random_chance": 100,
                 "remove_child_entities": false
             },
             "minecraft:collision_box": {
-                "height": 0.5,
-                "width": 1
+                "height": 0.3,
+                "width": 0.3
             },
             "minecraft:projectile": {
                 "anchor": 0,
-                "on_fire_time": 0,
                 "angle_offset": 0,
+                "gravity": 0.01,
+                "knockback": false,
                 "catch_fire": false,
-                "gravity": 0.05,
-                "inertia": 1.5,
-                "knockback": true,
                 "on_hit": {
-                    "catch_fire": false,
-                    
                     "impact_damage": {
-                        "damage": 25,
-                        
-                        "knockback": true,
+                        "damage": 2,
+                        "catch_fire": false,
+                        "knockback": false,
                         "destroy_on_hit": false,
-                        "max_critical_damage": 40,
-                        "apply_knockback_to_blocking_targets": true
-                    },
-                    "particle_on_hit": {
-                        "num_particles": 8,
-                        "on_entity_hit": true,
-                        "on_other_hit": true,
-                        "particle_type": "snowballpoof"
+                        "max_critical_damage": 2,
+                        "apply_knockback_to_blocking_targets": false
                     }
                 },
-                "is_dangerous": true,
-                "shoot_sound": "flintlockshoot",
-                "multiple_targets": true,
-                "power": 3,
+                "is_dangerous": false,
+                "power": 1,
                 "shoot_target": true,
                 "should_bounce": false
             }
