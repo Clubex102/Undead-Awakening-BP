@@ -27,6 +27,7 @@ import "./entities/pillager.js";
 import "./entities/bullet_trail.js";
 import "./oil_bottle.js";
 import "./entities/abordador.js";
+import "./entities/fisherman.js";
 import "./raid_zombies.js";
 
 

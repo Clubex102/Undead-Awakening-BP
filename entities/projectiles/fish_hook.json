@@ -1,0 +1,52 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "udaw:fish_hook",
+            "runtime_identifier": "snowball",
+            "is_summonable": true
+        },
+        "components": {
+            "minecraft:physics": {
+                "has_collision": true,
+                "has_gravity": true
+            },
+            "minecraft:despawn": {
+                "despawn_from_chance": true,
+                "despawn_from_distance": {
+                    "max_distance": 100
+                },
+                "despawn_from_inactivity": true,
+                "despawn_from_simulation_edge": true,
+                "min_range_inactivity_timer": 10,
+                "min_range_random_chance": 100,
+                "remove_child_entities": false
+            },
+            "minecraft:collision_box": {
+                "height": 0.3,
+                "width": 0.3
+            },
+            "minecraft:projectile": {
+                "anchor": 0,
+                "angle_offset": 0,
+                "gravity": 0.03,
+                "knockback": false,
+                "catch_fire": false,
+                "on_hit": {
+                    "impact_damage": {
+                        "damage": 2,
+                        "catch_fire": false,
+                        "knockback": false,
+                        "destroy_on_hit": false,
+                        "max_critical_damage": 2,
+                        "apply_knockback_to_blocking_targets": false
+                    }
+                },
+                "is_dangerous": false,
+                "power": 1,
+                "shoot_target": true,
+                "should_bounce": false
+            }
+        }
+    }
+}

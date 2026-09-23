@@ -1,0 +1,28 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "udaw:fish_link",
+            "runtime_identifier": "snowball",
+            "is_spawnable": false,
+            "is_summonable": true
+        },
+        "components": {
+            "minecraft:collision_box": {
+                "height": 0.2,
+                "width": 0.2
+            },
+            "minecraft:type_family": {
+                "family": ["inanimate", "udaw_link"]
+            },
+"minecraft:pushable_by_entity": {
+    "presets": [
+        {
+            "min_distance": 0
+        }
+    ]
+}
+            }
+        }
+    }
+
