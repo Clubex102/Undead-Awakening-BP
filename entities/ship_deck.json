@@ -1,0 +1,66 @@
+{
+    "format_version": "1.21.90",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "udaw:ship_deck",
+            "is_spawnable": false,
+            "is_summonable": true
+        },
+        "components": {
+            "minecraft:type_family": {
+                "family": [
+                    "ship_deck",
+                    "inanimate"
+                ]
+            },
+            "minecraft:collision_box": {
+                "width": 7,
+                "height": 1,
+                "origin": [
+                    0,
+                    -0.2,
+                    0
+                ]
+            },
+            "minecraft:is_collidable": {},
+            "minecraft:physics": {
+                "has_gravity": false,
+                "has_collision": false
+            },
+            "minecraft:body_rotation_blocked": {},
+            "minecraft:rotation_axis_aligned": {},
+            "minecraft:renders_when_invisible": {},
+            "minecraft:spell_effects": {
+                "add_effects": [
+                    {
+                        "effect": "invisibility",
+                        "duration": 999999,
+                        "visible": false
+                    }
+                ]
+            },
+            "minecraft:health": {
+                "value": 1000,
+                "max": 1000
+            },
+            "minecraft:knockback_resistance": {
+                "value": 1,
+                "max": 1
+            },
+            "minecraft:pushable": {
+                "is_pushable": false,
+                "is_pushable_by_piston": false
+            },
+            "minecraft:fire_immune": true,
+            "minecraft:damage_sensor": {
+                "triggers": [
+                    {
+                        "cause": "all",
+                        "deals_damage": false
+                    }
+                ]
+            },
+            "minecraft:conditional_bandwidth_optimization": {}
+        }
+    }
+}

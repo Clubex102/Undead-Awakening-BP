@@ -28,8 +28,10 @@ import "./entities/bullet_trail.js";
 import "./oil_bottle.js";
 import "./entities/abordador.js";
 import "./entities/fisherman.js";
+import "./entities/squad.js";
+import "./entities/headless_rider.js";
+import "./entities/big_ship.js";
 import "./raid_zombies.js";
-
 
 
 

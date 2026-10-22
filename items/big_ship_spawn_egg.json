@@ -1,0 +1,18 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:item": {
+        "description": {
+            "identifier": "udaw:big_ship_spawn_egg",
+            "menu_category": {
+                "category": "items"
+            }
+        },
+        "components": {
+            "minecraft:icon": "spawn_egg_big_ship",
+            "minecraft:entity_placer": {
+                "entity": "udaw:big_ship"
+            },
+            "minecraft:max_stack_size": 1
+        }
+    }
+}

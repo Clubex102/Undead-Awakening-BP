@@ -1,0 +1,58 @@
+{
+  "format_version": "1.21.60",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "udaw:musket_ball",
+      "runtime_identifier": "snowball",
+      "is_summonable": true
+    },
+    "components": {
+      "minecraft:physics": {
+        "has_collision": true,
+        "has_gravity": true
+      },
+      "minecraft:despawn": {
+        "despawn_from_chance": true,
+        "despawn_from_distance": {
+          "max_distance": 60
+        },
+        "despawn_from_inactivity": true,
+        "despawn_from_simulation_edge": true,
+        "min_range_inactivity_timer": 30,
+        "min_range_random_chance": 800,
+        "remove_child_entities": false
+      },
+      "minecraft:collision_box": {
+        "height": 0.3,
+        "width": 0.3
+      },
+      "minecraft:type_family": {
+        "family": [
+          "udaw_musket_ball"
+        ]
+      },
+      "minecraft:projectile": {
+        "anchor": 0,
+        "angle_offset": 0,
+        "gravity": 0.01,
+        "inertia": 1.5,
+        "knockback": false,
+        "on_hit": {
+          "impact_damage": {
+            "damage": 20,
+            "catch_fire": false,
+            "knockback": false,
+            "destroy_on_hit": false,
+            "max_critical_damage": 9,
+            "apply_knockback_to_blocking_targets": false
+          }
+        },
+        "is_dangerous": true,
+        "multiple_targets": true,
+        "power": 2.4,
+        "shoot_target": false,
+        "should_bounce": false
+      }
+    }
+  }
+}
