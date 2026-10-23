@@ -116,9 +116,9 @@ function playMove(boss, name) {
 //         "roar":    "animation.udaw_headless_rider.roar",
 //         "gallop":  "animation.udaw_headless_rider.gallop"
 //     (slash, chargue, pumpkin y jump ya los tienes; si no los registraste así, hazlo igual)
-// ═══════════════════════════════════════════════════════════════════════════
-
-// ───────── Movimientos (cada uno devuelve cuántos ticks dura) ─────────
+// ═════════════                  ══════════════════════════════════════════════════════════════                                                                                                                         
+                                        
+// ─────────                                         Movimientos (cada uno devuelve cuántos ticks dura) ─────────
 
 // 1) Tajo en arco: golpe frontal con derribo
 function tajo(boss, t) {

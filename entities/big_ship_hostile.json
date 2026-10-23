@@ -1,0 +1,146 @@
+{
+    "format_version": "1.21.90",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "udaw:big_ship_hostile",
+            "is_spawnable": false,
+            "is_summonable": true,
+            "properties": {
+                "udaw:moving": {
+                    "type": "bool",
+                    "client_sync": true,
+                    "default": false
+                }
+            }
+        },
+        "component_groups": {
+            "udaw:crippled": {
+                "minecraft:transformation": {
+                    "into": "udaw:big_ship_destroyed",
+                    "delay": 0
+                }
+            }
+        },
+        "components": {
+            "minecraft:type_family": {
+                "family": [
+                    "big_ship",
+                    "big_ship_hostile",
+                    "ship",
+                    "inanimate"
+                ]
+            },
+            "minecraft:collision_box": {
+                "width": 9,
+                "height": 2.25
+            },
+            "minecraft:is_collidable": {},
+            "minecraft:physics": {
+                "has_gravity": true,
+                "has_collision": true
+            },
+            "minecraft:buoyant": {
+                "base_buoyancy": 1,
+                "apply_gravity": true,
+                "simulate_waves": false,
+                "liquid_blocks": [
+                    "minecraft:water",
+                    "minecraft:flowing_water"
+                ]
+            },
+            "minecraft:water_movement": {
+                "drag_factor": 1
+            },
+            "minecraft:movement": {
+                "value": 0
+            },
+            "minecraft:rideable": {
+                "controlling_seat": 0,
+                "seat_count": 10,
+                "crouching_skip_interact": true,
+                "family_types": [
+                    "player",
+                    "pillager_crew"
+                ],
+                "interact_text": "action.interact.ride.boat",
+                "pull_in_entities": false,
+                "rider_can_interact": true,
+                "seats": [
+                    {
+                        "position": [0, 5, -9]
+                    },
+                    {
+                        "position": [1.35, 2.3, -3]
+                    },
+                    {
+                        "position": [-1.35, 2.3, -1.5]
+                    },
+                    {
+                        "position": [1.35, 2.3, -1.5]
+                    },
+                    {
+                        "position": [-1.35, 2.3, 0]
+                    },
+                    {
+                        "position": [1.35, 2.3, 0]
+                    },
+                    {
+                        "position": [-1.35, 2.3, 1.5]
+                    },
+                    {
+                        "position": [1.35, 2.3, 1.5]
+                    },
+                    {
+                        "position": [-1.35, 2.3, 3]
+                    },
+                    {
+                        "position": [1.35, 2.3, 3]
+                    }
+                ]
+            },
+            "minecraft:health": {
+                "value": 400,
+                "max": 400
+            },
+            "minecraft:knockback_resistance": {
+                "value": 1,
+                "max": 1
+            },
+            "minecraft:pushable": {
+                "is_pushable": false,
+                "is_pushable_by_piston": false
+            },
+            "minecraft:fire_immune": true,
+            "minecraft:nameable": {},
+            "minecraft:persistent": {},
+            "minecraft:damage_sensor": {
+                "triggers": [
+                    {
+                        "cause": "fall",
+                        "deals_damage": "no"
+                    }
+                ]
+            },
+            "minecraft:on_death": {
+                "target": "self",
+                "event": "udaw:cripple"
+            },
+            "minecraft:conditional_bandwidth_optimization": {
+                "default_values": {
+                    "max_optimized_distance": 96,
+                    "max_dropped_ticks": 20,
+                    "use_motion_prediction_hints": true
+                }
+            }
+        },
+        "events": {
+            "udaw:cripple": {
+                "add": {
+                    "component_groups": [
+                        "udaw:crippled"
+                    ]
+                }
+            }
+        }
+    }
+}

@@ -1,11 +1,25 @@
-import { world, system, Player } from "@minecraft/server";
+import { world, system, Player, GameMode } from "@minecraft/server";
 
 // ───────────────────────── Configuración ─────────────────────────
 const SHIP_ID = "udaw:big_ship";
+const HOSTILE_SHIP_ID = "udaw:big_ship_hostile";
+const SHIP_IDS = new Set([SHIP_ID, HOSTILE_SHIP_ID]);
 const DECK_ID = "udaw:ship_deck";
 const BULLET_ID = "udaw:cannonbullet";
+const HOSTILE_BULLET_ID = "udaw:pillagercannonbullet";
 const FLINT_ITEM = "minecraft:flint_and_steel";
 const DIMENSIONS = ["overworld", "nether", "the_end"];
+const CREW_ID = "udaw:pillager_crew";
+const CREW_TAG_PREFIX = "udaw_ship_crew:";
+const CREW_COUNT = 6;
+const OWNER_PREFIX = "udaw_owner:";
+const HOSTILE_RANGE = 160;
+const HOSTILE_FIRE_RANGE = 60;
+const HOSTILE_APPROACH = 64;
+const HOSTILE_STANDOFF = 38;
+const HOSTILE_RELOAD = 160;
+const HOSTILE_CRIPPLE = 140;
+const HOSTILE_TURN_SCALE = 2.6;
 
 // Movimiento (drive corre cada 2 ticks)
 const MAX_SPEED = 0.34;
@@ -59,6 +73,24 @@ function isAlive(entity) {
 const wrapDegrees = (deg) => ((deg % 360) + 360) % 360;
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
+function ownerOf(ship) {
+    try {
+        const tag = ship.getTags().find((t) => t.startsWith(OWNER_PREFIX));
+        return tag ? tag.slice(OWNER_PREFIX.length) : undefined;
+    } catch (_) {
+        return undefined;
+    }
+}
+
+function canPilot(ship, player) {
+    const owner = ownerOf(ship);
+    return !owner || owner === player.id;
+}
+
+function crewTag(ship) {
+    return CREW_TAG_PREFIX + ship.id;
+}
+
 function yawOf(ship) {
     try {
         const r = ship.getRotation();
@@ -102,14 +134,188 @@ function readInput(player) {
 function register(ship) {
     let s = ships.get(ship.id);
     if (!s) {
-        s = { ship, turn: 0, moving: undefined, pads: {}, last: {}, reload: {}, invalid: 0 };
+        s = { ship, dim: ship.dimension, turn: 0, moving: undefined, pads: {}, last: {}, reload: {}, invalid: 0, target: undefined, freeCrew: [], hostileSide: 1 };
         ships.set(ship.id, s);
     } else if (!isAlive(s.ship)) {
         s.ship = ship;
+        s.dim = ship.dimension;
         s.pads = {};
         s.last = {};
     }
     return s;
+}
+
+function nearestPlayer(ship) {
+    let list = [];
+    try {
+        list = ship.dimension.getPlayers({ location: ship.location, maxDistance: HOSTILE_RANGE });
+    } catch (_) {
+        return undefined;
+    }
+
+    let best;
+    let bestDist = Infinity;
+    for (const player of list) {
+        try {
+            const mode = player.getGameMode();
+            if (mode === GameMode.Creative || mode === GameMode.Spectator) continue;
+            const dx = player.location.x - ship.location.x;
+            const dz = player.location.z - ship.location.z;
+            const d = Math.hypot(dx, dz);
+            if (d < bestDist) {
+                bestDist = d;
+                best = player;
+            }
+        } catch (_) {}
+    }
+    return best;
+}
+
+function targetSide(s, dx, dz) {
+    const f = forwardOf(s.ship);
+    const cross = dx * f.z - dz * f.x;
+    if (cross > 1) s.hostileSide = 1;
+    else if (cross < -1) s.hostileSide = -1;
+    return s.hostileSide ?? 1;
+}
+
+function hostileInput(s) {
+    const ship = s.ship;
+    const target = nearestPlayer(ship);
+    s.target = target;
+    if (!target) return { throttle: 0, steer: 0 };
+
+    const dx = target.location.x - ship.location.x;
+    const dz = target.location.z - ship.location.z;
+    const dist = Math.hypot(dx, dz);
+    const bearing = (Math.atan2(-dx, dz) * 180) / Math.PI;
+
+    const side = targetSide(s, dx, dz);
+    const closing = clamp((dist - HOSTILE_STANDOFF) / (HOSTILE_APPROACH - HOSTILE_STANDOFF), 0, 1);
+    const desired = bearing + 90 * (1 - closing) * side;
+    const diff = wrapDegrees(desired - yawOf(ship) + 180) - 180;
+    const steer = diff > 4 ? -1 : diff < -4 ? 1 : 0;
+    const throttle = dist > HOSTILE_STANDOFF ? 1 : 0;
+    return { throttle, steer };
+}
+
+function hostileFire(s, target) {
+    const ship = s.ship;
+    if (!isAlive(target)) return;
+
+    const dx = target.location.x - ship.location.x;
+    const dz = target.location.z - ship.location.z;
+    const dist = Math.hypot(dx, dz);
+    if (dist < 8 || dist > HOSTILE_FIRE_RANGE) return;
+
+    const f = forwardOf(ship);
+    const angle = Math.atan2(Math.abs(dx * f.z - dz * f.x), dx * f.x + dz * f.z);
+    if (Math.abs(angle - Math.PI / 2) > (35 * Math.PI) / 180) return;
+
+    const side = targetSide(s, dx, dz);
+    const now = system.currentTick;
+    if (now < (s.reload[side] ?? 0)) return;
+    s.reload[side] = now + HOSTILE_RELOAD;
+
+    const aim = { x: target.location.x, y: target.location.y + 1, z: target.location.z };
+    try { ship.playAnimation(SIDE_ANIM[side]); } catch (_) {}
+    CANNON_OFFSETS.forEach((offset, i) => {
+        system.runTimeout(() => {
+            try { shoot(ship, ship, side, offset, aim, HOSTILE_BULLET_ID); } catch (_) {}
+        }, ANIM_DELAY + i * SALVO_GAP);
+    });
+}
+
+function ensureCrew(ship) {
+    if (ship.typeId !== HOSTILE_SHIP_ID) return;
+
+    const tag = crewTag(ship);
+    let tagged = [];
+    try {
+        tagged = ship.dimension.getEntities({ type: CREW_ID, tags: [tag] });
+    } catch (_) {}
+
+    const s = register(ship);
+    const free = [];
+    for (const crew of tagged) {
+        let riding;
+        try { riding = crew.getComponent("minecraft:riding")?.entityRidingOn; } catch (_) {}
+        if (riding?.id === ship.id) continue;
+
+        let mounted = false;
+        try { mounted = ship.getComponent("minecraft:rideable")?.addRider(crew) ?? false; } catch (_) {}
+        if (!mounted) free.push(crew);
+    }
+    s.freeCrew = free;
+
+    const missing = CREW_COUNT - tagged.length;
+    for (let i = 0; i < missing; i++) {
+        let crew;
+        try {
+            crew = ship.dimension.spawnEntity(CREW_ID, { x: ship.location.x, y: ship.location.y + 3, z: ship.location.z });
+            crew.addTag(tag);
+        } catch (_) {
+            continue;
+        }
+
+        let mounted = false;
+        try {
+            mounted = ship.getComponent("minecraft:rideable")?.addRider(crew) ?? false;
+        } catch (_) {}
+
+        if (!mounted) s.freeCrew.push(crew);
+    }
+}
+
+function updateFreeCrew(s) {
+    if (!s.freeCrew.length) return;
+    s.freeCrew = s.freeCrew.filter(isAlive);
+    if (!s.freeCrew.length) return;
+
+    let seats = [];
+    try {
+        seats = s.ship.getComponent("minecraft:rideable")?.getSeats?.() ?? [];
+    } catch (_) {}
+
+    const rad = (yawOf(s.ship) * Math.PI) / 180;
+    s.freeCrew.forEach((crew, i) => {
+        const seat = seats[i % Math.max(1, seats.length)];
+        const p = seat?.position ?? { x: 0, y: 2.3, z: -3 };
+        const pos = {
+            x: s.ship.location.x + p.x * Math.cos(rad) - p.z * Math.sin(rad),
+            y: s.ship.location.y + p.y,
+            z: s.ship.location.z + p.x * Math.sin(rad) + p.z * Math.cos(rad)
+        };
+        try { crew.teleport(pos); } catch (_) {}
+    });
+}
+
+function removeCrew(ship) {
+    if (!ship) return;
+    let list = [];
+    try {
+        list = ship.dimension.getEntities({ type: CREW_ID, tags: [crewTag(ship)] });
+    } catch (_) {}
+    for (const crew of list) {
+        try { crew.remove(); } catch (_) {}
+    }
+}
+
+function cripple(ship) {
+    if (!isAlive(ship) || ship.typeId !== HOSTILE_SHIP_ID) return;
+    try {
+        if (ship.hasTag("udaw_crippled")) return;
+        ship.addTag("udaw_crippled");
+    } catch (_) {}
+    removeCrew(ship);
+    const s = ships.get(ship.id);
+    if (s) removePads(s);
+    try {
+        for (const player of ship.dimension.getPlayers({ location: ship.location, maxDistance: 60 })) {
+            try { player.onScreenDisplay.setActionBar("§e¡Casco destruido! Repáralo con madera, hierro o lana."); } catch (_) {}
+        }
+    } catch (_) {}
+    try { ship.triggerEvent("udaw:cripple"); } catch (_) {}
 }
 
 // ───────────────────────── Conducción ─────────────────────────
@@ -120,13 +326,27 @@ function drive(s) {
     let moving = false;
 
     try {
-        const pilot = pilotOf(ship);
-        const input = pilot ? readInput(pilot) : { throttle: 0, steer: 0 };
+        let input = { throttle: 0, steer: 0 };
+        if (ship.typeId === HOSTILE_SHIP_ID) {
+            input = hostileInput(s);
+        } else {
+            const pilot = pilotOf(ship);
+            if (pilot) {
+                if (canPilot(ship, pilot)) {
+                    input = readInput(pilot);
+                } else {
+                    try { ship.getComponent("minecraft:rideable")?.ejectRider(pilot); } catch (_) {}
+                    try { pilot.onScreenDisplay.setActionBar("§cEste barco pertenece a otro jugador."); } catch (_) {}
+                }
+            }
+        }
+
         const vel = ship.getVelocity();
         const speed = Math.hypot(vel.x, vel.z);
 
         const ratio = Math.min(1, speed / MAX_SPEED);
-        const targetTurn = input.steer * (TURN_REST + (TURN_FULL - TURN_REST) * ratio);
+        const turnScale = ship.typeId === HOSTILE_SHIP_ID ? HOSTILE_TURN_SCALE : 1;
+        const targetTurn = input.steer * (TURN_REST + (TURN_FULL - TURN_REST) * ratio) * turnScale;
         s.turn += (targetTurn - s.turn) * TURN_SMOOTH;
         if (Math.abs(s.turn) > 0.01) {
             ship.setRotation({ x: 0, y: wrapDegrees(yawOf(ship) - s.turn) });
@@ -160,6 +380,8 @@ function drive(s) {
         s.moving = moving;
         try { ship.setProperty("udaw:moving", moving); } catch (_) {}
     }
+
+    if (ship.typeId === HOSTILE_SHIP_ID) hostileFire(s, s.target);
 }
 
 // ───────────────────────── Cubierta ─────────────────────────
@@ -266,9 +488,12 @@ function scan() {
         try { dim = world.getDimension(name); } catch (_) { continue; }
 
         try {
-            for (const ship of dim.getEntities({ type: SHIP_ID })) {
-                const s = register(ship);
-                updatePads(s);
+            for (const type of SHIP_IDS) {
+                for (const ship of dim.getEntities({ type })) {
+                    const s = register(ship);
+                    updatePads(s);
+                    if (type === HOSTILE_SHIP_ID) ensureCrew(ship);
+                }
             }
         } catch (_) {}
 
@@ -346,7 +571,7 @@ function shotVelocity(pos, aim, sv) {
     return { x: hx * cp * v, y: Math.sin(pitch) * v, z: hz * cp * v };
 }
 
-function shoot(ship, player, side, offset, aim) {
+function shoot(ship, shooter, side, offset, aim, bulletId = BULLET_ID) {
     if (!isAlive(ship)) return;
 
     const f = forwardOf(ship);
@@ -363,9 +588,9 @@ function shoot(ship, player, side, offset, aim) {
     const sh = ship.getVelocity();
 
     try {
-        const bullet = dim.spawnEntity(BULLET_ID, pos);
+        const bullet = dim.spawnEntity(bulletId, pos);
         bullet.applyImpulse({ x: vel.x + sh.x, y: vel.y, z: vel.z + sh.z });
-        try { bullet.getComponent("minecraft:projectile").owner = player; } catch (_) {}
+        try { bullet.getComponent("minecraft:projectile").owner = shooter; } catch (_) {}
     } catch (_) {}
 
     try { dim.playSound("cannonshoot", pos, { volume: 2.5, pitch: 0.6 + Math.random() * 0.2 }); } catch (_) {}
@@ -377,6 +602,11 @@ function shoot(ship, player, side, offset, aim) {
 
 function fire(s, player) {
     const ship = s.ship;
+    if (!canPilot(ship, player)) {
+        player.onScreenDisplay.setActionBar("§cEste barco pertenece a otro jugador.");
+        return;
+    }
+
     const now = system.currentTick;
     const view = player.getViewDirection();
     const f = forwardOf(ship);
@@ -397,7 +627,7 @@ function fire(s, player) {
 
     CANNON_OFFSETS.forEach((offset, i) => {
         system.runTimeout(() => {
-            try { shoot(ship, player, side, offset, aim); } catch (_) {}
+            try { shoot(ship, player, side, offset, aim, BULLET_ID); } catch (_) {}
         }, ANIM_DELAY + i * SALVO_GAP);
     });
 }
@@ -417,6 +647,7 @@ system.runInterval(() => {
             continue;
         }
         s.invalid = 0;
+        if (s.ship.typeId === HOSTILE_SHIP_ID) updateFreeCrew(s);
         drive(s);
     }
 }, 2);
@@ -430,13 +661,40 @@ system.runInterval(() => {
 
 world.afterEvents.entitySpawn.subscribe((event) => {
     const e = event.entity;
-    if (e && e.typeId === SHIP_ID) updatePads(register(e));
+    if (!e || !SHIP_IDS.has(e.typeId)) return;
+    updatePads(register(e));
+    if (e.typeId === HOSTILE_SHIP_ID) ensureCrew(e);
 });
 
 world.afterEvents.entityRemove.subscribe((event) => {
-    if (event.typeId !== SHIP_ID) return;
+    if (!SHIP_IDS.has(event.typeId)) return;
     const s = ships.get(event.removedEntityId);
-    if (s) removePads(s);
+    if (!s) return;
+    removePads(s);
+    try {
+        const tag = CREW_TAG_PREFIX + event.removedEntityId;
+        const crew = s.dim.getEntities({ type: CREW_ID, tags: [tag] });
+        for (const c of crew) {
+            try { c.remove(); } catch (_) {}
+        }
+    } catch (_) {}
+});
+
+world.afterEvents.entityHurt.subscribe((event) => {
+    const ship = event.hurtEntity;
+    if (!ship || ship.typeId !== HOSTILE_SHIP_ID) return;
+
+    let health;
+    try { health = ship.getComponent("minecraft:health")?.currentValue; } catch (_) {}
+    if (typeof health === "number" && health > 0 && health <= HOSTILE_CRIPPLE) {
+        cripple(ship);
+        return;
+    }
+
+    const attacker = event.damageSource?.damagingEntity;
+    if (attacker instanceof Player && typeof health === "number") {
+        try { attacker.onScreenDisplay.setActionBar(`§cBarco saqueador: §f${Math.ceil((health / 400) * 100)}%`); } catch (_) {}
+    }
 });
 
 world.afterEvents.itemUse.subscribe((event) => {
