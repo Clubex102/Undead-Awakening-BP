@@ -1,0 +1,50 @@
+{
+  "format_version": "1.21.60",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "udaw:headless_pumpkin_projectile",
+      "runtime_identifier": "snowball",
+      "is_summonable": true,
+      "is_spawnable": false
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": ["projectile", "headless_rider_projectile"]
+      },
+      "minecraft:collision_box": {
+        "height": 0.8,
+        "width": 0.8
+      },
+      "minecraft:physics": {
+        "has_collision": true,
+        "has_gravity": true
+      },
+      "minecraft:despawn": {
+        "despawn_from_distance": {
+          "max_distance": 64
+        },
+        "despawn_from_inactivity": true,
+        "despawn_from_simulation_edge": true,
+        "min_range_inactivity_timer": 40
+      },
+      "minecraft:projectile": {
+        "anchor": 0,
+        "gravity": 0.01,
+        "inertia": 1,
+        "on_fire_time": 3,
+        "on_hit": {
+          "impact_damage": {
+            "damage": 5,
+            "catch_fire": true,
+            "knockback": true,
+            "destroy_on_hit": true
+          },
+          "remove_on_hit": {}
+        },
+        "is_dangerous": true,
+        "power": 1.6,
+        "should_bounce": false
+      }
+    }
+  }
+}

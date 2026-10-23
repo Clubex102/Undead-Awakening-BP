@@ -130,6 +130,17 @@
     },
     "components": {
       "minecraft:annotation.open_door": {},
+      "minecraft:tameable": {
+        "probability": 0,
+        "tame_items": ["minecraft:barrier"]
+      },
+      "minecraft:behavior.follow_owner": {
+        "priority": 6,
+        "speed_multiplier": 1,
+        "start_distance": 10,
+        "stop_distance": 4,
+        "can_teleport": true
+      },
       "minecraft:behavior.float": {
         "priority": 0
       },

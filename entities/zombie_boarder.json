@@ -174,7 +174,7 @@
                 "avoid_damage_blocks": true,
                 "avoid_portals": true,
                 "avoid_sun": false,
-                "avoid_water": true,
+                "avoid_water": false,
                 "can_breach": false,
                 "can_break_doors": true,
                 "can_jump": true,

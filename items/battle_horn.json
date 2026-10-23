@@ -1,0 +1,31 @@
+{
+  "format_version": "1.21.60",
+  "minecraft:item": {
+    "description": {
+      "identifier": "udaw:battle_horn",
+      "menu_category": {
+        "category": "equipment"
+      }
+    },
+    "components": {
+      "minecraft:display_name": {
+        "value": "%item.udaw.battle_horn"
+      },
+      "minecraft:hand_equipped": {
+        "value": true
+      },
+      "minecraft:use_animation": "spyglass",
+      "minecraft:icon": "battle_horn",
+      "minecraft:max_stack_size": 1,
+      "minecraft:cooldown": {
+        "category": "udaw_battle_horn",
+        "duration": 360
+      },
+      "minecraft:use_modifiers": {
+        "use_duration": 0.1,
+        "movement_modifier": 1
+      },
+      "minecraft:custom_components": ["udaw:battle_horn"]
+    }
+  }
+}

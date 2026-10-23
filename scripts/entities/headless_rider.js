@@ -135,10 +135,14 @@ function tajo(boss, t) {
       if (d.x * f.x + d.z * f.z > 0.25) { hurt(p, boss, 8); knock(p, d.x, d.z, 1.6, 0.5); }
     }
     fx(boss, "minecraft:large_explosion", { x: boss.location.x + f.x * 2.5, y: boss.location.y + 1.2, z: boss.location.z + f.z * 2.5 });
+    fx(boss, "udaw:headless_slash", { x: boss.location.x + f.x * 2.5, y: boss.location.y + 1.3, z: boss.location.z + f.z * 2.5 });
     for (let k = -4; k <= 4; k++) {
       const a = k * 0.3, c = Math.cos(a), sn = Math.sin(a);
       const rx = f.x * c - f.z * sn, rz = f.x * sn + f.z * c;
-      for (const r of [2, 3.5, 5]) fx(boss, "minecraft:basic_flame_particle", { x: boss.location.x + rx * r, y: boss.location.y + 1.3, z: boss.location.z + rz * r });
+      for (const r of [2, 3.5, 5]) {
+        const point = { x: boss.location.x + rx * r, y: boss.location.y + 1.3, z: boss.location.z + rz * r };
+        if (k % 2 === 0) fx(boss, "minecraft:basic_flame_particle", point);
+      }
     }
   });
   return 20;
@@ -154,7 +158,7 @@ function galope(boss, t, s) {
   later(24, () => play(boss, "gallop"));
   for (const w of [0, 8, 16]) {
     later(w, () => {
-      for (let i = 1; i <= 12; i++) fx(boss, "minecraft:basic_flame_particle", { x: o.x + d.x * i * 2, y: o.y + 0.3, z: o.z + d.z * i * 2 });
+      for (let i = 1; i <= 12; i++) fx(boss, "udaw:headless_charge_trail", { x: o.x + d.x * i * 2, y: o.y + 0.3, z: o.z + d.z * i * 2 });
     });
   }
   later(24, () => {
@@ -165,7 +169,7 @@ function galope(boss, t, s) {
       const sv = boss.getVelocity();
       if (n > 5 && Math.hypot(sv.x, sv.z) < 0.12) { system.clearRun(run); crash(boss, s); return; }
       boss.applyImpulse({ x: d.x * 0.55, y: 0, z: d.z * 0.55 });
-      fx(boss, "minecraft:basic_flame_particle");
+      fx(boss, "udaw:headless_charge_trail");
       fx(boss, "minecraft:basic_smoke_particle", { x: boss.location.x, y: boss.location.y + 0.8, z: boss.location.z });
       for (const p of players(boss, 2.6)) {
         if (hit.has(p.id)) continue;
@@ -178,7 +182,7 @@ function galope(boss, t, s) {
   return 54;
 }
 
-// 3) Calabazas ardientes: ráfaga de proyectiles (usa bolas de fuego como marcador)
+// 3) Calabazas ardientes: ráfaga de proyectiles con modelo propio
 function calabazas(boss, t, s, ph) {
   const shots = ph === 3 ? 5 : 3;
   laugh(boss, 1);
@@ -190,10 +194,19 @@ function calabazas(boss, t, s, ph) {
       const d = { x: to.x - b.x, y: to.y + 1 - (b.y + 2.4), z: to.z - b.z };
       const l = Math.hypot(d.x, d.y, d.z) || 1;
       const u = { x: d.x / l, y: d.y / l, z: d.z / l };
-      const fb = boss.dimension.spawnEntity("minecraft:small_fireball", { x: b.x + u.x * 1.6, y: b.y + 2.4 + u.y * 1.6, z: b.z + u.z * 1.6 });
-      const pr = fb.getComponent("minecraft:projectile");
+      const projectileLoc = { x: b.x + u.x * 1.6, y: b.y + 2.4 + u.y * 1.6, z: b.z + u.z * 1.6 };
+      const pumpkinProjectile = boss.dimension.spawnEntity("udaw:headless_pumpkin_projectile", projectileLoc);
+      const pr = pumpkinProjectile.getComponent("minecraft:projectile");
       pr.owner = boss;
       pr.shoot({ x: u.x * 1.6, y: u.y * 1.6, z: u.z * 1.6 });
+      let trailTicks = 0;
+      const trail = system.runInterval(() => {
+        if (!pumpkinProjectile.isValid || trailTicks++ >= 60) {
+          system.clearRun(trail);
+          return;
+        }
+        fxAt(boss.dimension, "udaw:headless_pumpkin_trail", pumpkinProjectile.location);
+      }, 2);
     });
   }
   return 15 + shots * 8;
@@ -206,6 +219,7 @@ function salto(boss) {
   later(22, () => {
     if (!boss.isValid) return;
     fx(boss, "minecraft:huge_explosion_emitter");
+    fx(boss, "udaw:headless_hoof_impact", { x: boss.location.x, y: boss.location.y + 0.1, z: boss.location.z });
     ring(boss.dimension, boss.location, 7, 32, "minecraft:basic_flame_particle");
     ring(boss.dimension, boss.location, 3.5, 20, "minecraft:basic_smoke_particle", 0.5);
     sound(boss, "random.explode");
@@ -320,7 +334,7 @@ function onda(boss, t) {
       if (!boss.isValid || n >= 18) { system.clearRun(run); return; }
       n++;
       const c = { x: o.x + d.x * n * 1.3, y: o.y, z: o.z + d.z * n * 1.3 };
-      for (const k of [-1, 0, 1]) fxAt(dim, "minecraft:basic_flame_particle", { x: c.x - d.z * k, y: c.y + 0.3, z: c.z + d.x * k });
+      for (const k of [-1, 0, 1]) fxAt(dim, "udaw:headless_charge_trail", { x: c.x - d.z * k, y: c.y + 0.3, z: c.z + d.x * k });
       if (n % 3 === 0) fxAt(dim, "minecraft:large_explosion", { x: c.x, y: c.y + 0.5, z: c.z });
       for (const p of dim.getPlayers({ location: c, maxDistance: 2.2 })) {
         if (hit.has(p.id)) continue;
@@ -349,10 +363,18 @@ function gancho(boss, t) {
     if (!boss.isValid || !t.isValid) return;
     const dist = flat(boss.location, t.location);
     if (dist > 36) return;
-    line(dim, hand(), chest(), "minecraft:basic_flame_particle", 0.8);
-    const d = dirTo(t.location, boss.location);
+    line(dim, hand(), chest(), "udaw:grapple_trail", 0.8);
     hurt(t, boss, 4);
-    knock(t, d.x, d.z, Math.min(3.4, Math.max(1.2, dist * 0.11)), 0.45);
+    let pulls = 0;
+    const pull = system.runInterval(() => {
+      if (!boss.isValid || !t.isValid || pulls++ >= 6 || flat(boss.location, t.location) < 3) {
+        system.clearRun(pull);
+        return;
+      }
+      const d = dirTo(t.location, boss.location);
+      const strength = Math.min(0.55, Math.max(0.3, flat(boss.location, t.location) * 0.025));
+      try { t.applyImpulse({ x: d.x * strength, y: 0.04, z: d.z * strength }); } catch { /* el objetivo ya no puede moverse */ }
+    }, 2);
   });
   later(32, () => { if (boss.isValid && t.isValid && flat(boss.location, t.location) < 7) tajo(boss, t); });
   return 64;
@@ -400,10 +422,13 @@ function meteoros(boss, t, s, ph) {
     const x = l.x + (i < pool.length ? 0 : (Math.random() - 0.5) * 9);
     const z = l.z + (i < pool.length ? 0 : (Math.random() - 0.5) * 9);
     const c = { x, y: ground(dim, x, z, l.y), z };
-    for (const w of [i * 5, i * 5 + 8, i * 5 + 16]) later(w, () => ring(dim, c, 3, 18, "minecraft:basic_flame_particle", 0.2));
-    later(i * 5 + 22, () => { for (let h = 1; h <= 10; h++) fxAt(dim, "minecraft:basic_flame_particle", { x: c.x, y: c.y + h, z: c.z }); });
+    for (const w of [i * 5, i * 5 + 8, i * 5 + 16]) later(w, () => {
+      fxAt(dim, "udaw:headless_warning_rune", { x: c.x, y: c.y + 0.04, z: c.z });
+      ring(dim, c, 3, 18, "minecraft:basic_flame_particle", 0.2);
+    });
+    later(i * 5 + 22, () => { for (let h = 1; h <= 10; h++) fxAt(dim, "udaw:headless_charge_trail", { x: c.x, y: c.y + h, z: c.z }); });
     later(i * 5 + 28, () => {
-      fxAt(dim, "minecraft:huge_explosion_emitter", { x: c.x, y: c.y + 0.5, z: c.z });
+      fxAt(dim, "udaw:headless_meteor_impact", { x: c.x, y: c.y + 0.5, z: c.z });
       ring(dim, c, 3, 20, "minecraft:basic_flame_particle", 0.3);
       for (const p of dim.getPlayers({ location: c, maxDistance: 3.2 })) {
         const d = dirTo(c, p.location);
@@ -422,6 +447,7 @@ function sueloMaldito(boss, t, s) {
   const dim = boss.dimension, l = t.location;
   const c = { x: l.x, y: ground(dim, l.x, l.z, l.y), z: l.z };
   sound(boss, "mob.horse.angry");
+  fxAt(dim, "udaw:headless_curse_ground", { x: c.x, y: c.y + 0.03, z: c.z });
   ring(dim, c, 5, 28, "minecraft:basic_smoke_particle", 0.3);
   later(20, () => {
     let n = 0;
@@ -433,6 +459,7 @@ function sueloMaldito(boss, t, s) {
       }
       ring(dim, c, 5, 28, "minecraft:basic_flame_particle", 0.2);
       ring(dim, c, 2.5, 14, "minecraft:basic_flame_particle", 0.2);
+      fxAt(dim, "udaw:headless_curse_ground", { x: c.x, y: c.y + 0.03, z: c.z });
       for (const p of dim.getPlayers({ location: c, maxDistance: 5 })) {
         if (Math.abs(p.location.y - c.y) > 3) continue;
         hurt(p, boss, 3);
@@ -448,6 +475,7 @@ function aparicion(boss, t) {
   const dim = boss.dimension;
   sound(boss, "mob.endermen.portal");
   laugh(boss, 1);
+  fx(boss, "udaw:headless_teleport_out", { x: boss.location.x, y: boss.location.y + 1, z: boss.location.z });
   ring(dim, boss.location, 1.5, 16, "minecraft:basic_smoke_particle", 1);
   boss.addEffect("invisibility", 24, { showParticles: false });
   later(20, () => {
@@ -458,6 +486,7 @@ function aparicion(boss, t) {
     let dest = { x: l.x - (v.x / hl) * 3.5, y: l.y, z: l.z - (v.z / hl) * 3.5 };
     if (!free(dest)) dest = { x: l.x + (v.x / hl) * 3.5, y: l.y, z: l.z + (v.z / hl) * 3.5 };
     if (!free(dest)) return;
+    fxAt(dim, "udaw:headless_teleport_in", { x: dest.x, y: dest.y + 1, z: dest.z });
     ring(dim, dest, 1.5, 16, "minecraft:basic_smoke_particle", 1);
     boss.teleport(dest, { facingLocation: l });
     sound(boss, "mob.endermen.portal");
@@ -483,6 +512,7 @@ function convocatoria(boss) {
       const m = dim.spawnEntity(MINION_TYPES[i % MINION_TYPES.length], pos);
       m.addTag(MINION_TAG);
       try { m.addEffect("fire_resistance", 12000, { showParticles: false }); } catch { /* sin efecto */ }
+      fxAt(dim, "udaw:headless_summon_rune", { x: pos.x, y: pos.y + 0.04, z: pos.z });
       for (let h = 0; h < 6; h++) fxAt(dim, "minecraft:basic_flame_particle", { x: pos.x, y: pos.y + h * 0.4, z: pos.z });
     }
   });
@@ -629,6 +659,7 @@ function flyby(s, boss, t, now) {
   hurt(t, boss, 8);
   knock(t, d.x, d.z, 1.6, 0.5);
   fx(boss, "minecraft:large_explosion", { x: t.location.x, y: t.location.y + 1, z: t.location.z });
+  fx(boss, "udaw:headless_slash", { x: t.location.x, y: t.location.y + 1, z: t.location.z });
 }
 
 // Choque contra un muro durante la embestida
@@ -642,6 +673,7 @@ function crash(boss, s) {
   sound(boss, "mob.horse.land");
   laugh(boss, 2);
   fx(boss, "minecraft:huge_explosion_emitter");
+  fx(boss, "udaw:headless_hoof_impact", { x: boss.location.x, y: boss.location.y + 0.1, z: boss.location.z });
   ring(boss.dimension, boss.location, 3, 20, "minecraft:basic_smoke_particle", 0.5);
   boss.addEffect("slowness", 60, { amplifier: 4, showParticles: false });
   boss.applyDamage(boss.getComponent("minecraft:health").effectiveMax * 0.04);
