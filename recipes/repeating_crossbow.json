@@ -1,0 +1,31 @@
+{
+    "format_version": "1.12.0",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "udaw:repeating_crossbow"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern": [
+            "III",
+            " S ",
+            "W W"
+        ],
+        "key": {
+            "I": {
+                "item": "minecraft:iron_ingot"
+            },
+            "S": {
+                "item": "minecraft:string"
+            },
+            "W": {
+                "item": "minecraft:stick"
+            }
+        },
+        "result": {
+            "item": "udaw:repeating_crossbow",
+            "count": 1
+        }
+    }
+}

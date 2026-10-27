@@ -31,9 +31,11 @@ import "./entities/fisherman.js";
 import "./entities/squad.js";
 import "./battle_horn.js";
 import "./entities/headless_rider.js";
+import "./entities/scarecrow.js";
 import "./entities/big_ship.js";
 import "./entities/big_ship_destroyed.js";
 import "./entities/hostile_ship_encounter.js";
 import "./raid_zombies.js";
+import "./snail.js";
 
 

@@ -1,0 +1,32 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:block": {
+        "description": {
+            "identifier": "udaw:snail_block",
+            "menu_category": {
+                "category": "items"
+            }
+        },
+        "components": {
+            "minecraft:material_instances": {
+                "*": {
+                    "texture": "texturecaracol",
+                    "render_method": "alpha_test"
+                }
+            },
+            "minecraft:geometry": "geometry.snail",
+            "minecraft:destructible_by_mining": {
+                "seconds_to_destroy": 1.5
+            },
+            "minecraft:collision_box": {
+                "origin": [-6, 0, -6],
+                "size": [12, 8, 12]
+            },
+            "minecraft:selection_box": {
+                "origin": [-6, 0, -6],
+                "size": [12, 8, 12]
+            },
+            "minecraft:loot": "loot_tables/blocks/snail_block.json"
+        }
+    }
+}

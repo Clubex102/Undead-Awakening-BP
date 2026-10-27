@@ -367,7 +367,7 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
 
             if (!removeItem(source, AMMO_ITEM)) return;
 
-            stopReloadSound(source, "reload1");
+            stopReloadSound(source, "reload3");
 
             const loaded = convertItem(item, "udaw:arcabuz_loaded");
             mainhand.setItem(loaded);
@@ -387,7 +387,7 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
             if (!hasItem(source, AMMO_ITEM)) {
                 mainhand.setItem(convertItem(item, "udaw:arcabuz_unusable"));
             } else {
-                startReloadSound(source, "reload1", "udaw:arcabuz");
+                startReloadSound(source, "reload3", "udaw:arcabuz");
                 try { source.playAnimation("animation.humanoid.crossbow_hold", { blendOutTime: 0.2, stopExpression: "1" }); } catch (_) {}
             }
         }
@@ -502,6 +502,76 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
 
             if (hasItem(source, AMMO_ITEM)) {
                 mainhand.setItem(convertItem(item, "udaw:flintlockgun"));
+            }
+        }
+    });
+
+    /* ---------- REPEATING CROSSBOW (Zhuge Nu) ---------- */
+    startupEvent.itemComponentRegistry.registerCustomComponent("udaw:repeating_crossbow", {
+        onCompleteUse(event) {
+            const { source } = event;
+            const mainhand = source.getComponent(EntityEquippableComponent.componentId)
+                                   ?.getEquipmentSlot(EquipmentSlot.Mainhand);
+            const item = mainhand?.getItem();
+            if (!mainhand || !item) return;
+            if (item.typeId !== "udaw:repeating_crossbow") return;
+
+            if (!hasItemCount(source, "minecraft:arrow", 10)) {
+                try { source.runCommand("title @s actionbar §c¡Se necesitan 10 flechas para recargar!"); } catch (_) {}
+                return;
+            }
+            if (!removeItemCount(source, "minecraft:arrow", 10)) return;
+
+            source.dimension.playSound("random.bow", source.location);
+
+            const loaded = convertItem(item, "udaw:repeating_crossbow_loaded");
+            const durComp = loaded.getComponent(ItemDurabilityComponent.componentId);
+            if (durComp) durComp.damage = 0;
+            mainhand.setItem(loaded);
+        },
+        onUse(event) {
+            const { source } = event;
+            const mainhand = source.getComponent(EntityEquippableComponent.componentId)
+                                   ?.getEquipmentSlot(EquipmentSlot.Mainhand);
+            const item = mainhand?.getItem();
+            if (!mainhand || !item) return;
+            if (item.typeId !== "udaw:repeating_crossbow") return;
+
+            if (!hasItemCount(source, "minecraft:arrow", 10)) {
+                try { source.runCommand("title @s actionbar §c¡Se necesitan 10 flechas para recargar!"); } catch (_) {}
+            } else {
+                try { source.playAnimation("animation.humanoid.crossbow_hold", { blendOutTime: 0.2, stopExpression: "1" }); } catch (_) {}
+            }
+        }
+    });
+
+    startupEvent.itemComponentRegistry.registerCustomComponent("udaw:repeating_crossbow_loaded", {
+        onUse(event) {
+            const { source } = event;
+            const mainhand = source.getComponent(EntityEquippableComponent.componentId)
+                                   ?.getEquipmentSlot(EquipmentSlot.Mainhand);
+            const item = mainhand?.getItem();
+            if (!mainhand || !item) return;
+            if (item.typeId !== "udaw:repeating_crossbow_loaded") return;
+
+            shootCommon(source, "minecraft:arrow", 1, 0);
+            source.dimension.playSound("random.bow", source.location, { volume: 2, pitch: 1.2 });
+
+            const durComp = item.getComponent(ItemDurabilityComponent.componentId);
+            if (durComp) {
+                durComp.damage += 1;
+                if (durComp.damage >= durComp.maxDurability) {
+                    const unloaded = convertItem(item, "udaw:repeating_crossbow");
+                    const unComp = unloaded.getComponent(ItemDurabilityComponent.componentId);
+                    if (unComp) unComp.damage = 0;
+                    mainhand.setItem(unloaded);
+                    source.dimension.playSound("random.click", source.location);
+                } else {
+                    mainhand.setItem(item);
+                }
+            } else {
+                const unloaded = convertItem(item, "udaw:repeating_crossbow");
+                mainhand.setItem(unloaded);
             }
         }
     });
@@ -750,6 +820,75 @@ system.beforeEvents.startup.subscribe((startupEvent) => {
     });
 });
 
+/* ---------- HALBERD ATTACK LISTENER ---------- */
+const halberdCooldowns = new Map(); // playerId -> tick
+
+world.afterEvents.entityHurt.subscribe((event) => {
+    try {
+        const { damageSource, hurtEntity } = event;
+        if (damageSource.cause !== "entityAttack") return;
+        const player = damageSource.damagingEntity;
+        if (!player || player.typeId !== "minecraft:player") return;
+
+        const equippable = player.getComponent(EntityEquippableComponent.componentId);
+        if (!equippable) return;
+        const mainhand = equippable.getEquipment(EquipmentSlot.Mainhand);
+        if (!mainhand || mainhand.typeId !== "udaw:halberd") return;
+
+        const currentTick = system.currentTick;
+        const lastHit = halberdCooldowns.get(player.id) ?? 0;
+        if (currentTick - lastHit < 20) return; // 1 second cooldown (20 ticks)
+        halberdCooldowns.set(player.id, currentTick);
+
+        const pos = player.location;
+        const rot = player.getRotation();
+        const yaw = (rot.y * Math.PI) / 180;
+        const dirX = -Math.sin(yaw);
+        const dirZ = Math.cos(yaw);
+
+        player.dimension.playSound("item.trident.riptide_1", pos);
+
+        try {
+            player.dimension.spawnParticle("udaw:headless_slash", {
+                x: pos.x + dirX * 3.0,
+                y: pos.y + 1.2,
+                z: pos.z + dirZ * 3.0
+            });
+        } catch (_) {}
+
+        try {
+            player.playAnimation("attack");
+            player.playAnimation("animation.udaw.halberd_attack");
+            player.playAnimation("animation.humanoid.sable_tpp");
+        } catch (_) {}
+
+        const damage = 11;
+        const entities = player.dimension.getEntities({
+            location: pos,
+            maxDistance: 6,
+            excludeFamilies: ["player"],
+        });
+
+        for (const entity of entities) {
+            if (entity === player || entity === hurtEntity) continue;
+
+            const dx = entity.location.x - pos.x;
+            const dz = entity.location.z - pos.z;
+
+            const dot = dx * dirX + dz * dirZ;
+            if (dot <= 0 || dot > 5) continue;
+
+            const perp = Math.abs(dx * (-dirZ) + dz * dirX);
+            if (perp > 2.0) continue;
+
+            const dy = entity.location.y - pos.y;
+            if (Math.abs(dy) > 2.0) continue;
+
+            entity.applyDamage(damage, { cause: "entityAttack", damagingEntity: player });
+        }
+    } catch (_) {}
+});
+
 /* ================= SOLTAR BOTON ================= */
 
 world.afterEvents.itemReleaseUse.subscribe((event) => {
@@ -760,7 +899,7 @@ world.afterEvents.itemReleaseUse.subscribe((event) => {
     const typeId = item.typeId;
 
     if (typeId === "udaw:arcabuz") {
-        stopReloadSound(player, "reload1");
+        stopReloadSound(player, "reload3");
     } else if (typeId === "udaw:flintlockgun") {
         stopReloadSound(player, "reload2");
     } else if (typeId === "udaw:hand_cannon" || typeId === "udaw:hand_cannon_oil") {

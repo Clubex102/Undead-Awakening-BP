@@ -13,6 +13,9 @@
 		21,
 		60
 	],
+        "capabilities": [
+            "experimental_custom_blocks"
+        ],
         "uuid": "729aab84-34ef-4ba1-90bd-8954dc2bcbfd"
     },
     "modules": [

@@ -1,0 +1,18 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:item": {
+        "description": {
+            "identifier": "udaw:scarecrow_spawn_egg"
+        },
+        "components": {
+            "minecraft:icon": "egg",
+            "minecraft:use_on_release": {
+                "on_release": "summon_entity"
+            },
+            "minecraft:entity_placer": {
+                "entity": "udaw:scarecrow"
+            },
+            "minecraft:max_stack_size": 64
+        }
+    }
+}

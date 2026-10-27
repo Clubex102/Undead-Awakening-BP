@@ -1,0 +1,33 @@
+{
+    "format_version": "1.21.60",
+    "minecraft:item": {
+        "description": {
+            "identifier": "udaw:repeating_crossbow",
+            "menu_category": {
+                "category": "equipment"
+            }
+        },
+        "components": {
+            "minecraft:display_name": {
+                "value": "§6Repeating Crossbow\n§eZhuge Nu"
+            },
+            "minecraft:icon": "repeating_crossbow",
+            "minecraft:hand_equipped": true,
+            "minecraft:max_stack_size": 1,
+            "minecraft:custom_components": ["udaw:repeating_crossbow"],
+            "minecraft:durability": {
+                "damage_chance": { "min": 1, "max": 2},
+                "max_durability": 450
+            },
+            "minecraft:use_modifiers": {
+                "use_duration": 7,
+                "movement_modifier": 0.5
+            },
+            "minecraft:repairable": {
+                "repair_items": [{ "items": ["minecraft:iron_ingot"], "repair_amount": "query.max_durability * 0.25" }]
+            },
+            "minecraft:enchantable": { "slot": "crossbow", "value": 5 },
+            "minecraft:use_animation": "crossbow"
+        }
+    }
+}

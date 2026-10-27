@@ -18,7 +18,7 @@
                 "max_durability": 400
             },
             "minecraft:use_modifiers": {
-                "use_duration": 10,
+                "use_duration": 7,
                 "movement_modifier": 0.35
             },
             "minecraft:repairable": {

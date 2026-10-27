@@ -179,9 +179,34 @@ function targetSide(s, dx, dz) {
     return s.hostileSide ?? 1;
 }
 
+function nearestTargetShip(ship) {
+    let dim = ship.dimension;
+    let list = [];
+    try {
+        list = dim.getEntities({ type: SHIP_ID, location: ship.location, maxDistance: HOSTILE_RANGE });
+    } catch (_) {}
+
+    let best;
+    let bestDist = Infinity;
+    for (const otherShip of list) {
+        if (otherShip.id === ship.id) continue;
+        try {
+            const dx = otherShip.location.x - ship.location.x;
+            const dz = otherShip.location.z - ship.location.z;
+            const d = Math.hypot(dx, dz);
+            if (d < bestDist) {
+                bestDist = d;
+                best = otherShip;
+            }
+        } catch (_) {}
+    }
+    if (best) return best;
+    return nearestPlayer(ship);
+}
+
 function hostileInput(s) {
     const ship = s.ship;
-    const target = nearestPlayer(ship);
+    const target = nearestTargetShip(ship);
     s.target = target;
     if (!target) return { throttle: 0, steer: 0 };
 
@@ -535,6 +560,7 @@ function aimPoint(player, ship) {
             if (e.id === player.id || e.id === ship.id) continue;
             if (e.typeId === DECK_ID || e.typeId === BULLET_ID) continue;
             dist = Math.min(dist, h.distance);
+
             break;
         }
     } catch (_) {}
@@ -600,6 +626,8 @@ function shoot(ship, shooter, side, offset, aim, bulletId = BULLET_ID) {
     try { ship.applyImpulse({ x: -sv.x * RECOIL, y: 0, z: -sv.z * RECOIL }); } catch (_) {}
 }
 
+
+
 function fire(s, player) {
     const ship = s.ship;
     if (!canPilot(ship, player)) {
@@ -614,6 +642,7 @@ function fire(s, player) {
     // El costado que dispara es hacia donde mira el jugador
     const side = view.x * f.z - view.z * f.x >= 0 ? 1 : -1;
 
+
     const readyAt = s.reload[side] ?? 0;
     if (now < readyAt) {
         player.onScreenDisplay.setActionBar(`§7Recargando ${SIDE_NAME[side]}: ${((readyAt - now) / 20).toFixed(1)} s`);
@@ -622,7 +651,7 @@ function fire(s, player) {
     s.reload[side] = now + RELOAD;
 
     const aim = aimPoint(player, ship);
-    player.onScreenDisplay.setActionBar(`§6¡Fuego a ${SIDE_NAME[side]}!`);
+    player.onScreenDisplay.setActionBar(`§6¡FUEGO A ${SIDE_NAME[side].toUpperCase()}!`);
     try { ship.playAnimation(SIDE_ANIM[side]); } catch (_) {}
 
     CANNON_OFFSETS.forEach((offset, i) => {

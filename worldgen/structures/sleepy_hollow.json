@@ -1,0 +1,50 @@
+{ 
+  "format_version": "1.21.20", 
+  "minecraft:jigsaw": { 
+    "start_height": {
+      "processor_type": "constant",
+      "type": "constant",
+      "value": {
+        "absolute": 0
+      }
+    },
+    "description": { 
+        "identifier": "udaw:sleepy_hollow"
+    }, 
+    "biome_filters": [
+      {
+        "all_of": [
+          {
+            "any_of": [
+              {
+                "test": "has_biome_tag",
+                "operator": "==",
+                "value": "forest"
+              },
+              {
+                "test": "has_biome_tag",
+                "operator": "==",
+                "value": "roofed"
+              },
+              {
+                "test": "has_biome_tag",
+                "operator": "==",
+                "value": "dark_forest"
+              },
+              {
+                "test": "has_biome_tag",
+                "operator": "==",
+                "value": "roofed_forest"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "step": "surface_structures", 
+    "terrain_adaptation": "beard_thin", 
+    "start_pool": "udaw:sleepy_hollow_pool", 
+    "max_depth": 7,
+    "heightmap_projection": "world_surface"
+  }
+}

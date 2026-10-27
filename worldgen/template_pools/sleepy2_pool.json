@@ -1,0 +1,19 @@
+{
+  "format_version": "1.21.80",
+  "minecraft:template_pool": {
+    "description": {
+      "identifier": "udaw:sleepy2_pool"
+    },
+    "elements": [
+      {
+        "weight": 1,
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "udaw:udaw/sleepy2",
+          "projection": "rigid",
+          "processors": ""
+        }
+      }
+    ]
+  }
+}

@@ -56,7 +56,7 @@
           "reach_multiplier": 8,
           "attack_once": false,
           "require_complete_path": false,
-          "cooldown_time": 1.2
+          "cooldown_time": 0.5
         },
         "minecraft:behavior.look_at_target": {
           "priority": 10,

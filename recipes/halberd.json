@@ -1,0 +1,26 @@
+{
+    "format_version": "1.21.10",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "udaw:halberd"
+        },
+        "unlock": [
+            { "item": "minecraft:iron_ingot" },
+            { "item": "minecraft:stick" }
+        ],
+        "tags": [ "crafting_table" ],
+        "pattern": [
+            "HHH",
+            "HSH",
+            " S "
+        ],
+        "key": {
+            "H": { "item": "minecraft:iron_ingot" },
+            "S": { "item": "minecraft:stick" }
+        },
+        "result": {
+            "item": "udaw:halberd",
+            "count": 1
+        }
+    }
+}

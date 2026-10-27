@@ -1,0 +1,19 @@
+{
+  "format_version": "1.21.80",
+  "minecraft:template_pool": {
+    "description": {
+      "identifier": "udaw:sleepy_hollow_pool"
+    },
+    "elements": [
+      {
+        "weight": 1,
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "udaw:udaw/sleepy1",
+          "projection": "rigid",
+          "processors": ""
+        }
+      }
+    ]
+  }
+}
